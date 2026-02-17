@@ -11,12 +11,19 @@
   ],
   "scripts": {
     "dev": "tsx packages/core/src/main.ts",
-    "build": "tsup",
+    "dev:watch": "tsx watch packages/core/src/main.ts",
+    "build": "tsup packages/core/src/main.ts --format esm --dts",
     "test": "vitest",
-    "test:coverage": "vitest --coverage",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "eslint . --ext .ts,.tsx --fix",
-    "typecheck": "tsc --noEmit"
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
   },
   "devDependencies": {
     "typescript": "^5.4.3",
