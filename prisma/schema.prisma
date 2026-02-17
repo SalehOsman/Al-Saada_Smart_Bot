@@ -1,0 +1,188 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enum definitions
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  EMPLOYEE
+  VISITOR
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NotificationType {
+  SYSTEM
+  JOIN_REQUEST
+  APPROVAL
+  REJECTION
+  ANNOUNCEMENT
+}
+
+enum ScopeType {
+  SECTION
+  MODULE
+}
+
+// User - Telegram Bot Users
+model User {
+  telegramId    BigInt   @id @map("telegram_id")
+  firstName     String   @map("first_name")
+  lastName      String?  @map("last_name")
+  phone         String?  // Egyptian phone format: 01[0125][0-9]{8}
+  role          Role     @default(VISITOR)
+  isActive      Boolean  @default(true) @map("is_active")
+  language      String   @default("ar") // ISO 639-1
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  joinRequests       JoinRequest[]
+  auditLogs         AuditLog[]
+  notifications     Notification[]
+  adminScopes       AdminScope[]
+  createdSections   Section[]      @relation("SectionCreator")
+  reviewedJoinRequests JoinRequest[] @relation("ReviewAdmin")
+
+  @@map("users")
+  @@index([telegramId])
+  @@index([role])
+  @@index([isActive])
+}
+
+// JoinRequest - Pending User Registrations
+model JoinRequest {
+  id         String    @id @default(nanoid())
+  userId     BigInt    @map("user_id")
+  name       String
+  phone      String    // Egyptian phone format validation
+  message    String?
+  status     Status    @default(PENDING)
+  reviewedBy BigInt?   @map("reviewed_by")
+  reviewedAt DateTime?  @map("reviewed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  // Relationships
+  user     User  @relation(fields: [userId], references: [telegramId])
+  reviewer User? @relation("ReviewAdmin", fields: [reviewedBy], references: [telegramId])
+
+  @@map("join_requests")
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Section - Dynamic Departments/Containers
+model Section {
+  id        String   @id @default(nanoid())
+  name      String   // Arabic name
+  nameEn    String   // English name
+  icon      String   // Emoji (e.g., "📁", "💼")
+  isActive  Boolean  @default(true) @map("is_active")
+  orderIndex Int     @default(0) @map("order_index")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy BigInt?  @map("created_by")
+
+  // Relationships
+  creator    User?       @relation("SectionCreator", fields: [createdBy], references: [telegramId])
+  modules    Module[]
+  adminScopes AdminScope[] @relation("SectionScope")
+
+  @@map("sections")
+  @@index([isActive])
+  @@index([orderIndex])
+}
+
+// Module - Discovered Module Configurations
+model Module {
+  id          String   @id @default(nanoid())
+  name        String   // Module name in Arabic
+  nameEn      String   // Module name in English
+  sectionId   String   @map("section_id")
+  icon        String   // Menu icon emoji
+  isActive    Boolean  @default(true) @map("is_active")
+  orderIndex  Int      @default(0) @map("order_index")
+  configPath  String   @map("config_path") // Relative path to module.config.ts
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relationships
+  section    Section    @relation(fields: [sectionId], references: [id])
+  adminScopes AdminScope[] @relation("ModuleScope")
+
+  @@map("modules")
+  @@index([sectionId])
+  @@index([isActive])
+  @@index([orderIndex])
+}
+
+// AuditLog - System Audit Trail
+model AuditLog {
+  id         String   @id @default(nanoid())
+  userId     BigInt   @map("user_id")
+  action     String   // Action type (e.g., "LOGIN", "SECTION_CREATE", "USER_APPROVE")
+  targetType String?  @map("target_type") // Entity type (User, Section, Module, etc.)
+  targetId   String?  @map("target_id")   // Entity ID
+  details    Json?    // Additional context as JSON
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relationships
+  user User @relation(fields: [userId], references: [telegramId])
+
+  @@map("audit_logs")
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// Notification - Queue Notifications
+model Notification {
+  id        String          @id @default(nanoid())
+  userId    BigInt          @map("user_id")
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean         @default(false) @map("is_read")
+  createdAt DateTime        @default(now()) @map("created_at")
+
+  // Relationships
+  user User @relation(fields: [userId], references: [telegramId])
+
+  @@map("notifications")
+  @@index([userId])
+  @@index([type])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// AdminScope - Admin Permissions
+model AdminScope {
+  id         String    @id @default(nanoid())
+  adminUserId BigInt    @map("admin_user_id")
+  scopeType  ScopeType
+  scopeId    String    @map("scope_id")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  // Relationships
+  adminUser  User     @relation(fields: [adminUserId], references: [telegramId])
+  section    Section? @relation("SectionScope", fields: [scopeId], references: [id])
+  module     Module?  @relation("ModuleScope", fields: [scopeId], references: [id])
+
+  @@unique([adminUserId, scopeType, scopeId])
+  @@map("admin_scopes")
+  @@index([adminUserId])
+  @@index([scopeType, scopeId])
+}
