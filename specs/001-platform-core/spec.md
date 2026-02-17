@@ -5,6 +5,27 @@
 **Status**: Draft
 **Input**: User description: "Build the Platform Core (Layer 1) for Al-Saada Smart Bot — a Telegram bot platform for Egyptian business management."
 
+## Definitions
+
+### Flow Blocks
+Reusable UI components (Layer 2) used to build modules. Examples include:
+- InputText: Text input with validation rules
+- SelectMenu: Menu selection interface
+- DatePicker: Date selection with calendar
+- Confirm: Summary screen with save action
+- Approval: Manager/admin approval workflow step
+These components are configured in module flow definitions and implemented as part of the Flow Engine in Phase 2.
+
+### ModuleConfig
+TypeScript interface defining a module's structure, standard fields, and flow steps. Includes:
+- name and nameEn (bilingual module names)
+- sectionId (links to organizational section)
+- icon (emoji for menu display)
+- configPath (path to module configuration file)
+- isActive (enable/disable toggle)
+- orderIndex (menu positioning)
+- flow steps (array of Flow Block references)
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - First User Bootstrap (Priority: P1)
@@ -173,7 +194,6 @@ Auditable actions are defined as: USER_LOGIN, USER_LOGOUT, ROLE_CHANGE, USER_APP
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
-
 - **SC-001**: First user can complete bootstrap process in under 30 seconds
 - **SC-002**: System can handle 100 concurrent users without performance degradation
 - **SC-003**: Audit log captures all significant actions with 100% accuracy (no gaps)
@@ -185,5 +205,26 @@ Auditable actions are defined as: USER_LOGIN, USER_LOGOUT, ROLE_CHANGE, USER_APP
 - **SC-009**: Notification delivery rate is above 95% for join request notifications
 - **SC-010**: Super Admin can create and manage sections without requiring developer assistance
 
-## Versioning Strategy
-This project follows Semantic Versioning (SemVer). Phase 1 completion tags as v0.1.0. Phase 2 as v0.2.0. Phase 3 as v0.3.0. Phase 4 as v1.0.0 (first production release).
+### Non-Functional Requirements
+- **NFR-001 (Performance)**: System must maintain <500ms average response time for 95% of requests under normal load.
+- **NFR-002 (Maintenance)**: Maintenance mode toggle must propagate to all instances within 5 seconds via Redis pub/sub mechanism.
+- **NFR-003 (Scalability)**: System must support horizontal scaling to 500 concurrent users without architecture changes.
+- **NFR-004 (Security)**: All API endpoints must validate input and sanitize to prevent injection attacks.
+- **NFR-005 (Availability)**: Core services must maintain 99.9% uptime with automated recovery from failures.
+
+## Compliance & Validation (Constitutional)
+
+### Compliance Requirements
+
+- **CV-001 (90/10 Rule)**: Automated check during module loading. If a module has >10% code (hooks LOC vs config LOC), log a warning.
+- **CV-002 (Config Validity)**: All modules must pass Zod schema validation at startup.
+- **CV-003 (Audit Immutable)**: Audit logs must be immutable and stored for minimum 1 year.
+- **CV-004 (Maintenance Propagation)**: Maintenance mode toggle must propagate to all instances within 5 seconds via Redis pub/sub mechanism.
+- **CV-005 (Code Metrics)**: Module configuration code and hook code will be tracked separately to ensure 90/10 compliance.
+- **CV-001 (90/10 Rule)**: Automated check during module loading. If a module has >10% code (hooks LOC vs config LOC), log a warning.
+- **CV-002 (Config Validity)**: All modules must pass Zod schema validation at startup.
+- **CV-003 (Audit Immutable)**: Audit logs must be immutable and stored for minimum 1 year.
+- **CV-004 (Maintenance Propagation)**: Maintenance mode toggle must propagate to all instances within 5 seconds via Redis pub/sub mechanism.
+- **CV-005 (Code Metrics)**: Module configuration code and hook code will be tracked separately to ensure 90/10 compliance.
+
+## Success Criteria *(mandatory)*
