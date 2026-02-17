@@ -28,7 +28,7 @@ Platform Core (Layer 1) implementation for Al-Saada Smart Bot - the foundational
 
 1. **Platform-First Principle**: Platform Core (Layer 1) must be 100% complete and tested before any module is created. Modules are pure configuration — they contain ZERO business logic code. All logic lives in the Flow Engine.
 
-2. **Config-Driven Architecture**: Everything that can be configuration MUST be configuration, not code. Module creation should require only: Defining flow steps (which Flow Blocks in what order), Specifying database fields, Setting permissions. No TypeScript code should be written to create a standard module.
+2. **Config-Driven Architecture (Config-First, Code-When-Needed)**: Everything that can be configuration MUST be configuration, not code. Module creation should primarily require: Defining flow steps (which Flow Blocks in what order), Specifying database fields, Setting permissions. For complex business logic that cannot be expressed as configuration, use optional lifecycle hooks following the 90/10 rule (90% configuration, max 10% custom hook code).
 
 3. **Flow Block Reusability**: Every Flow Block must be: Self-contained and independently testable, Work with ANY module without modification, Handle its own validation, error messages, and UI, Support Arabic and English, Be configurable via parameters (label, field, validation rules, etc.).
 
@@ -394,7 +394,7 @@ Running agent context update to incorporate technical decisions from current pla
 
 ### Verified Principles
 ✅ **Platform-First**: Core platform infrastructure will be complete before any modules
-✅ **Config-Driven**: Module discovery system loads configuration only
+✅ **Config-Driven**: Module discovery system loads configuration with optional hooks (90/10 rule)
 ✅ **Egyptian Context**: All validators support Egyptian phone formats and Arabic UI
 ✅ **Security & Privacy**: Audit logging excludes sensitive data, Redis sessions secure
 ✅ **Monorepo Structure**: Clear package separation in packages/core/

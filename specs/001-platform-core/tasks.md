@@ -77,6 +77,8 @@
 ### Internationalization
 
 - [ ] T021 Create i18n setup with Arabic .ftl files (basic messages: welcome, error, loading, etc.)
+- [ ] T076 Create graceful shutdown handler in packages/core/src/utils/shutdown.ts - Handle SIGTERM/SIGINT, close Prisma, disconnect Redis, stop bot. Done when: Bot shuts down cleanly without orphaned connections.
+- [ ] T077 Create health check endpoints in packages/core/src/server/health.ts via Hono - GET /health returns {status: ok, db: connected, redis: connected}. Done when: Health endpoint responds with service status.
 
 **Checkpoint**: Bot foundation complete - core infrastructure services ready
 
@@ -245,6 +247,9 @@
 - [ ] T073 Code cleanup and final linting
 - [ ] T074 Update quickstart.md with actual commands
 - [ ] T075 Final commit and tag v0.1.0
+- [ ] T078 Verify SC-002: Load test with 100 concurrent simulated users, response time <500ms p95
+- [ ] T079 Verify SC-005: Confirm all 4 roles display correct menus and access levels
+- [ ] T080 Verify SC-008: Confirm audit logs capture 100% of defined auditable actions
 
 **Checkpoint**: Platform Core complete - ready for production deployment
 
