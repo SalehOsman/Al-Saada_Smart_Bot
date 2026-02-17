@@ -77,6 +77,7 @@
 ### Internationalization
 
 - [ ] T021 Create i18n setup with Arabic .ftl files (basic messages: welcome, error, loading, etc.)
+- [ ] T082 [P] Create English .ftl locale files for all user-facing messages (mirrors Arabic .ftl files) in packages/core/src/locales/en/
 - [ ] T076 Create graceful shutdown handler in packages/core/src/utils/shutdown.ts - Handle SIGTERM/SIGINT, close Prisma, disconnect Redis, stop bot. Done when: Bot shuts down cleanly without orphaned connections.
 - [ ] T077 Create health check endpoints in packages/core/src/server/health.ts via Hono - GET /health returns {status: ok, db: connected, redis: connected}. Done when: Health endpoint responds with service status.
 

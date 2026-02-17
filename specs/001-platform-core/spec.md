@@ -99,7 +99,7 @@ System tracks user actions and maintains session state.
 
 ### Edge Cases
 
-- What happens when a module's config.ts is invalid? Bot should log warning and skip it, not crash.
+- What happens when a module's configuration is invalid? Each module consists of: module.config.ts, add.flow.ts, edit.flow.ts, view.config.ts, list.config.ts, report.config.ts, schema.prisma, and optional lifecycle hooks. Bot should log warning and skip it, not crash.
 - How does the system handle database connection failures during bot startup? Should show appropriate error and retry.
 - What happens if Redis becomes unavailable? Should fall back to in-memory sessions and log warnings.
 - How are sensitive data handled in logs? Passwords, tokens, and other sensitive info should never appear in audit logs.
@@ -161,7 +161,7 @@ Auditable actions are defined as: USER_LOGIN, USER_LOGOUT, ROLE_CHANGE, USER_APP
 
 1. **Platform-First**: The platform (Layer 1 + Layer 2) must be 100% complete before any module is created.
 
-2. **Config-Driven Architecture**: All functionality must be implementable as configuration. No business logic code in modules.
+2. **Config-Driven Architecture**: All functionality must be primarily implementable as configuration. Optional lifecycle hooks (beforeValidate, beforeSave, afterSave, beforeDelete, onApproval, onRejection) are allowed for complex business logic that cannot be expressed as configuration. The 90/10 rule applies: 90% config, max 10% hook code per module.
 
 3. **Egyptian Business Context**: All validators must support Egyptian formats. Arabic naming and timezone (Africa/Cairo) required.
 
