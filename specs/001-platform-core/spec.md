@@ -143,13 +143,14 @@ Auditable actions are defined as: USER_LOGIN, USER_LOGOUT, ROLE_CHANGE, USER_APP
 *Example of marking unclear requirements:*
 
 - **FR-031**: System MUST support bilingual interface — Arabic as primary language, English as secondary. All user-facing messages must exist in both languages via .ftl locale files.
+  > **Note**: RTL rendering is handled natively by Telegram's message display. No custom RTL implementation is required in the bot code.
 - **FR-032**: System MUST retain notification history for 90 days. Notifications older than 90 days are automatically purged by a scheduled cron job.
 
 ### Key Entities *(include if feature involves data)*
 
 - **User**: Represents bot users with telegramId, firstName, lastName, phone, role, isActive, language
 - **JoinRequest**: Pending user registrations with name, phone, message, status
-- **Section**: Dynamic departments with Arabic/English names, icons, active state, ordering
+- **Section**: Dynamic departments with Arabic/English names, icons, active state, ordering. Section icons must be standard Unicode emoji characters (e.g., 📁, 💼, 🔧). No custom images or icon files.
 - **Module**: Discovered modules with configuration, section assignment, permissions
 - **AuditLog**: All significant actions with user, action type, target, details, timestamp
 - **Notification**: Queued messages with type, target users, read status, timestamps
@@ -183,3 +184,6 @@ Auditable actions are defined as: USER_LOGIN, USER_LOGOUT, ROLE_CHANGE, USER_APP
 - **SC-008**: System maintains 99.9% uptime for core services (PostgreSQL, Redis, Bot)
 - **SC-009**: Notification delivery rate is above 95% for join request notifications
 - **SC-010**: Super Admin can create and manage sections without requiring developer assistance
+
+## Versioning Strategy
+This project follows Semantic Versioning (SemVer). Phase 1 completion tags as v0.1.0. Phase 2 as v0.2.0. Phase 3 as v0.3.0. Phase 4 as v1.0.0 (first production release).
