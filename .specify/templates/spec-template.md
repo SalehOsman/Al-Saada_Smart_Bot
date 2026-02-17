@@ -100,20 +100,6 @@
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
 
-## Constitutional Principles & Constraints *(mandatory)*
-
-### Al-Saada Smart Bot Development Principles
-
-1. **Config-Driven Architecture (Config-First)**: All functionality must be implementable as Flow Blocks with configuration. Use optional hooks ONLY for exceptional cases that cannot be configured. Follow the 90/10 rule: 90% configuration, max 10% custom hook code.
-
-2. **Egyptian Business Context**: All validators MUST support Egyptian formats. Arabic naming and timezone (Africa/Cairo) required.
-
-3. **Bilingual Support**: Arabic (primary) and English (secondary) UI and validation messages required.
-
-4. **Test-First Development**: Independent tests MUST be written before implementation. 80% code coverage for engine code.
-
-5. **Flow Block Reusability**: UI components must be reusable across modules with configurable parameters. Hook patterns repeating across 3+ modules MUST be extracted into new Flow Blocks.
-
 ## Success Criteria *(mandatory)*
 
 <!--

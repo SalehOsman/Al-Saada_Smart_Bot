@@ -25,6 +25,3 @@ app.post('/webhook', async (c) => {
     return c.json({ ok: false, error: 'Webhook processing failed' }, 500)
   }
 })
-
-// Log bot initialization
-logger.info('Bot and Hono app initialized successfully')

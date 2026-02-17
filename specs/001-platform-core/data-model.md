@@ -49,7 +49,7 @@ Manages user registration requests and approval workflow.
 
 ```prisma
 model JoinRequest {
-  id           String    @id @default(nanoid())
+  id           String    @id @default(cuid())
   userId       BigInt    @map("user_id")
   name         String
   phone        String    // Egyptian phone format validation
@@ -78,7 +78,7 @@ Dynamic sections that organize modules in the bot interface.
 
 ```prisma
 model Section {
-  id          String    @id @default(nanoid())
+  id          String    @id @default(cuid())
   name        String    // Arabic name
   nameEn      String    // English name
   icon        String    // Emoji (e.g., "📁", "💼")
@@ -91,7 +91,6 @@ model Section {
   // Relationships
   creator     User?     @relation("SectionCreator", fields: [createdBy], references: [telegramId])
   modules     Module[]
-  adminScopes AdminScope[] @relation("SectionScope")
 
   @@map("sections")
 }
@@ -102,7 +101,7 @@ Modules discovered at runtime with their configuration metadata.
 
 ```prisma
 model Module {
-  id          String    @id @default(nanoid())
+  id          String    @id @default(cuid())
   name        String    // Module name in Arabic
   nameEn      String    // Module name in English
   sectionId   String    @map("section_id")
@@ -114,7 +113,6 @@ model Module {
 
   // Relationships
   section     Section   @relation(fields: [sectionId], references: [id])
-  adminScopes AdminScope[] @relation("ModuleScope")
 
   @@map("modules")
 }
@@ -125,7 +123,7 @@ Comprehensive logging of all significant system actions.
 
 ```prisma
 model AuditLog {
-  id          String    @id @default(nanoid())
+  id          String    @id @default(cuid())
   userId      BigInt    @map("user_id")
   action      String    // Action type (e.g., "LOGIN", "SECTION_CREATE", "USER_APPROVE")
   targetType  String?   @map("target_type") // Entity type (User, Section, Module, etc.)
@@ -145,7 +143,7 @@ Queue-based notification system with read tracking.
 
 ```prisma
 model Notification {
-  id        String            @id @default(nanoid())
+  id        String            @id @default(cuid())
   userId    BigInt            @map("user_id")
   type      NotificationType
   title     String
@@ -173,7 +171,7 @@ Fine-grained permission system for admin users.
 
 ```prisma
 model AdminScope {
-  id         String           @id @default(nanoid())
+  id         String           @id @default(cuid())
   adminUserId BigInt           @map("admin_user_id")
   scopeType  ScopeType
   scopeId    String           @map("scope_id")
@@ -181,8 +179,8 @@ model AdminScope {
 
   // Relationships
   adminUser  User             @relation(fields: [adminUserId], references: [telegramId])
-  section    Section?         @relation("SectionScope", fields: [scopeId], references: [id])
-  module     Module?          @relation("ModuleScope", fields: [scopeId], references: [id])
+  // Note: scopeId references either Section.id or Module.id based on scopeType
+  // Prisma does not support polymorphic FK, so we handle this in application code
 
   @@unique([adminUserId, scopeType, scopeId])
   @@map("admin_scopes")

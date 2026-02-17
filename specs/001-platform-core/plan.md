@@ -172,7 +172,7 @@ packages/core/
 - `updatedAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
 **JoinRequest** - Pending user registrations
-- `id` UUID PRIMARY KEY (nanoid)
+- `id` STRING PRIMARY KEY (cuid)
 - `userId` BIGINT REFERENCES User(telegramId)
 - `name` VARCHAR(100) NOT NULL
 - `phone` VARCHAR(20) NOT NULL (Egyptian format)
@@ -183,7 +183,7 @@ packages/core/
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
 **Section** - Dynamic departments/containers
-- `id` UUID PRIMARY KEY (nanoid)
+- `id` STRING PRIMARY KEY (cuid)
 - `name` VARCHAR(100) NOT NULL (Arabic)
 - `nameEn` VARCHAR(100) NOT NULL (English)
 - `icon` VARCHAR(10) NOT NULL (emoji)
@@ -194,7 +194,7 @@ packages/core/
 - `createdBy` BIGINT REFERENCES User(telegramId)
 
 **Module** - Discovered module configurations
-- `id` UUID PRIMARY KEY (nanoid)
+- `id` STRING PRIMARY KEY (cuid)
 - `name` VARCHAR(100) NOT NULL
 - `nameEn` VARCHAR(100) NOT NULL
 - `sectionId` UUID REFERENCES Section(id)
@@ -205,7 +205,7 @@ packages/core/
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
 **AuditLog** - System audit trail
-- `id` UUID PRIMARY KEY (nanoid)
+- `id` STRING PRIMARY KEY (cuid)
 - `userId` BIGINT REFERENCES User(telegramId)
 - `action` VARCHAR(50) NOT NULL (action type)
 - `targetType` VARCHAR(50) (e.g., 'User', 'Section', 'Module')
@@ -214,7 +214,7 @@ packages/core/
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
 **Notification** - Queue notifications
-- `id` UUID PRIMARY KEY (nanoid)
+- `id` STRING PRIMARY KEY (cuid)
 - `userId` BIGINT REFERENCES User(telegramId)
 - `type` ENUM('SYSTEM', 'JOIN_REQUEST', 'APPROVAL', 'REJECTION', 'ANNOUNCEMENT') NOT NULL
 - `title` VARCHAR(200) NOT NULL
@@ -223,7 +223,7 @@ packages/core/
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
 **AdminScope** - Admin permissions
-- `id` UUID PRIMARY KEY (nanoid)
+- `id` STRING PRIMARY KEY (cuid)
 - `adminUserId` BIGINT REFERENCES User(telegramId)
 - `scopeType` ENUM('section', 'module') NOT NULL
 - `scopeId` UUID NOT NULL (reference to Section or Module id)

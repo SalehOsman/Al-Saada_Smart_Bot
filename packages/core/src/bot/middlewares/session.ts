@@ -1,42 +1,60 @@
-import { session, SessionStore } from 'grammy'
+import { session, type StorageAdapter } from 'grammy'
 import { redis } from '../../cache/redis'
 import logger from '../../utils/logger'
 
-// Create Redis-backed session store
-const redisStore: SessionStore = {
-  async get(key) {
+// Session data interface
+export interface SessionData {
+  userId: number | undefined
+  role: string
+  language: string
+  currentSection: string | null
+  currentModule: string | null
+  lastActivity: number
+}
+
+// Default session data
+function defaultSession(): SessionData {
+  return {
+    userId: undefined,
+    role: 'VISITOR',
+    language: 'ar',
+    currentSection: null,
+    currentModule: null,
+    lastActivity: Date.now(),
+  }
+}
+
+// Redis-backed storage adapter for grammY sessions
+const redisStorage: StorageAdapter<SessionData> = {
+  async read(key: string): Promise<SessionData | undefined> {
     try {
-      const value = await redis.get(key)
+      const value = await redis.get(`session:${key}`)
       return value ? JSON.parse(value) : undefined
     } catch (error) {
-      logger.error(`Error getting session key ${key}:`, error)
+      logger.error({ err: error, key }, 'Error reading session')
       return undefined
     }
   },
-  
-  async set(key, value, expiresInSeconds = 86400) { // Default 24 hours
+
+  async write(key: string, value: SessionData): Promise<void> {
     try {
-      await redis.setex(key, expiresInSeconds, JSON.stringify(value))
+      await redis.setex(`session:${key}`, 86400, JSON.stringify(value)) // 24h TTL
     } catch (error) {
-      logger.error(`Error setting session key ${key}:`, error)
+      logger.error({ err: error, key }, 'Error writing session')
     }
   },
-  
-  async delete(key) {
+
+  async delete(key: string): Promise<void> {
     try {
-      await redis.del(key)
+      await redis.del(`session:${key}`)
     } catch (error) {
-      logger.error(`Error deleting session key ${key}:`, error)
+      logger.error({ err: error, key }, 'Error deleting session')
     }
   },
 }
 
-// Create session middleware with Redis store
+// Create session middleware
 export const sessionMiddleware = session({
-  store: redisStore,
-  initial: (ctx) => ({
-    userId: ctx.from?.id,
-    role: 'VISITOR', // Default role, will be updated after lookup
-    language: 'ar', // Default language, can be updated by user
-  }),
+  initial: defaultSession,
+  storage: redisStorage,
 })

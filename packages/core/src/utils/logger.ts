@@ -1,10 +1,9 @@
 import pino from 'pino'
-import pretty from 'pino-pretty'
 import { env } from '../config/env'
 
 // Create Pino logger instance with configuration based on environment
 const logger = pino({
-  level: env.LOG_LEVEL.toLowerCase(),
+  level: env.LOG_LEVEL,
   // Enable pretty printing in development mode
   transport: env.NODE_ENV === 'development' ? {
     target: 'pino-pretty',

@@ -28,33 +28,33 @@
 
 ### Project Initialization
 
-- [ ] T001 [P] Create root package.json with Node.js ≥20, TypeScript 5.x, and essential scripts
-- [ ] T002 [P] Create root tsconfig.json with strict mode configuration
-- [ ] T003 [P] Create root .gitignore, .eslintrc, and .prettierrc configuration files
-- [ ] T004 [P] Initialize packages/core/ with its own package.json and tsconfig
+- [X] T001 [P] Create root package.json with Node.js ≥20, TypeScript 5.x, and essential scripts
+- [X] T002 [P] Create root tsconfig.json with strict mode configuration
+- [X] T003 [P] Create root .gitignore, .eslintrc, and .prettierrc configuration files
+- [X] T004 [P] Initialize packages/core/ with its own package.json and tsconfig
 
 ### Docker Configuration
 
-- [ ] T005 [P] Create docker-compose.yml with PostgreSQL 16 + Redis 7 services
-- [ ] T006 [P] Create .env.example with Zod validation schema for environment variables
+- [X] T005 [P] Create docker-compose.yml with PostgreSQL 16 + Redis 7 services
+- [X] T006 [P] Create .env.example with Zod validation schema for environment variables
 
 ### Database Setup
 
-- [ ] T007 [P] Setup Prisma with initial schema (all 7 tables from data-model.md)
-- [ ] T008 [P] Create prisma/schema.prisma with complete database schema
-- [ ] T009 [P] Create database migrations directory structure
-- [ ] T010 [P] Run first migration to create database tables
-- [ ] T011 [P] Generate Prisma client for TypeScript types
+- [X] T007 [P] Setup Prisma with initial schema (all 7 tables from data-model.md)
+- [X] T008 [P] Create prisma/schema.prisma with complete database schema
+- [X] T009 [P] Create database migrations directory structure
+- [X] T010 [P] Run first migration to create database tables
+- [X] T011 [P] Generate Prisma client for TypeScript types
 
 ### Testing Infrastructure
 
-- [ ] T012 [P] Setup Vitest configuration with TypeScript support
-- [ ] T013 [P] Create tests/ directory structure (unit/, integration/, e2e/)
+- [X] T012 [P] Setup Vitest configuration with TypeScript support
+- [X] T013 [P] Create tests/ directory structure (unit/, integration/, e2e/)
 
 ### Core Infrastructure
 
-- [ ] T014 [P] Setup Pino logger with Arabic-friendly formatting
-- [ ] T015 [P] Create root package.json scripts for development, testing, and deployment
+- [X] T014 [P] Setup Pino logger with Arabic-friendly formatting
+- [X] T015 [P] Create root package.json scripts for development, testing, and deployment
 
 **Checkpoint**: Project scaffolding complete - all foundational infrastructure in place
 
@@ -68,18 +68,18 @@
 
 ### Core Bot Setup
 
-- [ ] T016 Initialize grammY bot with Hono webhook server in packages/core/src/
-- [ ] T017 Create Redis connection (ioredis singleton) in packages/core/src/cache/
-- [ ] T018 Create Prisma client singleton in packages/core/src/database/
-- [ ] T019 Create grammY session storage adapter using Redis
-- [ ] T020 Create error handling middleware (catches errors, sends Arabic message)
+- [X] T016 Initialize grammY bot with Hono webhook server in packages/core/src/
+- [X] T017 Create Redis connection (ioredis singleton) in packages/core/src/cache/
+- [X] T018 Create Prisma client singleton in packages/core/src/database/
+- [X] T019 Create grammY session storage adapter using Redis. Depends on T017 (Redis) and T021 (i18n setup).
+- [X] T020 Create error handling middleware (catches errors, sends Arabic message). Depends on T014 (Logger).
 
 ### Internationalization
 
-- [ ] T021 Create i18n setup with Arabic .ftl files (basic messages: welcome, error, loading, etc.)
-- [ ] T082 [P] Create English .ftl locale files for all user-facing messages (mirrors Arabic .ftl files) in packages/core/src/locales/en/
-- [ ] T076 Create graceful shutdown handler in packages/core/src/utils/shutdown.ts - Handle SIGTERM/SIGINT, close Prisma, disconnect Redis, stop bot. Done when: Bot shuts down cleanly without orphaned connections.
-- [ ] T077 Create health check endpoints in packages/core/src/server/health.ts via Hono - GET /health returns {status: ok, db: connected, redis: connected}. Done when: Health endpoint responds with service status.
+- [X] T021 Create i18n setup with Arabic .ftl files (basic messages: welcome, error, loading, etc.)
+- [X] T082 [P] Create English .ftl locale files for all user-facing messages (mirrors Arabic .ftl files) in packages/core/src/locales/en/
+- [X] T076 Create graceful shutdown handler in packages/core/src/utils/shutdown.ts - Handle SIGTERM/SIGINT, close Prisma, disconnect Redis, stop bot. Done when: Bot shuts down cleanly without orphaned connections.
+- [X] T077 Create health check endpoints in packages/core/src/server/health.ts via Hono - GET /health returns {status: ok, db: connected, redis: connected}. Done when: Health endpoint responds with service status.
 
 **Checkpoint**: Bot foundation complete - core infrastructure services ready
 
@@ -155,7 +155,7 @@
 
 ### Module Discovery
 
-- [ ] T041 [P] Create ModuleConfig TypeScript type/interface in packages/core/src/types/
+- [ ] T041 [P] Create ModuleConfig TypeScript type/interface in packages/core/src/types/. Based on ModuleConfig definition added to spec.md.
 - [ ] T042 [P] Create module discovery service (scans modules/ directory)
 - [ ] T043 [P] Create module registry (Map<string, ModuleConfig>)
 - [ ] T044 [P] Create module validation (skip invalid configs with warning log)

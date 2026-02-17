@@ -44,138 +44,32 @@ description: "Task list template for feature implementation"
   ============================================================================
 -->
 
-## Phase 1: Platform Core (Feature 001) ⚠️ CRITICAL
+## Phase 1: Setup (Shared Infrastructure)
 
-**Purpose**: Platform Core (Layer 1) MUST be complete before any Flow Blocks or modules
+**Purpose**: Project initialization and basic structure
 
-**⚠️ BLOCKING**: No Flow Block or module development can begin until this phase is complete
-
-### Core Infrastructure
-
-- [ ] T001 Create monorepo structure: packages/core, packages/flow-engine, packages/validators, packages/ai-builder, modules/
-- [ ] T002 Initialize Node.js ≥20 project with TypeScript 5.x (strict mode)
-- [ ] T003 [P] Setup grammY bot framework with @grammyjs/conversations + @grammyjs/hydrate
-- [ ] T004 [P] Implement RBAC system with 4 roles: Super Admin, Admin, Employee, Visitor
-- [ ] T005 [P] Create dynamic module loader that discovers modules at startup
-- [ ] T006 [P] Implement section (department) management system
-- [ ] T007 Setup PostgreSQL + Redis with Docker Compose
-- [ ] T008 [P] Create audit logging system
-- [ ] T009 [P] Implement notification system
-- [ ] T010 [P] Create maintenance mode functionality
-
-**Checkpoint**: Platform Core complete - Flow Engine development can now begin
+- [ ] T001 Create project structure per implementation plan
+- [ ] T002 Initialize [language] project with [framework] dependencies
+- [ ] T003 [P] Configure linting and formatting tools
 
 ---
 
-## Phase 2: Flow Engine (Feature 002) 🧠
+## Phase 2: Foundational (Blocking Prerequisites)
 
-**Purpose**: Flow Engine (Layer 2) converts config files into working Telegram bot screens
+**Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented
 
-**⚠️ BLOCKING**: No modules can be created until Flow Engine is complete
+**⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-### Flow Blocks Development
+Examples of foundational tasks (adjust based on your project):
 
-**Flow Block Requirements** (must be self-contained, work with any module, support Arabic/English):
-- [ ] T011 [P] Create text_input Flow Block with Egyptian character support
-- [ ] T012 [P] Create number_input Flow Block with Arabic number formatting
-- [ ] T013 [P] Create date_input Flow Block with Gregorian + Hijri calendar
-- [ ] T014 [P] Create phone_input Flow Block with Egyptian number validation
-- [ ] T015 [P] Create national_id Flow Block with auto-extraction (birthdate, gender)
-- [ ] T016 [P] Create email_input Flow Block with Arabic domain support
-- [ ] T017 [P] Create currency_input Flow Block (EGP default)
-- [ ] T018 [P] Create location_input Flow Block with Egyptian governorates
-- [ ] T019 [P] Create select_from_db Flow Block with dynamic table loading
-- [ ] T020 [P] Create select_enum Flow Block with static options
-- [ ] T021 [P] Create file_upload and photo_upload Flow Blocks
-- [ ] T022 [P] Create confirm Flow Block (summary + save + notifications)
-- [ ] T023 [P] Create approval Flow Block (manager approval workflow)
+- [ ] T004 Setup database schema and migrations framework
+- [ ] T005 [P] Implement authentication/authorization framework
+- [ ] T006 [P] Setup API routing and middleware structure
+- [ ] T007 Create base models/entities that all stories depend on
+- [ ] T008 Configure error handling and logging infrastructure
+- [ ] T009 Setup environment configuration management
 
-### Core Engines
-
-- [ ] T024 Create Wizard Runner that executes flow steps sequentially
-- [ ] T025 Create List Engine with pagination, filtering, searching
-- [ ] T026 Create Report Engine (Excel/PDF from any data)
-- [ ] T027 Create Search Engine for cross-module data
-- [ ] T028 [P] Setup @grammyjs/i18n with Arabic primary + English secondary
-- [ ] T029 [P] Create Zod validation schemas for all input types
-- [ ] T030 [P] Setup dayjs with Africa/Cairo timezone and Hijri support
-
-**Checkpoint**: Flow Engine complete - Modules can now be created
-
----
-
-## Phase 3: Test Module (Feature 003) 🎯 MVP
-
-**Purpose**: One complete HR module to prove the platform works end-to-end
-
-**Note**: Built primarily with Flow Blocks config - may use optional hooks for exceptional cases that cannot be configured (90/10 rule)
-
-### Module Structure
-
-- [ ] T031 Create modules/hr-employee-registration/ directory structure
-- [ ] T032 Create module.config.ts (name, section, permissions, icon)
-- [ ] T033 Create schema.prisma (employee table definition)
-- [ ] T034 Create add.flow.ts (employee registration flow steps + optional hooks if needed)
-- [ ] T035 Create edit.flow.ts (employee profile edit + optional hooks if needed)
-- [ ] T036 Create list.config.ts (employee list display)
-- [ ] T037 Create report.config.ts (employee reports)
-- [ ] T038 [P] Create hooks.ts (only if config insufficient for complex business logic)
-
-### Testing Requirements
-
-**80% code coverage required for engine code**:
-- [ ] T038 [P] Write unit tests for all Flow Blocks before implementation
-- [ ] T039 [P] Write integration tests for Wizard Runner
-- [ ] T040 [P] Write integration tests for List Engine
-- [ ] T041 [P] Write integration tests for Report Engine
-- [ ] T042 Write end-to-end test for complete employee registration flow
-
-**Checkpoint**: Test module complete - Platform is proven functional
-
----
-
-## Phase 4: AI Module Builder (Feature 004) 🚀
-
-**Purpose**: AI-powered module creation (future enhancement)
-
-### Infrastructure Setup
-
-- [ ] T043 Setup pgvector (Prisma extension) for vector storage
-- [ ] T044 [P] Setup Vercel AI SDK or LangChain.js
-- [ ] T045 [P] Create RAG knowledge base of Egyptian business rules
-- [ ] T046 [P] Build conversational module creation interface via bot
-
-### AI Features
-
-- [ ] T047 Auto-generate module.config.ts from natural language
-- [ ] T048 Auto-generate schema.prisma from requirements
-- [ ] T049 Auto-generate flow.ts files from workflows
-- [ ] T050 Auto-generate list.config.ts and report.config.ts
-
-**Checkpoint**: AI module builder complete - Full automation capability
-
----
-
-## Phase 5: Cross-Cutting Concerns
-
-**Purpose**: Improvements that affect multiple phases
-
-### Testing & Quality
-
-- [ ] TXXX [P] Additional unit tests to maintain 80% coverage
-- [ ] TXXX Performance optimization across all engines
-- [ ] TXXX Security hardening and input sanitization
-
-### Documentation
-
-- [ ] TXXX Update documentation with Egyptian business context
-- [ ] TXXX Create Flow Block developer guide
-- [ ] TXXX Create module configuration guide
-
-### Polish
-
-- [ ] TXXX Code cleanup and refactoring
-- [ ] TXXX Run quickstart.md validation
+**Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
 ---
 
@@ -269,27 +163,35 @@ description: "Task list template for feature implementation"
 
 ### Phase Dependencies
 
-- **Phase 1 (Platform Core)**: No dependencies - can start immediately
-- **Phase 2 (Flow Engine)**: Depends on Phase 1 completion - BLOCKS all modules
-- **Phase 3 (Test Module)**: Depends on Phase 2 completion - PROVES platform works
-- **Phase 4 (AI Module Builder)**: Depends on Phase 3 completion - FUTURE enhancement
-- **Phase 5 (Polish)**: Depends on all core phases being complete
+- **Setup (Phase 1)**: No dependencies - can start immediately
+- **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
+- **User Stories (Phase 3+)**: All depend on Foundational phase completion
+  - User stories can then proceed in parallel (if staffed)
+  - Or sequentially in priority order (P1 → P2 → P3)
+- **Polish (Final Phase)**: Depends on all desired user stories being complete
 
-### Constitutional Constraints
+### User Story Dependencies
 
-- **Platform-First**: Phase 1 MUST be 100% complete before any Phase 2 work
-- **Config-Driven**: ALL modules MUST be primarily configuration (90%) with optional hooks (10% max) for exceptional cases
-- **Test-First**: ALL Flow Blocks MUST have unit tests before implementation
-- **Egyptian Context**: ALL validators MUST support Egyptian formats and timezone
-- **Reusability**: Flow Blocks MUST work with ANY module without modification; hook patterns across 3+ modules MUST be extracted to new Flow Blocks
+- **User Story 1 (P1)**: Can start after Foundational (Phase 2) - No dependencies on other stories
+- **User Story 2 (P2)**: Can start after Foundational (Phase 2) - May integrate with US1 but should be independently testable
+- **User Story 3 (P3)**: Can start after Foundational (Phase 2) - May integrate with US1/US2 but should be independently testable
+
+### Within Each User Story
+
+- Tests (if included) MUST be written and FAIL before implementation
+- Models before services
+- Services before endpoints
+- Core implementation before integration
+- Story complete before moving to next priority
 
 ### Parallel Opportunities
 
-- All Phase 1 tasks marked [P] can run in parallel
-- All Phase 2 Flow Block tasks marked [P] can run in parallel
-- All Flow Block tests marked [P] can run in parallel
-- Phase 3 module can only start after Phase 2 complete
-- Phase 4 AI features can only start after Phase 3 complete
+- All Setup tasks marked [P] can run in parallel
+- All Foundational tasks marked [P] can run in parallel (within Phase 2)
+- Once Foundational phase completes, all user stories can start in parallel (if team capacity allows)
+- All tests for a user story marked [P] can run in parallel
+- Models within a story marked [P] can run in parallel
+- Different user stories can be worked on in parallel by different team members
 
 ---
 
@@ -309,29 +211,32 @@ Task: "Create [Entity2] model in src/models/[entity2].py"
 
 ## Implementation Strategy
 
-### Constitutional Compliance Strategy
+### MVP First (User Story 1 Only)
 
-1. **Platform-First**: Phase 1 (Platform Core) MUST be complete before any other work
-2. **Flow Block Development**: Phase 2 Flow Blocks MUST be fully tested before any module creation
-3. **Config-Driven Verification**: Phase 3 MUST primarily use configuration files to prove platform works (with optional hooks only for exceptional cases)
-4. **Test Coverage**: Maintain 80% code coverage for ALL engine code
-5. **Egyptian Context**: ALL components MUST support Arabic, Egyptian formats, and Africa/Cairo timezone
+1. Complete Phase 1: Setup
+2. Complete Phase 2: Foundational (CRITICAL - blocks all stories)
+3. Complete Phase 3: User Story 1
+4. **STOP and VALIDATE**: Test User Story 1 independently
+5. Deploy/demo if ready
 
-### Incremental Delivery (Aligned with Phases)
+### Incremental Delivery
 
-1. **MVP**: Complete Phase 1 + Phase 2 + Phase 3 → Test module proves platform works
-2. **Enhancement**: Add Phase 4 AI features → Deploy automation capability
-3. **Polish**: Phase 5 improvements → Final production quality
+1. Complete Setup + Foundational → Foundation ready
+2. Add User Story 1 → Test independently → Deploy/Demo (MVP!)
+3. Add User Story 2 → Test independently → Deploy/Demo
+4. Add User Story 3 → Test independently → Deploy/Demo
+5. Each story adds value without breaking previous stories
 
-### Team Strategy
+### Parallel Team Strategy
 
 With multiple developers:
 
-1. **Phase 1**: All developers collaborate on core infrastructure
-2. **Phase 2**: Developers can work on different Flow Blocks in parallel
-3. **Phase 3**: One developer focuses on the test module
-4. **Phase 4**: AI specialists work on automation features
-5. **Phase 5**: All developers collaborate on polish and improvements
+1. Team completes Setup + Foundational together
+2. Once Foundational is done:
+   - Developer A: User Story 1
+   - Developer B: User Story 2
+   - Developer C: User Story 3
+3. Stories complete and integrate independently
 
 ---
 

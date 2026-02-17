@@ -15,8 +15,6 @@ build/
 # Database
 *.sqlite
 *.sqlite-journal
-.prisma/
-prisma/migrations/
 
 # Logs
 *.log

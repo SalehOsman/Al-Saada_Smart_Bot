@@ -1,5 +1,5 @@
 import { Bot } from 'grammy'
-import logger from '../utils/logger'
+import logger from './logger'
 import { disconnect as disconnectRedis } from '../cache/redis'
 import { disconnect as disconnectPrisma } from '../database/prisma'
 

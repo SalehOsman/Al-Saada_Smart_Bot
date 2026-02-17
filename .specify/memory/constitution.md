@@ -1,11 +1,11 @@
 <!--
 Sync Impact Report:
-- Version change: 1.2.0 → 1.3.0 (MINOR: Added Hooks system to Layer 3, updated Config-Driven principle)
-- Modified principles: II. Config-Driven Architecture (updated to Config-First with hooks), III. Flow Block Reusability (added hook pattern extraction rule)
-- Added sections: Practical Example in Layer 2
-- No removed sections
-- Modified sections: Three-Layer Architecture (Layer 3 updated), Core Principles (Principles II & III updated)
-- Templates requiring updates: .specify/templates/plan-template.md (ensure no hardcoded module assumptions)
+- Version change: 1.4.0 → 1.4.1 (MINOR: Updated primary local AI model to Qwen3-8B)
+- Modified principles: None
+- Added sections: None
+- Removed sections: None
+- Modified sections: Technology Stack (AI Assistant), Development Phases (Phase 4), Amendment History
+- Templates requiring updates: None
 - No deferred placeholders
 -->
 
@@ -25,7 +25,7 @@ Sync Impact Report:
 
 - **Name (EN):** Al-Saada Smart Bot
 - **Name (AR):** بوت السعادة الذكي
-- **Description:** An intelligent, modular platform for Egyptian business management through Telegram. Designed as an empty engine that dynamically loads config-driven modules built using reusable Flow Blocks.
+- **Description:** An intelligent, modular platform for Egyptian business management through Telegram. Designed as an empty engine that dynamically loads config-driven modules built using reusable Flow Blocks, with a built-in AI Operational Assistant trained on company data for queries, reports, and voice interaction.
 - **Target Audience:** Any Egyptian organization (construction, maintenance, transport, general business)
 - **Expected Users:** ~200 users
 - **Primary Language:** Arabic (RTL), with English support
@@ -127,7 +127,7 @@ Key rules:
 - Access all data across all sections and modules
 - System settings: maintenance mode, bot configuration
 - View audit logs
-- Use AI Module Builder (Phase 4)
+- Use AI Assistant for data queries, reports, and operational insights via text and voice. Configure AI settings (default model, fallback model, voice response, RAG update schedule) — all from within the bot (Phase 4)
 - Receive all system-level notifications
 
 ### Admin
@@ -141,6 +141,7 @@ Key rules:
   - Approve/reject requests (leaves, advances, etc.)
   - Generate reports
   - Receive notifications for their scope
+  - Use AI Assistant within assigned scope — ask questions and generate reports about data in their sections/modules via text or voice
 - Outside assigned scope: NO access at all
 - Cannot create/delete sections or modules
 - Cannot manage other admins or Super Admin
@@ -148,8 +149,9 @@ Key rules:
 ### Employee
 - View own personal data only (profile, salary, leaves, attendance)
 - Receive notifications relevant to them only
-- Submit requests: leave requests, advance requests, complaints, etc.
+- Submit requests: leave requests, advance requests, complaints, etc.)
 - View status of their submitted requests
+- Use AI Assistant to ask about own data via text or voice (salary, leaves, attendance, requests status)
 - Cannot view other employees' data
 - Cannot access any admin functions
 - Menu shows only modules they have permission to interact with
@@ -172,7 +174,7 @@ Key rules:
 ## Core Principles
 
 ### I. Platform-First, Module-Second
-The platform (Layer 1 + Layer 2) must be 100% complete and tested before any module is created. Modules are pure configuration — they contain ZERO business logic code. All logic lives in the Flow Engine.
+The platform (Layer 1 + Layer 2) must be 100% complete and tested before any module is created. Modules follow Config-First architecture — primarily configuration with optional lifecycle hooks for complex business logic (90/10 rule). All reusable logic lives in the Flow Engine.
 
 ### II. Config-Driven Architecture (Config-First, Code-When-Needed)
 Everything that can be configuration MUST be configuration, not code. Module creation should primarily require:
@@ -214,7 +216,7 @@ The project uses a monorepo with clear package separation:
 - packages/core — Platform Core (Layer 1)
 - packages/flow-engine — Flow Engine (Layer 2)
 - packages/validators — Egyptian validation library
-- packages/ai-builder — RAG Module Builder (Phase 4)
+- packages/ai-assistant — AI Operational Assistant with RAG (Phase 4)
 - modules/ — All modules (config files only)
 
 ## Technology Stack
@@ -247,9 +249,15 @@ The project uses a monorepo with clear package separation:
 - **Commits:** commitlint (conventional commits)
 - **Changelog:** changelogen
 
-### Future (Phase 4)
-- **AI/RAG:** Vercel AI SDK or LangChain.js
-- **Vector DB:** pgvector (Prisma extension)
+### AI Assistant (Phase 4)
+- **AI Framework:** Vercel AI SDK (@ai-sdk/*) — unified interface for all models
+- **Primary Model (Local):** Qwen3-8B running via Ollama — Apache 2.0 license, excellent Arabic support (100+ languages), 32K-128K context window for RAG, built-in function calling and tool use, handles 90% of daily queries with full data privacy
+- **Fallback Models (Cloud):** Gemini API (free tier), Claude API, OpenAI API — for complex analysis when local model is insufficient
+- **RAG Engine:** pgvector (PostgreSQL extension) — embeddings from company database (employees, equipment, finances, sections, modules, audit logs)
+- **Embeddings:** Generated locally via Ollama (Qwen3 embedding model) from company data
+- **Speech-to-Text (STT):** OpenAI Whisper API or Google STT — converts voice messages to text
+- **Text-to-Speech (TTS):** Google TTS or OpenAI TTS — Arabic voice responses
+- **Model Switching:** All AI settings configurable from bot by Super Admin (no code changes)
 
 ## Development Phases
 
@@ -276,10 +284,21 @@ The project uses a monorepo with clear package separation:
 - Built entirely with Flow Blocks config
 - Proves the platform works end-to-end
 
-### Phase 4: AI Module Builder (Feature 004)
-- RAG knowledge base
-- Conversational module creation via bot
-- Auto-generation of config files
+### Phase 4: AI Operational Assistant (Feature 004)
+- RAG engine trained on company database using pgvector embeddings — not general AI, but company-specific knowledge
+- Primary local model: Qwen3-8B via Ollama (Apache 2.0, best-in-class Arabic support, function calling, 32K-128K context) for daily queries with full data privacy
+- Cloud models (Gemini/Claude/GPT) as fallback for complex tasks
+- All AI configuration managed from bot by Super Admin:
+  - Default model selection (local or cloud)
+  - Fallback model selection
+  - Voice response toggle (on/off)
+  - RAG update schedule (manual trigger or daily auto-sync)
+- Natural language data queries in Arabic via text or voice ("كم موظف في إجازة اليوم؟" / "ما حالة المعدة رقم 105؟")
+- Voice input: user sends voice message → STT → AI processes with RAG context → responds with text + optional voice reply
+- AI-powered report generation and data summarization from company data
+- All AI responses respect RBAC — user only gets answers about data they have permission to access
+- AI is read-only — no data modification through AI, only queries and reports
+- Provider-agnostic via Vercel AI SDK — switch models by changing one config value from bot
 
 ## Governance
 
@@ -304,10 +323,12 @@ The project uses a monorepo with clear package separation:
 
 ### Amendment History
 | Version | Date | Description |
-|---------|------|-------------|
+|---|---|---|
 | 1.0.0 | 2026-02-17 | Initial constitution with 8 core principles |
 | 1.1.0 | 2026-02-17 | Added Project Identity, Three-Layer Architecture, RBAC |
 | 1.2.0 | 2026-02-17 | Formatting fixes, expanded governance, added TOC |
 | 1.3.0 | 2026-02-17 | Added Hooks system to Layer 3, updated Config-Driven principle to Config-First |
+| 1.4.0 | 2026-02-17 | Replaced AI Module Builder with AI Operational Assistant — local open-source model (Gemma/Ollama) as primary with RAG on company DB, cloud models as fallback, voice support (STT/TTS), all settings configurable from bot, RBAC-aware responses |
+| 1.4.1 | 2026-02-17 | Specified Qwen3-8B as primary local AI model — chosen for superior Arabic language support, Apache 2.0 license, built-in function calling, and RAG-optimized context window |
 
-**Version**: 1.3.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-02-17
+**Version**: 1.4.1 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-02-17

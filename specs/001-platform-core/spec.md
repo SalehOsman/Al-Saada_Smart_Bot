@@ -221,10 +221,7 @@ Auditable actions are defined as: USER_LOGIN, USER_LOGOUT, ROLE_CHANGE, USER_APP
 - **CV-003 (Audit Immutable)**: Audit logs must be immutable and stored for minimum 1 year.
 - **CV-004 (Maintenance Propagation)**: Maintenance mode toggle must propagate to all instances within 5 seconds via Redis pub/sub mechanism.
 - **CV-005 (Code Metrics)**: Module configuration code and hook code will be tracked separately to ensure 90/10 compliance.
-- **CV-001 (90/10 Rule)**: Automated check during module loading. If a module has >10% code (hooks LOC vs config LOC), log a warning.
-- **CV-002 (Config Validity)**: All modules must pass Zod schema validation at startup.
-- **CV-003 (Audit Immutable)**: Audit logs must be immutable and stored for minimum 1 year.
-- **CV-004 (Maintenance Propagation)**: Maintenance mode toggle must propagate to all instances within 5 seconds via Redis pub/sub mechanism.
-- **CV-005 (Code Metrics)**: Module configuration code and hook code will be tracked separately to ensure 90/10 compliance.
 
-## Success Criteria *(mandatory)*
+## Versioning Strategy
+
+This project follows Semantic Versioning (SemVer). Phase 1 completion tags as v0.1.0. Phase 2 as v0.2.0. Phase 3 as v0.3.0. Phase 4 as v1.0.0 (first production release).

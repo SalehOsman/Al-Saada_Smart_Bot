@@ -39,5 +39,3 @@ healthRouter.get('/health', async (c) => {
   return c.json(healthStatus, allServicesHealthy ? 200 : 503)
 })
 
-// Export the router for use in main app
-export { healthRouter }
