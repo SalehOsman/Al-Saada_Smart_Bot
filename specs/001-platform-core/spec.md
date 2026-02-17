@@ -134,15 +134,16 @@ System tracks user actions and maintains session state.
 - **FR-024**: System MUST implement notification service using BullMQ (queue-based)
 - **FR-025**: System MUST store notification history in database for audit
 - **FR-026**: System MUST log all significant user actions to audit log
+Auditable actions are defined as: USER_LOGIN, USER_LOGOUT, ROLE_CHANGE, USER_APPROVE, USER_REJECT, USER_DEACTIVATE, SECTION_CREATE, SECTION_UPDATE, SECTION_DELETE, MODULE_ENABLE, MODULE_DISABLE, MAINTENANCE_ON, MAINTENANCE_OFF, PERMISSION_CHANGE, ADMIN_SCOPE_ASSIGN, ADMIN_SCOPE_REVOKE
 - **FR-027**: System MUST NOT log sensitive data (passwords, tokens) in audit logs
 - **FR-028**: System MUST use Redis for user session management (24-hour expiry)
-- **FR-029**: System MUST provide canAccess(userId, sectionId?, moduleId?) → boolean function
+- **FR-029**: System MUST provide canAccess(userId: bigint, sectionId?: string, moduleId?: string): Promise<boolean> function — Returns true if the user's role and admin scope allow access. Super Admin always returns true. Visitor always returns false except for join-request. Results are cached in Redis for 5 minutes.
 - **FR-030**: System MUST provide API functions: registerModule(), unregisterModule(), getModulesBySection()
 
 *Example of marking unclear requirements:*
 
-- **FR-031**: System MUST support Arabic-only messages [NEEDS CLARIFICATION: Should we support Arabic + English toggle or Arabic only?]
-- **FR-032**: System MUST store notification history for [NEEDS CLARIFICATION: How long should notifications be retained?]
+- **FR-031**: System MUST support bilingual interface — Arabic as primary language, English as secondary. All user-facing messages must exist in both languages via .ftl locale files.
+- **FR-032**: System MUST retain notification history for 90 days. Notifications older than 90 days are automatically purged by a scheduled cron job.
 
 ### Key Entities *(include if feature involves data)*
 

@@ -26,7 +26,7 @@ Platform Core (Layer 1) implementation for Al-Saada Smart Bot - the foundational
 
 ### Al-Saada Smart Bot Principle Checks
 
-1. **Platform-First Principle**: Platform Core (Layer 1) must be 100% complete and tested before any module is created. Modules are pure configuration — they contain ZERO business logic code. All logic lives in the Flow Engine.
+1. **Platform-First Principle**: Platform Core (Layer 1) must be 100% complete and tested before any module is created. Modules are primarily configuration (Config-First). Optional lifecycle hooks (beforeSave, afterSave, etc.) are allowed for complex business logic that cannot be expressed as configuration. The 90/10 rule applies: 90% config, max 10% hook code. All logic lives in the Flow Engine.
 
 2. **Config-Driven Architecture (Config-First, Code-When-Needed)**: Everything that can be configuration MUST be configuration, not code. Module creation should primarily require: Defining flow steps (which Flow Blocks in what order), Specifying database fields, Setting permissions. For complex business logic that cannot be expressed as configuration, use optional lifecycle hooks following the 90/10 rule (90% configuration, max 10% custom hook code).
 

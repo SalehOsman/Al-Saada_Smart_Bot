@@ -197,6 +197,7 @@
 - [ ] T056 [P] Create notification history storage in database
 - [ ] T057 [P] Create notification delivery worker
 - [ ] T058 [P] Write integration test for notification flow
+- [ ] T081 [P] Create notification cleanup cron job in packages/core/src/services/notification-cleanup.ts - Runs daily, deletes notifications older than 90 days. Done when: Old notifications are purged automatically.
 
 **Checkpoint**: Notification system complete - queue-based messaging functional
 
