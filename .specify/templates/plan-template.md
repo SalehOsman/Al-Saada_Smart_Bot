@@ -35,9 +35,9 @@
 
 1. **Platform-First Principle**: Platform Core (Layer 1) and Flow Engine (Layer 2) must be fully designed and tested before any module creation (Layer 3).
 
-2. **Config-Driven Architecture**: All business logic must be implemented as Flow Blocks with configuration-driven module definitions. No TypeScript business logic in modules.
+2. **Config-Driven Architecture (Config-First)**: All business logic must be implemented as Flow Blocks with configuration-driven module definitions. Use optional hooks ONLY for exceptional cases that cannot be configured. The 90/10 rule: 90% configuration, max 10% custom hook code.
 
-3. **Flow Block Reusability**: Any new UI component must be implemented as a reusable Flow Block that works across multiple modules with configurable parameters.
+3. **Flow Block Reusability**: Any new UI component must be implemented as a reusable Flow Block that works across multiple modules with configurable parameters. Hook patterns repeating across 3+ modules MUST be extracted into new Flow Blocks.
 
 4. **Test-First Development**: All Flow Blocks must have unit tests before implementation. Minimum 80% code coverage required for engine code.
 
@@ -109,6 +109,8 @@ ios/ or android/
 
 **Structure Decision**: [Document the selected structure and reference the real
 directories captured above]
+
+**Note**: When implementing modules, remember they consist of configuration files (90%) with optional hooks (10% max). Hooks should be placed in modules/[module-name]/hooks.ts and follow the strict lifecycle rules defined in the constitution.
 
 ## Complexity Tracking
 

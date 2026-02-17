@@ -108,17 +108,18 @@ description: "Task list template for feature implementation"
 
 **Purpose**: One complete HR module to prove the platform works end-to-end
 
-**Note**: Built entirely with Flow Blocks config - ZERO business logic code
+**Note**: Built primarily with Flow Blocks config - may use optional hooks for exceptional cases that cannot be configured (90/10 rule)
 
 ### Module Structure
 
 - [ ] T031 Create modules/hr-employee-registration/ directory structure
 - [ ] T032 Create module.config.ts (name, section, permissions, icon)
 - [ ] T033 Create schema.prisma (employee table definition)
-- [ ] T034 Create add.flow.ts (employee registration flow steps)
-- [ ] T035 Create edit.flow.ts (employee profile edit)
+- [ ] T034 Create add.flow.ts (employee registration flow steps + optional hooks if needed)
+- [ ] T035 Create edit.flow.ts (employee profile edit + optional hooks if needed)
 - [ ] T036 Create list.config.ts (employee list display)
 - [ ] T037 Create report.config.ts (employee reports)
+- [ ] T038 [P] Create hooks.ts (only if config insufficient for complex business logic)
 
 ### Testing Requirements
 
@@ -277,10 +278,10 @@ description: "Task list template for feature implementation"
 ### Constitutional Constraints
 
 - **Platform-First**: Phase 1 MUST be 100% complete before any Phase 2 work
-- **Config-Driven**: ALL modules MUST be pure configuration - ZERO business logic code
+- **Config-Driven**: ALL modules MUST be primarily configuration (90%) with optional hooks (10% max) for exceptional cases
 - **Test-First**: ALL Flow Blocks MUST have unit tests before implementation
 - **Egyptian Context**: ALL validators MUST support Egyptian formats and timezone
-- **Reusability**: Flow Blocks MUST work with ANY module without modification
+- **Reusability**: Flow Blocks MUST work with ANY module without modification; hook patterns across 3+ modules MUST be extracted to new Flow Blocks
 
 ### Parallel Opportunities
 
@@ -312,7 +313,7 @@ Task: "Create [Entity2] model in src/models/[entity2].py"
 
 1. **Platform-First**: Phase 1 (Platform Core) MUST be complete before any other work
 2. **Flow Block Development**: Phase 2 Flow Blocks MUST be fully tested before any module creation
-3. **Config-Driven Verification**: Phase 3 MUST use ONLY configuration files to prove platform works
+3. **Config-Driven Verification**: Phase 3 MUST primarily use configuration files to prove platform works (with optional hooks only for exceptional cases)
 4. **Test Coverage**: Maintain 80% code coverage for ALL engine code
 5. **Egyptian Context**: ALL components MUST support Arabic, Egyptian formats, and Africa/Cairo timezone
 
