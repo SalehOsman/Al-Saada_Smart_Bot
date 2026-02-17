@@ -16,7 +16,7 @@ Platform Core (Layer 1) implementation for Al-Saada Smart Bot - the foundational
 **Testing**: Vitest with 80% coverage requirement
 **Target Platform**: Linux server with Docker Compose
 **Project Type**: Monorepo - platform package in packages/core/
-**Performance Goals**: 100 concurrent users, 99.9% uptime, <1s response time
+**Performance Goals**: ~200 concurrent users, 99.9% uptime, <500ms p95 response time
 **Constraints**: Arabic-first UI, RTL support, 24-hour session expiry, audit logging
 **Scale/Scope**: ~200 users initially, 4 RBAC roles, dynamic section/module system
 
@@ -40,7 +40,7 @@ Platform Core (Layer 1) implementation for Al-Saada Smart Bot - the foundational
 
 7. **Simplicity Over Cleverness**: Start simple, add complexity only when proven necessary. YAGNI principle strictly enforced. No premature optimization. Clear naming conventions (Arabic-friendly). Every file has a single clear purpose.
 
-8. **Monorepo Structure**: The project uses a monorepo with clear package separation: packages/core — Platform Core (Layer 1), packages/flow-engine — Flow Engine (Layer 2), packages/validators — Egyptian validation library, packages/ai-builder — RAG Module Builder (Phase 4), modules/ — All modules (config files only).
+8. **Monorepo Structure**: The project uses a monorepo with clear package separation: packages/core — Platform Core (Layer 1), packages/flow-engine — Flow Engine (Layer 2), packages/validators — Egyptian validation library, packages/ai-assistant — AI Operational Assistant with RAG (Phase 4), modules/ — All modules (config files only).
 
 ## Project Structure
 
@@ -61,48 +61,48 @@ specs/001-platform-core/
 
 ```text
 # Monorepo structure for Platform Core
-packages/core/
-├── src/
-│   ├── main.ts         # Application entry point
-│   ├── bot/
-│   │   ├── index.ts    # Bot setup and configuration
-│   │   ├── middlewares/ # RBAC, maintenance, session middleware
-│   │   ├── handlers/   # Command handlers (/start, /sections, etc.)
-│   │   └── menus/      # Menu generation logic
-│   ├── services/
-│   │   ├── auth.ts     # Authentication service
-│   │   ├── rbac.ts     # Role-based access control
-│   │   ├── sections.ts # Section management
-│   │   ├── modules.ts  # Module discovery and loading
-│   │   ├── notifications.ts # BullMQ notification service
-│   │   └── audit.ts    # Audit logging service
-│   ├── database/
-│   │   ├── prisma.ts   # Prisma client singleton
-│   │   └── migrations/ # Database migrations
-│   ├── cache/
-│   │   └── redis.ts    # ioredis client singleton
-│   ├── types/
-│   │   ├── user.ts     # User-related types
-│   │   ├── section.ts  # Section-related types
-│   │   ├── module.ts   # Module-related types
-│   │   └── common.ts  # Shared types
-│   └── utils/
-│       ├── validators.ts # Egyptian format validators
-│       ├── logger.ts   # Pino logger setup
-│       └── errors.ts   # Custom error classes
-├── tests/
-│   ├── unit/           # Unit tests
-│   │   ├── rbac.test.ts
-│   │   ├── session.test.ts
-│   │   ├── modules.test.ts
-│   │   └── audit.test.ts
-│   ├── integration/    # Integration tests
-│   │   ├── user-flow.test.ts
-│   │   ├── join-request.test.ts
-│   │   └── sections.test.ts
-│   └── e2e/           # End-to-end tests
-└── package.json        # Package dependencies and scripts
-
+packages/
+├── core/
+│   ├── src/
+│   │   ├── main.ts         # Application entry point
+│   │   ├── bot/
+│   │   │   ├── index.ts    # Bot setup and configuration
+│   │   │   ├── middlewares/ # RBAC, maintenance, session middleware
+│   │   │   ├── handlers/   # Command handlers (/start, /sections, etc.)
+│   │   │   └── menus/      # Menu generation logic
+│   │   ├── services/
+│   │   │   ├── auth.ts     # Authentication service
+│   │   │   ├── rbac.ts     # Role-based access control
+│   │   │   ├── sections.ts # Section management
+│   │   │   ├── modules.ts  # Module discovery and loading
+│   │   │   ├── notifications.ts # BullMQ notification service
+│   │   │   └── audit.ts    # Audit logging service
+│   │   ├── database/
+│   │   │   ├── prisma.ts   # Prisma client singleton
+│   │   │   └── migrations/ # Database migrations
+│   │   ├── cache/
+│   │   │   └── redis.ts    # ioredis client singleton
+│   │   ├── types/
+│   │   │   ├── user.ts     # User-related types
+│   │   │   ├── section.ts  # Section-related types
+│   │   │   ├── module.ts   # Module-related types
+│   │   │   └── common.ts  # Shared types
+│   │   └── utils/
+│   │       ├── logger.ts   # Pino logger setup
+│   │       └── errors.ts   # Custom error classes
+│   ├── tests/
+│   │   ├── unit/           # Unit tests
+│   │   │   ├── rbac.test.ts
+│   │   │   ├── session.test.ts
+│   │   │   ├── modules.test.ts
+│   │   │   └── audit.test.ts
+│   │   ├── integration/    # Integration tests
+│   │   │   ├── user-flow.test.ts
+│   │   │   ├── join-request.test.ts
+│   │   │   └── sections.test.ts
+│   │   └── e2e/           # End-to-end tests
+│   └── package.json        # Package dependencies and scripts
+├── validators/             # Egyptian format validators
 # Infrastructure
 ├── docker-compose.yml # PostgreSQL + Redis + Bot services
 ├── prisma/
@@ -110,7 +110,7 @@ packages/core/
 └── modules/           # Empty directory for future modules
 ```
 
-**Structure Decision**: Monorepo with packages/core/ as the Platform Core package. All source code follows the specified architecture with clear separation of concerns between middleware, handlers, services, and database layers.
+**Structure Decision**: Monorepo with `packages/core/` as the Platform Core package and `packages/validators/` for Egyptian format validators. All source code follows the specified architecture with clear separation of concerns.
 
 ## Complexity Tracking
 
