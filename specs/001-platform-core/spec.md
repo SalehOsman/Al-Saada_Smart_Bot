@@ -121,8 +121,8 @@ System tracks user actions and maintains session state.
 ### Edge Cases
 
 - What happens when a module's configuration is invalid? Each module consists of: module.config.ts, add.flow.ts, edit.flow.ts, view.config.ts, list.config.ts, report.config.ts, schema.prisma, and optional lifecycle hooks. Bot should log warning and skip it, not crash.
-- How does the system handle database connection failures during bot startup? Should show appropriate error and retry.
-- What happens if Redis becomes unavailable? Should fall back to in-memory sessions and log warnings.
+- How does the system handle database connection failures during bot startup? Should attempt to reconnect 3 times with exponential backoff (1s, 2s, 4s) before exiting with a critical error.
+- What happens if Redis becomes unavailable? The system should gracefully fall back to an in-memory session provider for the current request and log a critical warning. It should attempt to reconnect to Redis on subsequent requests.
 - How are sensitive data handled in logs? Passwords, tokens, and other sensitive info should never appear in audit logs.
 
 ## Requirements *(mandatory)*
@@ -154,18 +154,15 @@ System tracks user actions and maintains session state.
 - **FR-023**: System MUST show maintenance message to non-Super Admin users when in maintenance mode
 - **FR-024**: System MUST implement notification service using BullMQ (queue-based)
 - **FR-025**: System MUST store notification history in database for audit
-- **FR-026**: System MUST log all significant user actions to audit log
-Auditable actions are defined as: USER_LOGIN, USER_LOGOUT, ROLE_CHANGE, USER_APPROVE, USER_REJECT, USER_DEACTIVATE, SECTION_CREATE, SECTION_UPDATE, SECTION_DELETE, MODULE_ENABLE, MODULE_DISABLE, MAINTENANCE_ON, MAINTENANCE_OFF, PERMISSION_CHANGE, ADMIN_SCOPE_ASSIGN, ADMIN_SCOPE_REVOKE
+- **FR-026**: System MUST log all significant user actions to audit log. Auditable actions are defined as: USER_LOGIN, USER_LOGOUT, ROLE_CHANGE, USER_APPROVE, USER_REJECT, USER_ACTIVATE, USER_DEACTIVATE, JOIN_REQUEST_SUBMIT, SECTION_CREATE, SECTION_UPDATE, SECTION_DELETE, SECTION_ENABLE, SECTION_DISABLE, MODULE_REGISTER, MODULE_UNREGISTER, MODULE_ENABLE, MODULE_DISABLE, MAINTENANCE_ON, MAINTENANCE_OFF, PERMISSION_CHANGE, ADMIN_SCOPE_ASSIGN, ADMIN_SCOPE_REVOKE
 - **FR-027**: System MUST NOT log sensitive data (passwords, tokens) in audit logs
 - **FR-028**: System MUST use Redis for user session management (24-hour expiry)
 - **FR-029**: System MUST provide canAccess(userId: bigint, sectionId?: string, moduleId?: string): Promise<boolean> function — Returns true if the user's role and admin scope allow access. Super Admin always returns true. Visitor always returns false except for join-request. Results are cached in Redis for 5 minutes.
 - **FR-030**: System MUST provide API functions: registerModule(), unregisterModule(), getModulesBySection()
-
-*Example of marking unclear requirements:*
-
 - **FR-031**: System MUST support bilingual interface — Arabic as primary language, English as secondary. All user-facing messages must exist in both languages via .ftl locale files.
   > **Note**: RTL rendering is handled natively by Telegram's message display. No custom RTL implementation is required in the bot code.
 - **FR-032**: System MUST retain notification history for 90 days. Notifications older than 90 days are automatically purged by a scheduled cron job.
+- **FR-033**: System MUST validate and sanitize all user input to prevent injection attacks (XSS, SQLi).
 
 ### Key Entities *(include if feature involves data)*
 
@@ -195,7 +192,7 @@ Auditable actions are defined as: USER_LOGIN, USER_LOGOUT, ROLE_CHANGE, USER_APP
 
 ### Measurable Outcomes
 - **SC-001**: First user can complete bootstrap process in under 30 seconds
-- **SC-002**: System can handle 100 concurrent users without performance degradation
+- **SC-002**: System can handle ~200 concurrent users without performance degradation
 - **SC-003**: Audit log captures all significant actions with 100% accuracy (no gaps)
 - **SC-004**: Session persistence works across bot interactions for 24-hour period
 - **SC-005**: Maintenance mode toggle affects all non-Super Admin users within 5 seconds
@@ -208,20 +205,14 @@ Auditable actions are defined as: USER_LOGIN, USER_LOGOUT, ROLE_CHANGE, USER_APP
 ### Non-Functional Requirements
 - **NFR-001 (Performance)**: System must maintain <500ms average response time for 95% of requests under normal load.
 - **NFR-002 (Maintenance)**: Maintenance mode toggle must propagate to all instances within 5 seconds via Redis pub/sub mechanism.
-- **NFR-003 (Scalability)**: System must support horizontal scaling to 500 concurrent users without architecture changes.
+- **NFR-003 (Scalability)**: System must support horizontal scaling to ~200 concurrent users without architecture changes, maintaining <500ms p95 response time.
 - **NFR-004 (Security)**: All API endpoints must validate input and sanitize to prevent injection attacks.
 - **NFR-005 (Availability)**: Core services must maintain 99.9% uptime with automated recovery from failures.
 
-## Compliance & Validation (Constitutional)
-
-### Compliance Requirements
-
-- **CV-001 (90/10 Rule)**: Automated check during module loading. If a module has >10% code (hooks LOC vs config LOC), log a warning.
-- **CV-002 (Config Validity)**: All modules must pass Zod schema validation at startup.
-- **CV-003 (Audit Immutable)**: Audit logs must be immutable and stored for minimum 1 year.
-- **CV-004 (Maintenance Propagation)**: Maintenance mode toggle must propagate to all instances within 5 seconds via Redis pub/sub mechanism.
-- **CV-005 (Code Metrics)**: Module configuration code and hook code will be tracked separately to ensure 90/10 compliance.
-
 ## Versioning Strategy
 
-This project follows Semantic Versioning (SemVer). Phase 1 completion tags as v0.1.0. Phase 2 as v0.2.0. Phase 3 as v0.3.0. Phase 4 as v1.0.0 (first production release).
+This project follows the Semantic Versioning (SemVer) and Development Phases outlined in the project constitution.
+- **Phase 1: Platform Core** completion tags as v0.1.0.
+- **Phase 2: Flow Engine** completion tags as v0.2.0.
+- **Phase 3: Test Module** completion tags as v0.3.0.
+- **Phase 4: AI Operational Assistant** completion tags as v1.0.0 (first production release).

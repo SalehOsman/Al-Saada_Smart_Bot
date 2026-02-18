@@ -73,6 +73,7 @@
 - [X] T018 Create Prisma client singleton in packages/core/src/database/
 - [X] T019 Create grammY session storage adapter using Redis. Depends on T017 (Redis) and T021 (i18n setup).
 - [X] T020 Create error handling middleware (catches errors, sends Arabic message). Depends on T014 (Logger).
+- [ ] T083 [P] Create input validation and sanitization utilities in `packages/validators/src/`.
 
 ### Internationalization
 
@@ -85,7 +86,7 @@
 
 ---
 
-## Phase 3: User & Auth System (depends on Group 2)
+## Phase 3: User & Auth System (depends on Phase 2)
 
 **Purpose**: User authentication, registration, and initial bot experience
 
@@ -106,7 +107,7 @@
 
 ---
 
-## Phase 4: RBAC System (depends on Group 3)
+## Phase 4: RBAC System (depends on Phase 3)
 
 **Purpose**: Role-based access control and user management
 
@@ -114,6 +115,7 @@
 
 - [ ] T029 [P] Create RBAC middleware (checks role on every update)
 - [ ] T030 [P] Implement canAccess(userId, sectionId?, moduleId?) function in packages/core/src/services/
+- [ ] T084 [P] Implement AdminScope authorization logic in canAccess()
 - [ ] T031 [P] Create AdminScope service (assign/revoke admin permissions)
 
 ### User Management
@@ -123,13 +125,13 @@
 
 ### Unit Tests
 
-- [ ] T034 [P] Write unit tests for RBAC middleware and canAccess function
+- [ ] T034 [P] Write unit tests for RBAC middleware and canAccess function, covering roles, AdminScope, and caching.
 
 **Checkpoint**: RBAC system complete - permission management functional
 
 ---
 
-## Phase 5: Section Management (depends on Group 4)
+## Phase 5: Section Management (depends on Phase 4)
 
 **Purpose**: Dynamic section creation and management system
 
@@ -149,7 +151,7 @@
 
 ---
 
-## Phase 6: Module Loader (depends on Group 5)
+## Phase 6: Module Loader (depends on Phase 5)
 
 **Purpose**: Dynamic module discovery and loading system
 
@@ -163,6 +165,7 @@
 ### Module API
 
 - [ ] T045 [P] Create registerModule() and getModulesBySection() API in packages/core/src/services/
+- [ ] T085 [P] Implement unregisterModule() API function.
 - [ ] T046 [P] Create module list display within sections
 - [ ] T047 [P] Write unit tests for module loader
 
@@ -170,7 +173,7 @@
 
 ---
 
-## Phase 7: Maintenance Mode (depends on Group 2)
+## Phase 7: Maintenance Mode (depends on Phase 2)
 
 **Purpose**: System maintenance control and user experience
 
@@ -180,13 +183,14 @@
 - [ ] T049 [P] [US4] Create maintenance toggle command (Super Admin only)
 - [ ] T050 [P] [US4] Create Arabic maintenance message for blocked users
 - [ ] T051 [P] Store maintenance status in Redis
+- [ ] T086 [P] Implement Redis pub/sub for maintenance mode propagation.
 - [ ] T052 [P] Write unit test for maintenance middleware
 
 **Checkpoint**: Maintenance mode complete - system control functional
 
 ---
 
-## Phase 8: Notification System (depends on Group 2)
+## Phase 8: Notification System (depends on Phase 2)
 
 **Purpose**: Queue-based notification delivery system
 
@@ -204,7 +208,7 @@
 
 ---
 
-## Phase 9: Audit Logging (depends on Group 2)
+## Phase 9: Audit Logging (depends on Phase 2)
 
 **Purpose**: Comprehensive system audit trail
 
@@ -212,7 +216,7 @@
 
 - [ ] T059 [P] Create audit log service in packages/core/src/services/
 - [ ] T060 [P] Create audit middleware (auto-logs significant actions)
-- [ ] T061 [P] Define auditable actions list (login, role_change, section_create, etc.)
+- [ ] T061 [P] Define auditable actions list to match FR-026.
 - [ ] T062 [P] Create audit log viewer for Super Admin (recent logs via bot command)
 - [ ] T063 [P] Ensure NO sensitive data is logged
 - [ ] T064 [P] Write unit tests for audit service
@@ -221,13 +225,14 @@
 
 ---
 
-## Phase 10: Session Management (depends on Group 2)
+## Phase 10: Session Management (depends on Phase 2)
 
 **Purpose**: User session persistence and navigation state
 
 ### Session Infrastructure
 
 - [ ] T065 [P] Create Redis session service with 24-hour TTL in packages/core/src/services/
+- [ ] T087 [P] Implement Redis fallback to in-memory sessions.
 - [ ] T066 [P] Create session middleware (load/save on every message)
 - [ ] T067 [P] Store navigation state (currentSection, currentModule, currentStep)
 - [ ] T068 [P] Handle session expiry gracefully
@@ -249,7 +254,7 @@
 - [ ] T073 Code cleanup and final linting
 - [ ] T074 Update quickstart.md with actual commands
 - [ ] T075 Final commit and tag v0.1.0
-- [ ] T078 Verify SC-002: Load test with 100 concurrent simulated users, response time <500ms p95
+- [ ] T078 Verify SC-002: Load test with ~200 concurrent simulated users, response time <500ms p95
 - [ ] T079 Verify SC-005: Confirm all 4 roles display correct menus and access levels
 - [ ] T080 Verify SC-008: Confirm audit logs capture 100% of defined auditable actions
 
@@ -263,7 +268,10 @@
 
 - **Phase 1**: No dependencies - can start immediately
 - **Phase 2**: Depends on Phase 1 completion - BLOCKS all bot functionality
-- **Phase 3-6**: Depend on Phase 2 completion - User stories can be developed in parallel
+- **Phase 3**: Depends on Phase 2 completion
+- **Phase 4**: Depends on Phase 3 completion
+- **Phase 5**: Depends on Phase 4 completion
+- **Phase 6**: Depends on Phase 5 completion
 - **Phase 7-10**: Depend on Phase 2 completion - Can run in parallel with user stories
 - **Phase 11**: Depends on all above phases being complete
 
@@ -280,18 +288,6 @@
 - All Phase 1 tasks marked [P] can run in parallel
 - All Phase 2 tasks marked [P] can run in parallel
 - All Phase 7, 8, 9, 10 tasks can run in parallel with each other
-- Phase 3-6 user story tasks can be developed independently after Phase 2
-
----
-
-## Parallel Example: User Story 1
-
-```bash
-# Launch all User Story 1 tasks together:
-Task: "T022 [US1] Create /start command handler with user lookup logic"
-Task: "T023 [US1] Implement first-user-becomes-Super-Admin bootstrap logic"
-Task: "T024 [US1] Create welcome message handler for existing users"
-```
 
 ---
 
@@ -318,7 +314,7 @@ With multiple developers:
 
 1. **Phase 1**: All developers collaborate on project scaffolding
 2. **Phase 2**: Developers split between bot setup and infrastructure services
-3. **Phase 3-6**: Different developers work on parallel user stories
+3. **Phase 3-6**: These phases are sequential. A developer can work on a phase once the previous one is complete.
 4. **Phase 7-10**: Developers work independently on parallel infrastructure systems
 5. **Phase 11**: All developers collaborate on testing and polish
 
