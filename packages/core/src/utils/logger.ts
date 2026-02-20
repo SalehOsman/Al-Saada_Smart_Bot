@@ -5,15 +5,18 @@ import { env } from '../config/env'
 const logger = pino({
   level: env.LOG_LEVEL,
   // Enable pretty printing in development mode
-  transport: env.NODE_ENV === 'development' ? {
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-      translateTime: 'HH:MM:ss Z',
-      ignore: 'pid,hostname',
-      messageFormat: '{msg}', // Clean format for Arabic text
-    },
-  } : undefined,
+  transport:
+    env.NODE_ENV === 'development'
+      ? {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+            translateTime: 'HH:MM:ss Z',
+            ignore: 'pid,hostname',
+            messageFormat: '{msg}', // Clean format for Arabic text
+          },
+        }
+      : undefined,
   // Ensure UTF-8 encoding for Arabic text
   formatters: {
     level(label) {

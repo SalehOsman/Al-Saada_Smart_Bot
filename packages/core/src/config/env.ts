@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { z } from 'zod'
 
 const envSchema = z.object({
@@ -23,6 +24,9 @@ const envSchema = z.object({
 
   // Logging
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+
+  // Super Admin Configuration
+  INITIAL_SUPER_ADMIN_ID: z.coerce.number().int().positive().optional(),
 })
 
 // Validate environment variables
