@@ -1,14 +1,13 @@
 <!--
 Sync Impact Report:
-- Version change: 1.5.0 → 1.6.0 (MINOR: Updated bootstrap mechanism to use Telegram ID)
-- Modified principles: VI. Security & Privacy (Replaced INITIAL_SUPER_ADMIN_PHONE with INITIAL_SUPER_ADMIN_ID)
+- Version change: 1.6.0 → 1.7.0 (MINOR: Formalized integration of AI Agent Skills)
+- Modified principles: Technology Stack, Governance (Added rules for AI Agent Skills usage)
 - Added sections: None
 - Removed sections: None
 - Modified sections: Amendment History, Version Metadata
 - Templates requiring updates: ✅ spec.md, ✅ tasks.md (propagated changes to bootstrap logic and US/Task descriptions)
 - No deferred placeholders
 -->
-
 
 # Al-Saada Smart Bot Constitution
 
@@ -253,6 +252,7 @@ The project uses a monorepo with clear package separation:
 - **Build:** tsup (production) + tsx (development)
 - **Commits:** commitlint (conventional commits)
 - **Changelog:** changelogen
+- **AI Agent Skills:** Curated skills from `antigravity-awesome-skills` installed locally in `.agents/skills/` to empower the AI Executor (e.g., Code Review, TDD, Architecture patterns).
 
 ### AI Assistant (Phase 4)
 - **AI Framework:** Vercel AI SDK (@ai-sdk/*) — unified interface for all models
@@ -325,6 +325,7 @@ The project uses a monorepo with clear package separation:
 - No module-specific code is allowed in platform packages (packages/core, packages/flow-engine)
 - Any deviation from the constitution must be documented and justified
 - Code reviews must verify constitutional compliance
+- **AI Skills Restriction:** AI Agent Skills MUST NOT be used to bypass the Config-First architecture. They must be cherry-picked and installed individually as needed, rather than blindly bulk-installed.
 
 ### Amendment History
 | Version | Date | Description |
@@ -337,5 +338,6 @@ The project uses a monorepo with clear package separation:
 | 1.4.1 | 2026-02-17 | Specified Qwen3-8B as primary local AI model — chosen for superior Arabic language support, Apache 2.0 license, built-in function calling, and RAG-optimized context window |
 | 1.5.0 | 2026-02-20 | Added Secure Bootstrap rule to Principle VI (Security & Privacy) |
 | 1.6.0 | 2026-02-20 | Updated Principle VI to use Telegram ID (INITIAL_SUPER_ADMIN_ID) instead of phone number for bootstrapping |
+| 1.7.0 | 2026-02-20 | Formalized integration and governance of Antigravity Awesome Skills |
 
-**Version**: 1.6.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-02-20
+**Version**: 1.7.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-02-20

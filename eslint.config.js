@@ -11,6 +11,9 @@ export default antfu({
     '.temp',
     '!.github',
     'specs/**/*.md',
+    '.claude/**',
+    '.gemini/**',
+    '.opencode/**',
   ],
 }, {
   rules: {

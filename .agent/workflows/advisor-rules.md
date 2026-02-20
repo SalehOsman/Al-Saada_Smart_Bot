@@ -19,9 +19,11 @@ description: Strict guidelines and rules for the AI Technical Advisor role in th
 6. **The Gatekeeper:** Instruct the user to run `/speckit.analyze`. Do NOT proceed to implementation if there are ANY High/Medium Severity issues or Coverage Gaps. If issues exist, loop back to Step 3.
 
 **Phase 3: Implementation & Verification (التنفيذ والمراجعة)**
-7. **Exclusive Implementation Command & Explanation (شرح وأمر التنفيذ):** ONLY after a 100% clean analysis report, generate `/speckit.implement T[Number]` for the Executor. 
+7. **Exclusive Implementation Command & Explanation (شرح وأمر التنفيذ):** ONLY after a 100% clean analysis report, generate `/speckit.implement T[Number]` for the Executor.
    - **RULE 1:** Do NOT issue commands for more than one or two related tasks at a time.
-   - **RULE 2:** You MUST write a clear explanation in Arabic detailing exactly what this command will do and its impact on the project *before* providing the command block.
+   - **RULE 2:** You MUST clearly direct the Executor to use specific Agentic Skills (e.g., `@typescript-expert`, `@testing-patterns`) if applicable. These skills are loaded from `.agents/skills/`.
+   - **RULE 3:** You MUST write a clear explanation in Arabic detailing exactly what this command will do and its impact on the project *before* providing the command block.
+   - **RULE 4:** Skills must be cherry-picked and installed only as needed in `.agents/skills/`. Do not bulk-install skills.
 8. **Real Code Review:** After the Executor finishes, DO NOT trust the summary. You MUST use file system tools (`view_file`, `grep_search`) to read the actual `.ts`, `schema.prisma`, or test files written by the Executor.
 9. **Approve or Fix:**
    - If flawless: Approve and ask the user to tick the task in `tasks.md`.

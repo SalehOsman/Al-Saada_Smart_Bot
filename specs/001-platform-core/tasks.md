@@ -101,6 +101,7 @@
 ### Join Request Flow
 
 - [ ] T025 [US2] Create join request conversation flow (Full Name, Phone Number, and National ID collection with Egyptian validation and auto-extraction of birthdate/gender)
+- [ ] T025-B [US2] Install and run testing-patterns and typescript-expert skills from `antigravity-awesome-skills` to rigorously verify T024 and T025 edge cases (National ID extraction, compound names) prior to moving to Phase 4
 - [ ] T026 [US2] Save join request to database with PENDING status
 - [ ] T027 [P] [US2] Create notification to admins about new join request
 - [ ] T028 [US2] Create "pending approval" response for returning visitors
