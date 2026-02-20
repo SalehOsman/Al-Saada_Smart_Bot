@@ -1,11 +1,11 @@
 <!--
 Sync Impact Report:
-- Version change: 1.4.0 → 1.4.1 (MINOR: Updated primary local AI model to Qwen3-8B)
-- Modified principles: None
+- Version change: 1.5.0 → 1.6.0 (MINOR: Updated bootstrap mechanism to use Telegram ID)
+- Modified principles: VI. Security & Privacy (Replaced INITIAL_SUPER_ADMIN_PHONE with INITIAL_SUPER_ADMIN_ID)
 - Added sections: None
 - Removed sections: None
-- Modified sections: Technology Stack (AI Assistant), Development Phases (Phase 4), Amendment History
-- Templates requiring updates: None
+- Modified sections: Amendment History, Version Metadata
+- Templates requiring updates: ✅ spec.md, ✅ tasks.md (propagated changes to bootstrap logic and US/Task descriptions)
 - No deferred placeholders
 -->
 
@@ -206,7 +206,12 @@ All Flow Blocks must have unit tests before implementation. All engine features 
 All validators must support Egyptian formats (national ID, phone numbers, tax IDs). Arabic name processing with compound name handling. Egyptian governorates as seed data. Currency defaults to EGP. Timezone defaults to Africa/Cairo. Calendar support for both Gregorian and Hijri.
 
 ### VI. Security & Privacy
-No sensitive data in logs. All user actions audited. Session management via Redis. Maintenance mode for safe deployments. Input sanitization on all user inputs.
+- **Secure Bootstrap**: The initial `SUPER_ADMIN` user must be bootstrapped via a secure, deterministic mechanism. The system will assign the `SUPER_ADMIN` role only to the user whose Telegram ID matches a pre-configured, private environment variable (`INITIAL_SUPER_ADMIN_ID`). This prevents "first-come, first-served" race conditions and ensures administrative control is explicitly designated.
+- No sensitive data in logs.
+- All user actions audited.
+- Session management via Redis.
+- Maintenance mode for safe deployments.
+- Input sanitization on all user inputs.
 
 ### VII. Simplicity Over Cleverness
 Start simple, add complexity only when proven necessary. YAGNI principle strictly enforced. No premature optimization. Clear naming conventions (Arabic-friendly). Every file has a single clear purpose.
@@ -330,5 +335,7 @@ The project uses a monorepo with clear package separation:
 | 1.3.0 | 2026-02-17 | Added Hooks system to Layer 3, updated Config-Driven principle to Config-First |
 | 1.4.0 | 2026-02-17 | Replaced AI Module Builder with AI Operational Assistant — local open-source model (Gemma/Ollama) as primary with RAG on company DB, cloud models as fallback, voice support (STT/TTS), all settings configurable from bot, RBAC-aware responses |
 | 1.4.1 | 2026-02-17 | Specified Qwen3-8B as primary local AI model — chosen for superior Arabic language support, Apache 2.0 license, built-in function calling, and RAG-optimized context window |
+| 1.5.0 | 2026-02-20 | Added Secure Bootstrap rule to Principle VI (Security & Privacy) |
+| 1.6.0 | 2026-02-20 | Updated Principle VI to use Telegram ID (INITIAL_SUPER_ADMIN_ID) instead of phone number for bootstrapping |
 
-**Version**: 1.4.1 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-02-17
+**Version**: 1.6.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-02-20

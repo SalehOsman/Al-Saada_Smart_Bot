@@ -39,148 +39,147 @@ enum ScopeType {
 
 // User - Telegram Bot Users
 model User {
-  telegramId    BigInt   @id @map("telegram_id")
-  firstName     String   @map("first_name")
-  lastName      String?  @map("last_name")
-  phone         String?  // Egyptian phone format: 01[0125][0-9]{8}
-  role          Role     @default(VISITOR)
-  isActive      Boolean  @default(true) @map("is_active")
-  language      String   @default("ar") // ISO 639-1
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  telegramId       BigInt    @id @map("telegram_id")
+  id               String    @unique @default(cuid())
+  fullName         String    @map("full_name")
+  nickname         String?
+  phone            String?   @unique
+  nationalId       String?   @unique @map("national_id")
+  telegramUsername String?   @map("telegram_username")
+  role             Role      @default(VISITOR)
+  isActive         Boolean   @default(true) @map("is_active")
+  language         String    @default("ar")
+  lastActiveAt     DateTime? @map("last_active_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   // Relationships
-  joinRequests       JoinRequest[]
-  auditLogs         AuditLog[]
-  notifications     Notification[]
-  adminScopes       AdminScope[]
-  createdSections   Section[]      @relation("SectionCreator")
-  reviewedJoinRequests JoinRequest[] @relation("ReviewAdmin")
+  joinRequests         JoinRequest[]
+  auditLogs            AuditLog[]
+  notifications        Notification[]
+  adminScopes          AdminScope[]
+  createdSections      Section[]      @relation("SectionCreator")
+  reviewedJoinRequests JoinRequest[]  @relation("ReviewAdmin")
 
   @@map("users")
-  @@index([telegramId])
-  @@index([role])
-  @@index([isActive])
 }
 
 // JoinRequest - Pending User Registrations
 model JoinRequest {
   id         String    @id @default(cuid())
-  userId     BigInt    @map("user_id")
-  name       String
-  phone      String    // Egyptian phone format validation
-  message    String?
+  telegramId BigInt?   @unique @map("telegram_id")
+  fullName   String    @map("full_name")
+  nickname   String?
+  phone      String
+  nationalId String    @map("national_id")
   status     Status    @default(PENDING)
   reviewedBy BigInt?   @map("reviewed_by")
-  reviewedAt DateTime?  @map("reviewed_at")
+  reviewedAt DateTime? @map("reviewed_at")
   createdAt  DateTime  @default(now()) @map("created_at")
 
   // Relationships
-  user     User  @relation(fields: [userId], references: [telegramId])
+  user     User? @relation(fields: [telegramId], references: [telegramId])
   reviewer User? @relation("ReviewAdmin", fields: [reviewedBy], references: [telegramId])
 
   @@map("join_requests")
-  @@index([userId])
-  @@index([status])
-  @@index([createdAt])
 }
 
 // Section - Dynamic Departments/Containers
 model Section {
-  id        String   @id @default(cuid())
-  name      String   // Arabic name
-  nameEn    String   // English name
-  icon      String   // Emoji (e.g., "📁", "💼")
-  isActive  Boolean  @default(true) @map("is_active")
-  orderIndex Int     @default(0) @map("order_index")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  createdBy BigInt?  @map("created_by")
+  id         String   @id @default(cuid())
+  name       String // Arabic name
+  nameEn     String // English name
+  icon       String // Emoji (e.g., "📁", "💼")
+  isActive   Boolean  @default(true) @map("is_active")
+  orderIndex Int      @default(0) @map("order_index")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  createdBy  BigInt?  @map("created_by")
 
   // Relationships
-  creator    User?       @relation("SectionCreator", fields: [createdBy], references: [telegramId])
-  modules    Module[]
+  creator User?    @relation("SectionCreator", fields: [createdBy], references: [telegramId])
+  modules Module[]
 
-  @@map("sections")
   @@index([isActive])
   @@index([orderIndex])
+  @@map("sections")
 }
 
 // Module - Discovered Module Configurations
 model Module {
-  id          String   @id @default(cuid())
-  name        String   // Module name in Arabic
-  nameEn      String   // Module name in English
-  sectionId   String   @map("section_id")
-  icon        String   // Menu icon emoji
-  isActive    Boolean  @default(true) @map("is_active")
-  orderIndex  Int      @default(0) @map("order_index")
-  configPath  String   @map("config_path") // Relative path to module.config.ts
-  createdAt   DateTime @default(now()) @map("created_at")
+  id         String   @id @default(cuid())
+  name       String // Module name in Arabic
+  nameEn     String // Module name in English
+  sectionId  String   @map("section_id")
+  icon       String // Menu icon emoji
+  isActive   Boolean  @default(true) @map("is_active")
+  orderIndex Int      @default(0) @map("order_index")
+  configPath String   @map("config_path") // Relative path to module.config.ts
+  createdAt  DateTime @default(now()) @map("created_at")
 
   // Relationships
-  section    Section    @relation(fields: [sectionId], references: [id])
+  section Section @relation(fields: [sectionId], references: [id])
 
-  @@map("modules")
   @@index([sectionId])
   @@index([isActive])
   @@index([orderIndex])
+  @@map("modules")
 }
 
 // AuditLog - System Audit Trail
 model AuditLog {
   id         String   @id @default(cuid())
   userId     BigInt   @map("user_id")
-  action     String   // Action type (e.g., "LOGIN", "SECTION_CREATE", "USER_APPROVE")
+  action     String // Action type (e.g., "LOGIN", "SECTION_CREATE", "USER_APPROVE")
   targetType String?  @map("target_type") // Entity type (User, Section, Module, etc.)
-  targetId   String?  @map("target_id")   // Entity ID
-  details    Json?    // Additional context as JSON
+  targetId   String?  @map("target_id") // Entity ID
+  details    Json? // Additional context as JSON
   createdAt  DateTime @default(now()) @map("created_at")
 
   // Relationships
   user User @relation(fields: [userId], references: [telegramId])
 
-  @@map("audit_logs")
   @@index([userId])
   @@index([action])
   @@index([createdAt])
+  @@map("audit_logs")
 }
 
 // Notification - Queue Notifications
 model Notification {
-  id        String          @id @default(cuid())
-  userId    BigInt          @map("user_id")
+  id        String           @id @default(cuid())
+  userId    BigInt           @map("user_id")
   type      NotificationType
   title     String
   message   String
-  isRead    Boolean         @default(false) @map("is_read")
-  createdAt DateTime        @default(now()) @map("created_at")
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
 
   // Relationships
   user User @relation(fields: [userId], references: [telegramId])
 
-  @@map("notifications")
   @@index([userId])
   @@index([type])
   @@index([isRead])
   @@index([createdAt])
+  @@map("notifications")
 }
 
 // AdminScope - Admin Permissions
 model AdminScope {
-  id         String    @id @default(cuid())
+  id          String    @id @default(cuid())
   adminUserId BigInt    @map("admin_user_id")
-  scopeType  ScopeType
-  scopeId    String    @map("scope_id")
-  createdAt  DateTime  @default(now()) @map("created_at")
+  scopeType   ScopeType
+  scopeId     String    @map("scope_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
 
   // Relationships
-  adminUser  User     @relation(fields: [adminUserId], references: [telegramId])
+  adminUser User @relation(fields: [adminUserId], references: [telegramId])
   // Note: scopeId references either Section.id or Module.id based on scopeType
   // Prisma does not support polymorphic FK, so we handle this in application code
 
   @@unique([adminUserId, scopeType, scopeId])
-  @@map("admin_scopes")
   @@index([adminUserId])
   @@index([scopeType, scopeId])
+  @@map("admin_scopes")
 }

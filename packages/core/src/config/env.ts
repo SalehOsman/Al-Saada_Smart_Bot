@@ -23,6 +23,9 @@ const envSchema = z.object({
 
   // Logging
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+
+  // Super Admin Configuration
+  INITIAL_SUPER_ADMIN_ID: z.coerce.number().int().positive().optional(),
 })
 
 // Validate environment variables

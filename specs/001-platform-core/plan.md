@@ -162,21 +162,26 @@ packages/
 
 **User** - Telegram bot users
 - `telegramId` BIGINT PRIMARY KEY (Telegram user ID)
-- `firstName` VARCHAR(100) NOT NULL
-- `lastName` VARCHAR(100)
-- `phone` VARCHAR(20) (Egyptian format validation)
-- `role` ENUM('SUPER_ADMIN', 'ADMIN', 'EMPLOYEE', 'VISITOR') NOT NULL
+- `id` STRING (cuid) UNIQUE
+- `fullName` VARCHAR(100) NOT NULL
+- `nickname` VARCHAR(100)
+- `phone` VARCHAR(20) UNIQUE (Egyptian format)
+- `nationalId` VARCHAR(14) UNIQUE (Egyptian format)
+- `telegramUsername` VARCHAR(100)
+- `role` ENUM('SUPER_ADMIN', 'ADMIN', 'EMPLOYEE', 'VISITOR') DEFAULT 'VISITOR'
 - `isActive` BOOLEAN DEFAULT true
 - `language` VARCHAR(5) DEFAULT 'ar'
+- `lastActiveAt` TIMESTAMP
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 - `updatedAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
 **JoinRequest** - Pending user registrations
 - `id` STRING PRIMARY KEY (cuid)
-- `userId` BIGINT REFERENCES User(telegramId)
-- `name` VARCHAR(100) NOT NULL
+- `telegramId` BIGINT UNIQUE
+- `fullName` VARCHAR(100) NOT NULL
+- `nickname` VARCHAR(100)
 - `phone` VARCHAR(20) NOT NULL (Egyptian format)
-- `message` TEXT
+- `nationalId` VARCHAR(14) NOT NULL (Egyptian format)
 - `status` ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING'
 - `reviewedBy` BIGINT REFERENCES User(telegramId)
 - `reviewedAt` TIMESTAMP
@@ -365,7 +370,8 @@ npx prisma generate
 npm run dev
 
 # Bot will be available at webhook URL
-# Send /start to begin bootstrap process
+# Ensure INITIAL_SUPER_ADMIN_ID is set in .env
+# Send /start from that Telegram ID's account to begin bootstrap process
 ```
 
 ### 5. Testing

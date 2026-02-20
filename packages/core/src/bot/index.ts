@@ -1,10 +1,39 @@
-import { Bot } from 'grammy'
+import { Bot, session } from 'grammy'
+import { hydrate } from '@grammyjs/hydrate'
+import { conversations } from '@grammyjs/conversations'
 import { Hono } from 'hono'
 import { env } from '../config/env'
 import logger from '../utils/logger'
+import { i18n } from './i18n'
+import { sessionMiddleware } from './middlewares/session'
+import { errorHandler } from './middlewares/error'
+import { startHandler } from './handlers/start'
+import { BotContext } from '../types/context'
 
 // Create grammy bot instance using BOT_TOKEN from environment
-export const bot = new Bot(env.BOT_TOKEN)
+export const bot = new Bot<BotContext>(env.BOT_TOKEN)
+
+// --- Middlewares ---
+
+// Error handling middleware
+bot.catch(errorHandler)
+
+// Hydration plugin for easier message manipulation
+bot.use(hydrate())
+
+// Session middleware with Redis storage
+bot.use(sessionMiddleware)
+
+// i18n middleware for bilingual support
+bot.use(i18n)
+
+// Conversations plugin for multi-step flows
+bot.use(conversations())
+
+// --- Handlers ---
+
+// /start command
+bot.command('start', startHandler)
 
 // Create Hono app instance for webhook server
 export const app = new Hono()

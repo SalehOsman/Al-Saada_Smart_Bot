@@ -1,0 +1,27 @@
+{
+  "name": "@al-saada/validators",
+  "version": "1.0.0",
+  "description": "Validators for Egyptian context (phone numbers, national IDs, etc.)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "test": "vitest",
+    "build": "tsup"
+  },
+  "keywords": [
+    "egypt",
+    "validation",
+    "zod"
+  ],
+  "author": "Al-Saada Smart Bot",
+  "license": "ISC",
+  "devDependencies": {
+    "tsup": "^8.2.3",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.4"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  }
+}

@@ -92,13 +92,15 @@
 
 ### Bootstrap System
 
-- [ ] T022 [US1] Create /start command handler with user lookup logic in packages/core/src/handlers/
-- [ ] T023 [US1] Implement first-user-becomes-Super-Admin bootstrap logic
+- [x] T022-A [US1] Update prisma/schema.prisma logic for User and JoinRequest based on the new spec. Add fields (telegramUsername, fullName, nickname, phone, nationalId, lastActiveAt, role, etc.). Create a new migration and run prisma generate.
+- [x] T022 [US1] Create /start command handler with user lookup logic in packages/core/src/bot/handlers/start.ts
+- [x] T022-B [US1] Implement FR-014 Bootstrap Lock security logic: Evaluate @.env ONLY IF there are 0 SUPER_ADMINs in the database.
+- [x] T023 [US1] Implement .env-based Super Admin bootstrap logic using `INITIAL_SUPER_ADMIN_ID`
 - [ ] T024 [US1] Create welcome message handler for existing users
 
 ### Join Request Flow
 
-- [ ] T025 [US2] Create join request conversation flow (name + phone input with Egyptian validation)
+- [ ] T025 [US2] Create join request conversation flow (Full Name, Phone Number, and National ID collection with Egyptian validation and auto-extraction of birthdate/gender)
 - [ ] T026 [US2] Save join request to database with PENDING status
 - [ ] T027 [P] [US2] Create notification to admins about new join request
 - [ ] T028 [US2] Create "pending approval" response for returning visitors
@@ -114,7 +116,7 @@
 ### Core RBAC Infrastructure
 
 - [ ] T029 [P] Create RBAC middleware (checks role on every update)
-- [ ] T030 [P] Implement canAccess(userId, sectionId?, moduleId?) function in packages/core/src/services/
+- [ ] T030 [P] Implement canAccess(userId, sectionId?, moduleId?) function in packages/core/src/services/ with Redis caching (5-minute TTL)
 - [ ] T084 [P] Implement AdminScope authorization logic in canAccess()
 - [ ] T031 [P] Create AdminScope service (assign/revoke admin permissions)
 
