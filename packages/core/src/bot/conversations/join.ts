@@ -1,5 +1,5 @@
 import { customAlphabet } from 'nanoid'
-import { egyptianPhoneNumber } from '@al-saada/validators'
+import { egyptianNationalId, egyptianPhoneNumber } from '@al-saada/validators'
 import type { Conversation, ConversationFlavor } from '@grammyjs/conversations'
 import { prisma } from '../../database/prisma'
 import logger from '../../utils/logger'
@@ -16,7 +16,10 @@ interface JoinRequestData {
 }
 
 // Extract birth date and gender from Egyptian National ID
-function extractNationalIdInfo(id: string): { birthDate: Date, gender: 'MALE' | 'FEMALE' } {
+export function extractNationalIdInfo(id: string): { birthDate: Date, gender: 'MALE' | 'FEMALE' } {
+  // For Egyptian IDs:
+  // - IDs starting with '2' are for people born between 1900 and 1999
+  // - IDs starting with '3' are for people born between 2000 and 2099
   const yearPrefix = id.startsWith('2') ? '19' : '20'
   const year = Number.parseInt(yearPrefix + id.substring(1, 3), 10)
   const month = Number.parseInt(id.substring(3, 5), 10) - 1 // Month is 0-indexed
@@ -24,7 +27,7 @@ function extractNationalIdInfo(id: string): { birthDate: Date, gender: 'MALE' | 
   const genderCode = Number.parseInt(id.substring(9, 10), 10)
 
   // Gender is determined by odd/even of the 10th digit
-  const gender = genderCode % 2 === 0 ? 'MALE' : 'FEMALE'
+  const gender = genderCode % 2 === 0 ? 'FEMALE' : 'MALE'
 
   const birthDate = new Date(year, month, day)
 
@@ -226,15 +229,15 @@ async function askForNationalId(conversation: Conversation<ConversationFlavor & 
     if (!text)
       return
 
-    // Validate format (simple check for now - full validation in component)
-    if (!/^[23]\d{13}$/.test(text)) {
+    const validation = egyptianNationalId().safeParse(text)
+    if (!validation.success) {
       await ctx.reply(ctx.t('error_invalid_national_id'))
       return
     }
 
     // Check if National ID already exists
     const existingUser = await prisma.user.findUnique({
-      where: { nationalId: text },
+      where: { nationalId: validation.data },
     })
 
     if (existingUser) {
@@ -242,7 +245,7 @@ async function askForNationalId(conversation: Conversation<ConversationFlavor & 
       return
     }
 
-    return text
+    return validation.data
   })
 }
 
@@ -279,8 +282,8 @@ async function showJoinRequestConfirmation(conversation: Conversation<Conversati
 async function saveJoinRequest(ctx: BotContext, telegramId: bigint, data: JoinRequestData) {
   await prisma.joinRequest.create({
     data: {
-      userId: telegramId,
-      name: data.fullName,
+      telegramId,
+      fullName: data.fullName,
       nickname: data.nickname,
       phone: data.phone,
       nationalId: data.nationalId,
