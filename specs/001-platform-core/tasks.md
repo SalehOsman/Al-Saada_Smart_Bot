@@ -96,7 +96,7 @@
 - [x] T022 [US1] Create /start command handler with user lookup logic in packages/core/src/bot/handlers/start.ts
 - [x] T022-B [US1] Implement FR-014 Bootstrap Lock security logic: Evaluate @.env ONLY IF there are 0 SUPER_ADMINs in the database.
 - [x] T023 [US1] Implement .env-based Super Admin bootstrap logic using `INITIAL_SUPER_ADMIN_ID`
-- [ ] T024 [US1] Create welcome message handler for existing users
+- [x] T024 [US1] Create welcome message handler for existing users
 
 ### Join Request Flow
 
