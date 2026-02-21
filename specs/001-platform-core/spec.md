@@ -149,7 +149,7 @@ System tracks user actions and maintains session state.
   - `011` → Etisalat (e&) Egypt
   - `012` → Orange Egypt
   - `015` → WE (Telecom Egypt)
-  Regex: `/^(010|011|012|015)d{8}$/`. Validation is handled by `@al-saada/validators` package (`egyptianPhoneNumber()` in `packages/validators/src/phone.ts`). Error message must be shown in Arabic.
+  Regex: `/^(010|011|012|015)\d{8}$/`. Validation is handled by `@al-saada/validators` package (`egyptianPhoneNumber()` in `packages/validators/src/phone.ts`). Error message must be shown in Arabic.
 - **FR-013**: System MUST notify all Super Admins about new join requests
 - **FR-014 (Bootstrap Lock)**: The system MUST implement the bootstrap lock mechanism as follows:
   1. On every `/start` command, query `COUNT(*) FROM users WHERE role = 'SUPER_ADMIN'`
