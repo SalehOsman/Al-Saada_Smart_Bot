@@ -31,7 +31,7 @@ export async function startHandler(ctx: BotContext) {
       where: { role: 'SUPER_ADMIN' },
     })
 
-    if (superAdminCount === 0 && env.INITIAL_SUPER_ADMIN_ID === Number(telegramId)) {
+    if (superAdminCount === 0 && BigInt(env.INITIAL_SUPER_ADMIN_ID) === telegramId) {
       // This is the first Super Admin bootstrap
       const fullName = ctx.from?.first_name || 'Super Admin'
       const nickname = generateNickname(fullName)
