@@ -1,6 +1,6 @@
 import { Bot } from 'grammy'
 import { hydrate } from '@grammyjs/hydrate'
-import { conversations } from '@grammyjs/conversations'
+import { conversations, createConversation } from '@grammyjs/conversations'
 import { Hono } from 'hono'
 import { env } from '../config/env'
 import logger from '../utils/logger'
@@ -41,7 +41,7 @@ bot.command('start', startHandler)
 bot.command('menu', menuHandler)
 
 // Register join conversation
-bot.conversation('join', joinConversation)
+bot.use(createConversation(joinConversation, 'join'))
 
 // Create Hono app instance for webhook server
 export const app = new Hono()

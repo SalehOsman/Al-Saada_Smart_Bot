@@ -1,6 +1,6 @@
 import { customAlphabet } from 'nanoid'
 import { egyptianNationalId, egyptianPhoneNumber } from '@al-saada/validators'
-import type { Conversation, ConversationFlavor } from '@grammyjs/conversations'
+import type { Conversation, ConversationFlavor, createConversation } from '@grammyjs/conversations'
 import { prisma } from '../../database/prisma'
 import logger from '../../utils/logger'
 import type { BotContext } from '../../types/context'
@@ -133,27 +133,27 @@ export async function joinConversation(conversation: Conversation<ConversationFl
  * Ask for full Arabic name with compound name support
  */
 async function askForFullName(conversation: Conversation<ConversationFlavor & BotContext>, ctx: BotContext): Promise<string> {
-  await ctx.reply(ctx.t('ask_full_name'))
+  while (true) {
+    await ctx.reply(ctx.t('ask_full_name'))
+    const nextCtx = await conversation.waitFor('message:text')
+    const text = nextCtx.message?.text?.trim()
 
-  return await conversation.waitFrom(ctx.from, async (ctx) => {
-    const text = ctx.message?.text?.trim()
-    if (!text)
-      return ''
+    if (!text) continue
 
     // Validate Arabic name (Unicode support)
     const arabicNameRegex = /^[\p{L}\s\u0660-\u0669.,'-]+$/u
     if (!arabicNameRegex.test(text)) {
       await ctx.reply(ctx.t('error_invalid_arabic_name'))
-      return ''
+      continue
     }
 
     if (text.length < 2) {
       await ctx.reply(ctx.t('error_name_too_short'))
-      return ''
+      continue
     }
 
     return text
-  })
+  }
 }
 
 /**
@@ -163,41 +163,35 @@ async function askForNickname(conversation: Conversation<ConversationFlavor & Bo
   await ctx.reply(ctx.t('ask_nickname'))
   await ctx.reply(ctx.t('nickname_info'))
 
-  const nickname = await conversation.waitFrom(ctx.from, async (ctx) => {
-    const text = ctx.message?.text?.trim()
-    if (!text)
-      return
+  const nextCtx = await conversation.waitFor('message:text')
+  const text = nextCtx.message?.text?.trim()
 
-    // User provided a nickname
-    return text
-  })
-
-  // If no nickname provided, auto-generate from first name + nanoid
-  if (!nickname || nickname === '/skip') {
+  // If no nickname provided or user skips, auto-generate from first name + nanoid
+  if (!text || text === '/skip') {
     const nanoid = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 4)
     return `${firstName.split(' ')[0]}-${nanoid()}`
   }
 
-  return nickname
+  return text
 }
 
 /**
  * Ask for Egyptian phone number with validation
  */
 async function askForPhoneNumber(conversation: Conversation<ConversationFlavor & BotContext>, ctx: BotContext): Promise<string> {
-  await ctx.reply(ctx.t('ask_phone_number'))
-  await ctx.reply(ctx.t('phone_info'))
+  while (true) {
+    await ctx.reply(ctx.t('ask_phone_number'))
+    await ctx.reply(ctx.t('phone_info'))
+    const nextCtx = await conversation.waitFor('message:text')
+    const text = nextCtx.message?.text?.trim()
 
-  return await conversation.waitFrom(ctx.from, async (ctx) => {
-    const text = ctx.message?.text?.trim()
-    if (!text)
-      return ''
+    if (!text) continue
 
     // Validate using @al-saada/validators
     const validation = egyptianPhoneNumber().safeParse(text)
     if (!validation.success) {
       await ctx.reply(ctx.t('error_invalid_phone'))
-      return ''
+      continue
     }
 
     // Check if phone already exists
@@ -207,29 +201,29 @@ async function askForPhoneNumber(conversation: Conversation<ConversationFlavor &
 
     if (existingUser) {
       await ctx.reply(ctx.t('error_phone_exists'))
-      return ''
+      continue
     }
 
     return validation.data
-  })
+  }
 }
 
 /**
  * Ask for Egyptian National ID with validation
  */
 async function askForNationalId(conversation: Conversation<ConversationFlavor & BotContext>, ctx: BotContext): Promise<string> {
-  await ctx.reply(ctx.t('ask_national_id'))
-  await ctx.reply(ctx.t('national_id_info'))
+  while (true) {
+    await ctx.reply(ctx.t('ask_national_id'))
+    await ctx.reply(ctx.t('national_id_info'))
+    const nextCtx = await conversation.waitFor('message:text')
+    const text = nextCtx.message?.text?.trim()
 
-  return await conversation.waitFrom(ctx.from, async (ctx) => {
-    const text = ctx.message?.text?.trim()
-    if (!text)
-      return ''
+    if (!text) continue
 
     const validation = egyptianNationalId().safeParse(text)
     if (!validation.success) {
       await ctx.reply(ctx.t('error_invalid_national_id'))
-      return ''
+      continue
     }
 
     // Check if National ID already exists
@@ -239,11 +233,11 @@ async function askForNationalId(conversation: Conversation<ConversationFlavor & 
 
     if (existingUser) {
       await ctx.reply(ctx.t('error_national_id_exists'))
-      return ''
+      continue
     }
 
     return validation.data
-  })
+  }
 }
 
 /**
