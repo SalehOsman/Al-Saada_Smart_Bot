@@ -55,7 +55,7 @@ export async function joinConversation(conversation: Conversation<ConversationFl
     // Check if there's already a pending join request
     const pendingRequest = await prisma.joinRequest.findFirst({
       where: {
-        userId: telegramId,
+        telegramId,
         status: 'PENDING',
       },
     })
@@ -107,18 +107,15 @@ export async function joinConversation(conversation: Conversation<ConversationFl
     // Step 5: Confirmation
     await showJoinRequestConfirmation(conversation, ctx, joinData)
 
-    // Wait for user confirmation
-    const confirmation = await conversation.waitFrom(ctx.from, async (ctx) => {
-      return ctx.message?.text
-    })
-
-    if (confirmation?.toLowerCase() === ctx.t('button_confirm')) {
+    // Wait for user confirmation (callback query)
+    const confirmation = await conversation.waitForCallbackQuery(['confirm_join', 'cancel_join'])
+    if (confirmation.match === 'confirm_join') {
       // Save join request to database
       await saveJoinRequest(ctx, telegramId, joinData)
-      await ctx.reply(ctx.t('join_request_saved'))
-    }
-    else {
-      await ctx.reply(ctx.t('join_request_cancelled'))
+      await ctx.editMessageText(ctx.t('join_request_saved'))
+    } else {
+      await ctx.editMessageText(ctx.t('join_request_cancelled'))
+      return
     }
 
     // Notify admins about new join request
@@ -141,18 +138,18 @@ async function askForFullName(conversation: Conversation<ConversationFlavor & Bo
   return await conversation.waitFrom(ctx.from, async (ctx) => {
     const text = ctx.message?.text?.trim()
     if (!text)
-      return
+      return ''
 
     // Validate Arabic name (Unicode support)
     const arabicNameRegex = /^[\p{L}\s\u0660-\u0669.,'-]+$/u
     if (!arabicNameRegex.test(text)) {
       await ctx.reply(ctx.t('error_invalid_arabic_name'))
-      return
+      return ''
     }
 
     if (text.length < 2) {
       await ctx.reply(ctx.t('error_name_too_short'))
-      return
+      return ''
     }
 
     return text
@@ -194,13 +191,13 @@ async function askForPhoneNumber(conversation: Conversation<ConversationFlavor &
   return await conversation.waitFrom(ctx.from, async (ctx) => {
     const text = ctx.message?.text?.trim()
     if (!text)
-      return
+      return ''
 
     // Validate using @al-saada/validators
     const validation = egyptianPhoneNumber().safeParse(text)
     if (!validation.success) {
       await ctx.reply(ctx.t('error_invalid_phone'))
-      return
+      return ''
     }
 
     // Check if phone already exists
@@ -210,7 +207,7 @@ async function askForPhoneNumber(conversation: Conversation<ConversationFlavor &
 
     if (existingUser) {
       await ctx.reply(ctx.t('error_phone_exists'))
-      return
+      return ''
     }
 
     return validation.data
@@ -227,12 +224,12 @@ async function askForNationalId(conversation: Conversation<ConversationFlavor & 
   return await conversation.waitFrom(ctx.from, async (ctx) => {
     const text = ctx.message?.text?.trim()
     if (!text)
-      return
+      return ''
 
     const validation = egyptianNationalId().safeParse(text)
     if (!validation.success) {
       await ctx.reply(ctx.t('error_invalid_national_id'))
-      return
+      return ''
     }
 
     // Check if National ID already exists
@@ -242,7 +239,7 @@ async function askForNationalId(conversation: Conversation<ConversationFlavor & 
 
     if (existingUser) {
       await ctx.reply(ctx.t('error_national_id_exists'))
-      return
+      return ''
     }
 
     return validation.data
