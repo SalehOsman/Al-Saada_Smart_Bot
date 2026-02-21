@@ -23,7 +23,7 @@ button_notifications = الإشعارات
 # Join Request Strings
 join_request_start = سنساعدك في تسجيل بياناتك. يرجى الإجابة على الأسئلة التالية بدقة:
 ask_full_name = ما هو اسمك الكامل باللغة العربية؟
-ask_nickname = هل تريد添加 لقب اختياري؟ (اضغط /skip للانتقال التالي)
+ask_nickname = هل تريد إضافة لقب اختياري؟ (اضغط /skip للانتقال التالي)
 nickname_info = (يمكنك تخطي هذا السؤال وسنقوم بإنشاء لقب تلقائي من اسمك)
 ask_phone_number = ما هو رقم هاتفك المصري؟ (مثال: 01xxxxxxxx)
 phone_info = (يرجى إدخال الرقم بصيغة مصرية كاملة)

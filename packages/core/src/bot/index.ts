@@ -11,6 +11,7 @@ import { errorHandler } from './middlewares/error'
 import { startHandler } from './handlers/start'
 import { menuHandler } from './handlers/menu'
 import { joinConversation } from './conversations/join'
+import { healthRouter } from '../server/health'
 
 // Create grammy bot instance using BOT_TOKEN from environment
 export const bot = new Bot<BotContext>(env.BOT_TOKEN)
@@ -45,6 +46,9 @@ bot.use(createConversation(joinConversation, 'join'))
 
 // Create Hono app instance for webhook server
 export const app = new Hono()
+
+// Health check endpoint
+app.route('/', healthRouter)
 
 // Setup webhook route to receive updates from Telegram
 app.post('/webhook', async (c) => {
