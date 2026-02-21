@@ -19,12 +19,7 @@ export async function menuHandler(ctx: BotContext) {
     const user = await prisma.user.findUnique({
       where: { telegramId },
       include: {
-        adminScopes: {
-          include: {
-            section: true,
-            module: true,
-          },
-        },
+        adminScopes: true,
       },
     })
 

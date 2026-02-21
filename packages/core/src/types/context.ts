@@ -1,13 +1,16 @@
-import { Context, SessionFlavor } from 'grammy'
-import { I18nFlavor } from '@grammyjs/i18n'
-import { HydrateFlavor } from '@grammyjs/hydrate'
-import { ConversationFlavor } from '@grammyjs/conversations'
+import type { Context, SessionFlavor } from 'grammy'
+import type { I18nFlavor } from '@grammyjs/i18n'
+import type { HydrateFlavor } from '@grammyjs/hydrate'
+import type { ConversationFlavor } from '@grammyjs/conversations'
 
 export interface SessionData {
-  currentSection?: string
-  currentModule?: string
+  userId?: number
+  role?: string
+  language?: string
+  currentSection?: string | null
+  currentModule?: string | null
   currentStep?: string
-  lastActivity?: string
+  lastActivity?: number
   __language_code?: string
 }
 

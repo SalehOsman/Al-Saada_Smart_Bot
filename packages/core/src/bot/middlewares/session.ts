@@ -1,16 +1,7 @@
-import { session, type StorageAdapter } from 'grammy'
+import { type StorageAdapter, session } from 'grammy'
 import { redis } from '../../cache/redis'
+import type { SessionData } from '../../types/context'
 import logger from '../../utils/logger'
-
-// Session data interface
-export interface SessionData {
-  userId: number | undefined
-  role: string
-  language: string
-  currentSection: string | null
-  currentModule: string | null
-  lastActivity: number
-}
 
 // Default session data
 function defaultSession(): SessionData {
@@ -30,7 +21,8 @@ const redisStorage: StorageAdapter<SessionData> = {
     try {
       const value = await redis.get(`session:${key}`)
       return value ? JSON.parse(value) : undefined
-    } catch (error) {
+    }
+    catch (error) {
       logger.error({ err: error, key }, 'Error reading session')
       return undefined
     }
@@ -39,7 +31,8 @@ const redisStorage: StorageAdapter<SessionData> = {
   async write(key: string, value: SessionData): Promise<void> {
     try {
       await redis.setex(`session:${key}`, 86400, JSON.stringify(value)) // 24h TTL
-    } catch (error) {
+    }
+    catch (error) {
       logger.error({ err: error, key }, 'Error writing session')
     }
   },
@@ -47,7 +40,8 @@ const redisStorage: StorageAdapter<SessionData> = {
   async delete(key: string): Promise<void> {
     try {
       await redis.del(`session:${key}`)
-    } catch (error) {
+    }
+    catch (error) {
       logger.error({ err: error, key }, 'Error deleting session')
     }
   },
