@@ -1,6 +1,6 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
-const EGYPTIAN_PHONE_REGEX = /^(010|011|012|015)\d{8}$/;
+const EGYPTIAN_PHONE_REGEX = /^(010|011|012|015)\d{8}$/
 
 /**
  * Creates a Zod schema for validating an Egyptian phone number.
@@ -11,12 +11,13 @@ const EGYPTIAN_PHONE_REGEX = /^(010|011|012|015)\d{8}$/;
  *
  * @returns A Zod schema for an Egyptian phone number.
  */
-export const egyptianPhoneNumber = () =>
-  z.preprocess((val) => {
+export function egyptianPhoneNumber() {
+  return z.preprocess((val) => {
     if (typeof val === 'string') {
-      return val.trim();
+      return val.trim()
     }
-    return val;
+    return val
   }, z.string().regex(EGYPTIAN_PHONE_REGEX, {
     message: 'Invalid Egyptian phone number format.',
-  }));
+  }))
+}

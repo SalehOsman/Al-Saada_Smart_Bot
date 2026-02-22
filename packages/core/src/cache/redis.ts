@@ -9,21 +9,21 @@ let redisInstance: Redis | null = null
 function getRedisInstance(): Redis {
   if (!redisInstance) {
     redisInstance = new Redis(env.REDIS_URL)
-    
+
     // Handle connection events
     redisInstance.on('connect', () => {
       logger.info('Redis connected successfully')
     })
-    
+
     redisInstance.on('error', (error) => {
       logger.error('Redis connection error:', error)
     })
-    
+
     redisInstance.on('close', () => {
       logger.info('Redis connection closed')
     })
   }
-  
+
   return redisInstance
 }
 

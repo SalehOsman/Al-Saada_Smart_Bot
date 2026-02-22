@@ -24,7 +24,7 @@ export function extractNationalIdInfo(id: string): { birthDate: Date, gender: 'M
   const year = Number.parseInt(yearPrefix + id.substring(1, 3), 10)
   const month = Number.parseInt(id.substring(3, 5), 10) - 1 // Month is 0-indexed
   const day = Number.parseInt(id.substring(5, 7), 10)
-  const genderCode = Number.parseInt(id.substring(9, 10), 10)
+  const genderCode = Number.parseInt(id.substring(12, 13), 10)
 
   // Gender is determined by odd/even of the 10th digit
   const gender = genderCode % 2 === 0 ? 'FEMALE' : 'MALE'
@@ -138,10 +138,13 @@ async function askForFullName(conversation: Conversation<ConversationFlavor & Bo
     const nextCtx = await conversation.waitFor('message:text')
     const text = nextCtx.message?.text?.trim()
 
-    if (!text) continue
+    if (!text) {
+      await ctx.reply(ctx.t('error_required_field'))
+      continue
+    }
 
     // Validate Arabic name (Unicode support)
-    const arabicNameRegex = /^[\p{L}\s\u0660-\u0669.,'-]+$/u
+    const arabicNameRegex = /^[\p{sc=Arabic}\s\u0660-\u0669.,'-]+$/u
     if (!arabicNameRegex.test(text)) {
       await ctx.reply(ctx.t('error_invalid_arabic_name'))
       continue
@@ -185,7 +188,10 @@ async function askForPhoneNumber(conversation: Conversation<ConversationFlavor &
     const nextCtx = await conversation.waitFor('message:text')
     const text = nextCtx.message?.text?.trim()
 
-    if (!text) continue
+    if (!text) {
+      await ctx.reply(ctx.t('error_required_field'))
+      continue
+    }
 
     // Validate using @al-saada/validators
     const validation = egyptianPhoneNumber().safeParse(text)
@@ -218,7 +224,10 @@ async function askForNationalId(conversation: Conversation<ConversationFlavor & 
     const nextCtx = await conversation.waitFor('message:text')
     const text = nextCtx.message?.text?.trim()
 
-    if (!text) continue
+    if (!text) {
+      await ctx.reply(ctx.t('error_required_field'))
+      continue
+    }
 
     const validation = egyptianNationalId().safeParse(text)
     if (!validation.success) {

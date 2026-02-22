@@ -1,11 +1,9 @@
-
-
 services:
   postgres:
     image: postgres:16
     container_name: al-saada-postgres
     ports:
-      - "5434:5432"
+      - '5434:5432'
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -18,7 +16,7 @@ services:
     image: redis:7-alpine
     container_name: al-saada-redis
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -29,7 +27,7 @@ services:
       dockerfile: Dockerfile
     container_name: al-saada-bot
     ports:
-      - "${PORT:-3000}:3000"
+      - '${PORT:-3000}:3000'
     env_file: .env
     depends_on:
       - postgres
