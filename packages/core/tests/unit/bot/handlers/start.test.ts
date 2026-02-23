@@ -139,7 +139,10 @@ describe('Start Handler Tests (Unified Flow)', () => {
 
       await startHandler(ctx)
 
-      expect(mockLogger.error).toHaveBeenCalledWith('Error in /start handler:', expect.any(Error))
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { err: expect.any(Error) },
+        expect.stringContaining('Error in /start handler:'),
+      )
       expect(ctx.reply).toHaveBeenCalledWith('An error occurred')
     })
   })

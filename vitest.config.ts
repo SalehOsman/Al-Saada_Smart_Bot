@@ -22,6 +22,14 @@ export default defineConfig({
         '**/*.spec.ts',
         'packages/core/tests/',
       ],
+      // Phase 1: baseline thresholds — reflects current test coverage
+      // TODO: raise to 50% after join flow tests, then 80% after full suite
+      thresholds: {
+        lines: 20,
+        functions: 20,
+        branches: 20,
+        statements: 20,
+      },
     },
   },
 })
