@@ -1,6 +1,10 @@
+import type { Prisma } from '@prisma/client'
 import type { BotContext } from '../../types/context'
 import { prisma } from '../../database/prisma'
 import logger from '../../utils/logger'
+
+/** User row including adminScopes — matches the findUnique query in menuHandler */
+type MenuUser = Prisma.UserGetPayload<{ include: { adminScopes: true } }>
 
 /**
  * Handles different role-based menu displays
@@ -65,7 +69,7 @@ export async function menuHandler(ctx: BotContext) {
 /**
  * Shows menu for Super Admin users with full system access
  */
-async function showSuperAdminMenu(ctx: BotContext, user: any) {
+async function showSuperAdminMenu(ctx: BotContext, user: MenuUser) {
   const menuText = ctx.t('menu_super_admin', { name: user.fullName })
 
   // Create keyboard buttons
@@ -94,7 +98,7 @@ async function showSuperAdminMenu(ctx: BotContext, user: any) {
 /**
  * Shows menu for Admin users with management capabilities
  */
-async function showAdminMenu(ctx: BotContext, user: any) {
+async function showAdminMenu(ctx: BotContext, user: MenuUser) {
   const menuText = ctx.t('menu_admin', { name: user.fullName })
 
   // Create keyboard buttons
@@ -119,7 +123,7 @@ async function showAdminMenu(ctx: BotContext, user: any) {
 /**
  * Shows menu for Employee users with limited access
  */
-async function showEmployeeMenu(ctx: BotContext, user: any) {
+async function showEmployeeMenu(ctx: BotContext, user: MenuUser) {
   const menuText = ctx.t('menu_employee', { name: user.fullName })
 
   // Create keyboard buttons for employee-level access
@@ -139,7 +143,7 @@ async function showEmployeeMenu(ctx: BotContext, user: any) {
 /**
  * Shows menu for Visitor users with basic access
  */
-async function showVisitorMenu(ctx: BotContext, user: any) {
+async function showVisitorMenu(ctx: BotContext, user: MenuUser) {
   const menuText = ctx.t('menu_visitor', { name: user.fullName })
 
   await ctx.reply(menuText, {
