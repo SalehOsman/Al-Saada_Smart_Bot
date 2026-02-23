@@ -53,3 +53,6 @@ temp/
 .Trashes
 ehthumbs.db
 Thumbs.db
+.kilocode/
+packages/core/tsconfig.tsbuildinfo
+test-vitest.test.ts
