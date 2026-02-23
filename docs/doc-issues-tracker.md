@@ -271,12 +271,12 @@ FR-035: System MUST extract birthdate and gender from Egyptian National ID.
 
 | الرمز | العدد | النوع |
 |-------|-------|-------|
-| 🔴 | 2 | حرجة |
-| 🟠 | 4 | عالية |
-| 🟡 | 3 | متوسطة |
-| 🔵 | 1 | منخفضة |
-| ✅ | 11 | مغلقة |
-| **المجموع** | **11** | — |
+| 🔴 | 0 | حرجة مفتوحة |
+| 🟠 | 0 | عالية مفتوحة |
+| 🟡 | 1 | متوسطة مفتوحة (BUG-12) |
+| 🔵 | 3 | منخفضة مفتوحة (BUG-14, BUG-15, BUG-16) |
+| ✅ | 27 | مغلقة |
+| **المجموع** | **31** | — |
 
 ---
 
@@ -286,27 +286,27 @@ FR-035: System MUST extract birthdate and gender from Egyptian National ID.
 
 | الرمز | الكود | المشكلة | الملف | الحالة |
 |-------|-------|---------|-------|--------|
-| BUG-01 | 🔴 | Prisma Client قديم — لم يُشغَّل `prisma generate` بعد آخر migration | جميع ملفات `prisma.user` | ❌ |
-| BUG-02 | 🔴 | أسماء حقول `saveJoinRequest()` خاطئة (`userId` بدلاً من `telegramId`) | `join.ts` السطر 283 | ❌ |
-| BUG-03 | 🔴 | منطق الجنس معكوس في `extractNationalIdInfo()` | `join.ts` السطر 29 | ❌ |
-| BUG-04 | 🔴 | `main.ts` فارغ — البوت لا يعمل أبداً | `packages/core/src/main.ts` | ❌ |
-| BUG-05 | 🟠 | زر التأكيد يُرسل `callback_query` لكن الكود ينتظر `message.text` | `join.ts` السطران 108-122 | ❌ |
-| BUG-06 | 🟠 | `bot.conversation()` غير موجودة في grammY API | `bot/index.ts` السطر 44 | ❌ |
-| BUG-07 | 🟠 | `menu.ts` يستعلم عن علاقات غير موجودة في الـ Schema | `menu.ts` السطران 23-26 | ❌ |
-| BUG-08 | 🟡 | `SessionData` معرّف مرتين بحقول متعارضة | `context.ts` و `session.ts` | ❌ |
-| BUG-09 | 🟡 | حرف صيني مختلط في `ar.ftl` السطر 26 | `ar.ftl` | ❌ |
-| BUG-10 | 🟡 | مقارنة `INITIAL_SUPER_ADMIN_ID` غير آمنة للـ BigInt | `start.ts` السطر 34 | ❌ |
+| BUG-01 | 🔴 | Prisma Client قديم — لم يُشغَّل `prisma generate` بعد آخر migration | جميع ملفات `prisma.user` | ✅ |
+| BUG-02 | 🔴 | أسماء حقول `saveJoinRequest()` خاطئة (`userId` بدلاً من `telegramId`) | `join.ts` | ✅ |
+| BUG-03 | 🔴 | منطق الجنس معكوس في `extractNationalIdInfo()` | `national-id.ts` | ✅ |
+| BUG-04 | 🔴 | `main.ts` فارغ — البوت لا يعمل أبداً | `packages/core/src/main.ts` | ✅ |
+| BUG-05 | 🟠 | زر التأكيد يُرسل `callback_query` لكن الكود ينتظر `message.text` | `join.ts` | ✅ |
+| BUG-06 | 🟠 | `bot.conversation()` غير موجودة في grammY API | `bot/index.ts` | ✅ |
+| BUG-07 | 🟠 | `menu.ts` يستعلم عن علاقات غير موجودة في الـ Schema | `menu.ts` | ✅ |
+| BUG-08 | 🟡 | `SessionData` معرّف مرتين بحقول متعارضة | `context.ts` و `session.ts` | ✅ |
+| BUG-09 | 🟡 | حرف صيني مختلط في `ar.ftl` السطر 26 | `ar.ftl` | ✅ |
+| BUG-10 | 🟡 | مقارنة `INITIAL_SUPER_ADMIN_ID` غير آمنة للـ BigInt | `start.ts` | ✅ |
 | BUG-11 | 🟡 | `healthRouter` غير مُربوط بالـ Hono App | `bot/index.ts` | ✅ |
 | BUG-12 | 🟡 | `menu.ts` يستخدم `any` للمستخدم | `menu.ts` | ❌ |
-| BUG-13 | 🟡 | `egyptianNationalId()` غير مُستخدم — regex بسيط بدلاً منه | `join.ts` السطر 233 | ❌ |
+| BUG-13 | 🟡 | `egyptianNationalId()` غير مُستخدم — regex بسيط بدلاً منه | `join.ts` | ✅ |
 | BUG-14 | 🔵 | `vitest.config.ts` لا يُطبّق حد الـ 80% coverage | `vitest.config.ts` | ❌ |
 | BUG-15 | 🔵 | `packages/validators` مُستثنى من نطاق الـ Coverage | `vitest.config.ts` | ❌ |
 | BUG-16 | 🔵 | T025-B (Skills Verification) لم تُنفَّذ | `tasks.md` | ❌ |
-| ARC-01 | 🟠 | `extractNationalIdInfo` مكررة في `join.ts` بدلاً من استيرادها من validators | `join.ts` + `national-id.ts` | ❌ |
-| ARC-02 | 🟠 | `join.ts` يكتب مباشرة لقاعدة البيانات بدلاً من `JoinRequestService` | `join.ts` | ❌ |
-| ARC-03 | 🟡 | `national-id.ts` لا يُصدّر `extractNationalIdInfo` | `packages/validators/src/national-id.ts` | ❌ |
-| SYN-01 | 🟡 | T025-T027 منفّذة في الكود لكن مُعلَّمة `[ ]` في tasks.md | `tasks.md` | ❌ |
-| SYN-02 | 🔵 | T083 مسماة "إنشاء" والأدوات موجودة — يجب تسميتها "توسيع/دمج" | `tasks.md` | ❌ |
+| ARC-01 | 🟠 | `extractNationalIdInfo` مكررة في `join.ts` بدلاً من استيرادها من validators | `join.ts` + `national-id.ts` | ✅ |
+| ARC-02 | 🟠 | `join.ts` يكتب مباشرة لقاعدة البيانات بدلاً من `JoinRequestService` | `join.ts` | ✅ |
+| ARC-03 | 🟡 | `national-id.ts` لا يُصدّر `extractNationalIdInfo` | `packages/validators/src/national-id.ts` | ✅ |
+| SYN-01 | 🟡 | T025-T027 منفّذة في الكود لكن مُعلَّمة `[ ]` في tasks.md | `tasks.md` | ✅ |
+| SYN-02 | 🔵 | T083 مسماة "إنشاء" والأدوات موجودة — يجب تسميتها "توسيع/دمج" | `tasks.md` | ✅ |
 
 ---
 
@@ -345,5 +345,11 @@ FR-035: System MUST extract birthdate and gender from Egyptian National ID.
 | 2026-02-23 | DOC-011 — Bootstrap Flow: تعارض بين FR-014 و US1 | إضافة 4a و 4b في FR-014 لتوضيح محادثة جمع البيانات قبل إنشاء Super Admin | المستشار التقني |
 
 ---
+
+| 2026-02-24 | BUG-01،04،06،08 | إصلاح البنية التحتية: main.ts، session، bot/index، Prisma | تدفق تطوير جلسات سابقة |
+| 2026-02-24 | BUG-02،03،05،07،09،10 | إصلاح join.ts: حقول DB، callback handling، BigInt، ar.ftl | تدفق تطوير جلسات سابقة |
+| 2026-02-24 | BUG-13، ARC-01، ARC-02، ARC-03 | استخدام `@al-saada/validators` في join.ts + تفريغ `user-inputs.ts` لـ bot/utils | إنشاء bot/utils (T088-T091) |
+| 2026-02-24 | SYN-01، SYN-02 | تحديث tasks.md ليعكس الواقع: T088-T091 مضافة، حالات محدّثة | إنشاء bot/utils (T088-T091) |
+| 2026-02-24 | overview.md | تحديث حالة المشروع، إضافة bot/utils، بنية الملفات، مبدأ i18n-Only | مراجعة توثيقية 2026-02-24 |
 
 *يُحدَّث هذا الملف بعد كل إصلاح توثيقي*

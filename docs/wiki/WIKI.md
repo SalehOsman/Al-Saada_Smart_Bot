@@ -12,5 +12,9 @@
 2. [نظام الوحدات (Modules System)](./modules.md)
    * مبدأ Config-First
    * كيفية بناء وحدة جديدة (Flow Blocks)
+3. [أدوات المحادثة المشتركة (Shared Bot Utilities)](./bot-utils.md)
+   * conversation.ts — تتبع الرسائل وأدوات الانتظار
+   * user-inputs.ts — جامعات المدخلات المصرية
+   * formatters.ts — المنسقات ومفاتيح i18n
 
 *(تُحدّث هذه القائمة باستمرار مع تقدم مراحل المشروع)*
