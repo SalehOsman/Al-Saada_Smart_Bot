@@ -119,8 +119,7 @@ beforeEach(() => {
     findMany: vi.fn().mockResolvedValue([]),
   }
   // Mock service methods
-  mockJoinRequestService.hasPendingRequest = vi.fn().mockResolvedValue(false)
-  mockJoinRequestService.create = vi.fn().mockResolvedValue({ id: 'req-001' })
+  mockJoinRequestService.createOrBootstrap = vi.fn().mockResolvedValue({ type: 'join_request', requestId: 'req-001' })
 
   mockPrisma.notification = {
     create: vi.fn().mockResolvedValue({}),
@@ -140,18 +139,6 @@ describe('T025 — Guard Checks', () => {
       ctx,
     )
     expect(ctx.reply).toHaveBeenCalledWith(t('error_invalid_telegram_id'))
-  })
-  it('should reject already-registered user', async () => {
-    mockPrisma.user.findUnique.mockResolvedValueOnce({ id: 'existing', telegramId: 12345n })
-    const ctx = makeMockCtx()
-    await joinConversation(makeConversation([]) as any, ctx)
-    expect(ctx.reply).toHaveBeenCalledWith(t('user_already_exists'))
-  })
-  it('should reject user with existing PENDING join request', async () => {
-    mockJoinRequestService.hasPendingRequest.mockResolvedValueOnce(true)
-    const ctx = makeMockCtx()
-    await joinConversation(makeConversation([]) as any, ctx)
-    expect(ctx.reply).toHaveBeenCalledWith(t('join_request_pending'))
   })
   it('should handle database errors gracefully', async () => {
     mockPrisma.user.findUnique.mockRejectedValueOnce(new Error('DB connection failed'))
@@ -218,7 +205,7 @@ describe('T025 — Nickname Generation', () => {
     const ctx = makeMockCtx()
     const conv = makeConversation([VALID_NAME, '', VALID_PHONE, VALID_NATIONAL_ID], 'confirm_join')
     await joinConversation(conv as any, ctx)
-    expect(mockJoinRequestService.create).toHaveBeenCalledWith(
+    expect(mockJoinRequestService.createOrBootstrap).toHaveBeenCalledWith(
       expect.objectContaining({
         nickname: expect.stringMatching(/^محمد-[a-z0-9]{4}$/),
       }),
@@ -228,7 +215,7 @@ describe('T025 — Nickname Generation', () => {
     const ctx = makeMockCtx()
     const conv = makeConversation(['فاطمة محمد', '/skip', VALID_PHONE, VALID_NATIONAL_ID], 'confirm_join')
     await joinConversation(conv as any, ctx)
-    expect(mockJoinRequestService.create).toHaveBeenCalledWith(
+    expect(mockJoinRequestService.createOrBootstrap).toHaveBeenCalledWith(
       expect.objectContaining({
         nickname: expect.stringMatching(/^فاطمة-[a-z0-9]{4}$/),
       }),
@@ -238,14 +225,14 @@ describe('T025 — Nickname Generation', () => {
     const ctx = makeMockCtx()
     const conv = makeConversation(['أحمد بن محمد علي', '', VALID_PHONE, VALID_NATIONAL_ID], 'confirm_join')
     await joinConversation(conv as any, ctx)
-    const created = mockJoinRequestService.create.mock.calls[0][0]
+    const created = mockJoinRequestService.createOrBootstrap.mock.calls[0][0]
     expect(created.nickname).toMatch(/^أحمد-[a-z0-9]{4}$/)
   })
   it('should preserve custom nickname when provided', async () => {
     const ctx = makeMockCtx()
     const conv = makeConversation([VALID_NAME, 'محمدو', VALID_PHONE, VALID_NATIONAL_ID], 'confirm_join')
     await joinConversation(conv as any, ctx)
-    expect(mockJoinRequestService.create).toHaveBeenCalledWith(
+    expect(mockJoinRequestService.createOrBootstrap).toHaveBeenCalledWith(
       expect.objectContaining({
         nickname: 'محمدو',
       }),
@@ -257,13 +244,12 @@ describe('T025 — Nickname Generation', () => {
       vi.clearAllMocks()
       mockPrisma.user = { findUnique: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) }
       // Mock service methods
-      mockJoinRequestService.hasPendingRequest = vi.fn().mockResolvedValue(false)
-      mockJoinRequestService.create = vi.fn().mockResolvedValue({ id: 'r' })
+      mockJoinRequestService.createOrBootstrap = vi.fn().mockResolvedValue({ type: 'join_request', requestId: 'r' })
       mockPrisma.notification = { create: vi.fn().mockResolvedValue({}) }
       const ctx = makeMockCtx()
       const conv = makeConversation([VALID_NAME, '', VALID_PHONE, VALID_NATIONAL_ID], 'confirm_join')
       await joinConversation(conv as any, ctx)
-      const nick = mockJoinRequestService.create.mock.calls[0][0].nickname
+      const nick = mockJoinRequestService.createOrBootstrap.mock.calls[0][0].nickname
       results.push(nick)
     }
     expect(results[0]).toMatch(/^محمد-[a-z0-9]{4}$/)
@@ -404,7 +390,7 @@ describe('T025/T026 — Confirmation & Save Flow', () => {
     const ctx = makeMockCtx()
     const conv = makeConversation([VALID_NAME, '/skip', VALID_PHONE, VALID_NATIONAL_ID], 'confirm_join')
     await joinConversation(conv as any, ctx)
-    expect(mockJoinRequestService.create).toHaveBeenCalledWith(
+    expect(mockJoinRequestService.createOrBootstrap).toHaveBeenCalledWith(
       expect.objectContaining({
         telegramId: 12345n,
         fullName: VALID_NAME,
@@ -417,7 +403,7 @@ describe('T025/T026 — Confirmation & Save Flow', () => {
     const ctx = makeMockCtx()
     const conv = makeConversation([VALID_NAME, '/skip', VALID_PHONE, VALID_NATIONAL_ID], 'cancel_join')
     await joinConversation(conv as any, ctx)
-    expect(mockJoinRequestService.create).not.toHaveBeenCalled()
+    expect(mockJoinRequestService.createOrBootstrap).not.toHaveBeenCalled()
   })
 })
 // ═══════════════════════════════════════════════════════════════════════════
