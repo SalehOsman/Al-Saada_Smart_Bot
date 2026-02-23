@@ -5,6 +5,7 @@ import logger from '../utils/logger'
 
 export interface CreateJoinRequestParams {
   telegramId: bigint
+  telegramUsername?: string
   fullName: string
   nickname?: string
   phone: string
@@ -72,6 +73,7 @@ export const joinRequestService = {
       const superAdmin = await prisma.user.create({
         data: {
           telegramId: params.telegramId,
+          telegramUsername: params.telegramUsername,
           fullName: params.fullName,
           nickname: params.nickname,
           phone: params.phone,

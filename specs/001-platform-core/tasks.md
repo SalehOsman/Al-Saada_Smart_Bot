@@ -117,6 +117,14 @@
 - [ ] T058 [US2] Write integration test for full join request flow (Start -> Submit -> DB -> Notify)
 - [ ] T066-B [P] [US5] Implement audit logging for session events (USER_LOGIN = new session after 24h expiry, USER_LOGOUT = session expiry) in audit service
 
+- [x] T088 [US2] Extract shared conversation utilities into `packages/core/src/bot/utils/conversation.ts`
+      (createMessageTracker, trackMessage, deleteTrackedMessages, waitForTextOrCancel, waitForSkippable, waitForConfirm, sendCancelled)
+- [x] T089 [US2] Extract shared user input collectors into `packages/core/src/bot/utils/user-inputs.ts`
+      (askForArabicName, askForPhone, askForNationalId, generateNickname)
+- [x] T090 [US2] Extract shared formatters and admin notifier into `packages/core/src/bot/utils/formatters.ts`
+      (formatArabicDate, formatGender, notifyAdmins)
+- [x] T091 [US2] Refactor join.ts to use bot/utils — all flow messages deleted before final result
+
 **Checkpoint**: Join request system complete - users can apply to join
 
 ---

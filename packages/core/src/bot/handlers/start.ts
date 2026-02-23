@@ -38,7 +38,7 @@ export async function startHandler(ctx: BotContext) {
     await ctx.conversation.enter('join')
   }
   catch (error) {
-    logger.error('Error in /start handler:', error)
+    logger.error({ err: error }, `Error in /start handler: ${String(error)}`)
     return ctx.reply(ctx.t('error_generic'))
   }
 }

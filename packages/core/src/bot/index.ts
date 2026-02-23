@@ -33,6 +33,9 @@ bot.use(i18n)
 // Conversations plugin for multi-step flows
 bot.use(conversations())
 
+// Register join conversation (must be registered before any handlers)
+bot.use(createConversation(joinConversation, 'join'))
+
 // --- Handlers ---
 
 // /start command
@@ -41,8 +44,11 @@ bot.command('start', startHandler)
 // /menu command
 bot.command('menu', menuHandler)
 
-// Register join conversation
-bot.use(createConversation(joinConversation, 'join'))
+// Handle "submit join request" button (shown after cancellation)
+bot.callbackQuery('start_join', async (ctx) => {
+  await ctx.answerCallbackQuery()
+  await ctx.conversation.enter('join')
+})
 
 // Create Hono app instance for webhook server
 export const app = new Hono()

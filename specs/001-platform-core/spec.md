@@ -212,7 +212,9 @@ System tracks user actions and maintains session state.
 
 4. **Bilingual Support**: Arabic (primary) and English (secondary) UI and validation messages required.
 
-5. **Flow Block Reusability**: UI components must be reusable across modules with configurable parameters.
+5. **i18n-Only User Text (No Hardcoded Strings)**: All user-facing text — including messages, labels, button captions, error messages, and status strings — MUST be defined exclusively in `.ftl` locale files (`packages/core/src/locales/ar.ftl` and `en.ftl`). Hardcoding any user-facing string (Arabic or English) directly in TypeScript source files is strictly prohibited. Code must reference translation keys via `ctx.t('key')`. Functions that format or classify data (e.g., gender, status) MUST return i18n keys, not display text. This rule applies to all packages across the entire monorepo.
+
+6. **Flow Block Reusability**: UI components must be reusable across modules with configurable parameters.
 
 ## Success Criteria *(mandatory)*
 

@@ -28,7 +28,7 @@ join_welcome =
     We need some information to complete your join request.
     
     You can cancel at any time by sending /cancel
-    ────────────────────
+    ────────────────
 
 join_step_name =
     📝 Step 1 of 4
@@ -39,11 +39,10 @@ join_step_name =
 join_step_nickname =
     ✏️ Step 2 of 4
     
-    Would you like to choose a nickname?
+    Would you like to choose a display name (nickname)?
     It will be used to identify you in the system.
     
-    - Enter your nickname, or
-    - Send /skip to auto-generate it from your name
+    Enter a name, or press "Skip" to auto-generate one
 
 join_step_phone =
     📱 Step 3 of 4
@@ -58,16 +57,14 @@ join_step_national_id =
 
 join_confirm =
     ✅ Review Your Join Request
-    
-    ────────────────────
-    👤 Full Name      : { $fullName }
-    🏷️ Nickname       : { $nickname }
-    📱 Phone          : { $phone }
-    🪪 National ID    : { $nationalId }
-    🎂 Birth Date     : { $birthDate }
-    ⚧️ Gender         : { $gender }
-    ────────────────────
-    
+    ────────────────
+    👤 Full Name    : { $fullName }
+    🏷️ Display Name : { $nickname }
+    📱 Phone        : { $phone }
+    🪪 National ID  : { $nationalId }
+    🎂 Birth Date   : { $birthDate }
+    ⚧️ Gender       : { $gender }
+    ────────────────
     This is the data that will be saved in the system.
     Do you confirm submitting the request?
 
@@ -82,18 +79,20 @@ join_request_already_pending =
 join_request_received =
     📨 Your Request Has Been Sent!
     
-    ────────────────────
-    Request No.   : #{ $requestCode }
-    Status        : ⏳ Under Review
-    Date Sent     : { $date }
-    ────────────────────
+    ────────────────
+    Request : #{ $requestCode }
+    Status  : ⏳ Under Review
+    Date    : { $date }
+    ────────────────
     
     Your request will be reviewed by the administration.
     You will receive a message once a decision is made. 🔔
 
 join_cancelled =
-    Join request cancelled.
-    You can try again at any time by sending /start
+    ⛔️ Join request cancelled.
+    You can submit a new request at any time.
+
+button_submit_join_request = 📝 Submit Join Request
 
 welcome_super_admin_new =
     🎉 Welcome, Super Admin!
@@ -104,23 +103,23 @@ welcome_super_admin_new =
 join_approved =
     🎉 Congratulations! Your Request Has Been Approved
     
-    ────────────────────
-    Status   : ✅ Approved
-    Role     : { $role }
-    By       : { $approvedBy }
-    Date     : { $date }
-    ────────────────────
+    ────────────────
+    Status  : ✅ Approved
+    Role    : { $role }
+    By      : { $approvedBy }
+    Date    : { $date }
+    ────────────────
     
     Send /start to access your account now. 👇
 
 join_rejected =
     We regret to inform you that your request was not approved
     
-    ────────────────────
-    Status   : ❌ Rejected
-    By       : { $rejectedBy }
-    Date     : { $date }
-    ────────────────────
+    ────────────────
+    Status  : ❌ Rejected
+    By      : { $rejectedBy }
+    Date    : { $date }
+    ────────────────
     
     For inquiries, please contact the administration.
 
@@ -148,6 +147,8 @@ error_national_id_exists =
 
 button_confirm = Confirm
 button_cancel = Cancel
+button_skip_nickname = Skip <-
+button_cancel_flow = ❌ Cancel
 
 user_inactive = Your account is currently inactive. Please contact an administrator.
 user_already_exists = You have already registered.
@@ -155,6 +156,11 @@ join_request_pending = You already have a pending join request.
 error_invalid_telegram_id = Invalid Telegram ID.
 error_required_field = This field is required.
 error_name_too_short = Name is too short. Please enter your full name.
+
+gender_male = Male
+gender_female = Female
+gender_unknown = Unknown
+value_unknown = Unknown
 
 notification_join_request_title = New Join Request
 notification_join_request_message = You have a new join request from: { $name } - { $phone }

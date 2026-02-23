@@ -10,7 +10,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "tsx packages/core/src/main.ts",
+    "dev": "tsx --env-file=.env packages/core/src/main.ts",
     "dev:watch": "tsx watch packages/core/src/main.ts",
     "build": "tsup packages/core/src/main.ts --format esm --dts",
     "test": "vitest",

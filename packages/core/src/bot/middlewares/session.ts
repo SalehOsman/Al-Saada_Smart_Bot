@@ -9,6 +9,7 @@ function defaultSession(): SessionData {
     userId: undefined,
     role: 'VISITOR',
     language: 'ar',
+    __language_code: 'ar',
     currentSection: null,
     currentModule: null,
     lastActivity: Date.now(),
