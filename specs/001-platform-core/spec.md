@@ -19,7 +19,8 @@ These components are configured in module flow definitions and implemented as pa
 ### ModuleConfig
 TypeScript interface defining a module's structure, standard fields, and flow steps. Includes:
 - name and nameEn (bilingual module names)
-- sectionId (links to organizational section)
+- slug (unique identifier for the module)
+- sectionSlug (links to organizational section)
 - icon (emoji for menu display)
 - configPath (path to module configuration file)
 - isActive (enable/disable toggle)
@@ -179,6 +180,12 @@ System tracks user actions and maintains session state.
   > **Note**: RTL rendering is handled natively by Telegram's message display. No custom RTL implementation is required in the bot code.
 - **FR-032**: System MUST retain notification history for 90 days. Notifications older than 90 days are automatically purged by a scheduled cron job.
 - **FR-033**: System MUST validate and sanitize all user input to prevent injection attacks (XSS, SQLi).
+- **FR-035**: System MUST extract the following data from the Egyptian National ID (14 digits) during join request submission:
+  - **Century**: Digit 1 — `2` = born 1900s, `3` = born 2000s
+  - **Birthdate**: Digits 2-7 — format `YYMMDD`
+  - **Gender**: Digit 9 — odd number = MALE, even number = FEMALE
+  - Extraction is handled by `@al-saada/validators` package (`egyptianNationalId()` in `packages/validators/src/national-id.ts`).
+  - Any extraction failure MUST be caught and replied to user with Arabic error message.
 
 ### Key Entities *(include if feature involves data)*
 
