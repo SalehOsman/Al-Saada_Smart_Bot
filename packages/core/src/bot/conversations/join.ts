@@ -24,16 +24,6 @@ export async function joinConversation(conversation: Conversation<ConversationFl
   }
 
   try {
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { telegramId },
-    })
-
-    if (existingUser) {
-      await ctx.reply(ctx.t('user_already_exists'))
-      return
-    }
-
     // Start the join request conversation flow
     await ctx.reply(ctx.t('join_welcome'))
 
