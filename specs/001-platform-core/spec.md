@@ -152,20 +152,17 @@ System tracks user actions and maintains session state.
   - `015` → WE (Telecom Egypt)
   Regex: `/^(010|011|012|015)\d{8}$/`. Validation is handled by `@al-saada/validators` package (`egyptianPhoneNumber()` in `packages/validators/src/phone.ts`). Error message must be shown in Arabic.
 - **FR-013**: System MUST notify all Super Admins about new join requests
-- **FR-014 (Bootstrap Lock)**: The system MUST implement the bootstrap lock mechanism as follows:
-  1. On every `/start` command, query `COUNT(*) FROM users WHERE role = 'SUPER_ADMIN'`
-  2. The bootstrap is eligible ONLY IF count === 0 AND `INITIAL_SUPER_ADMIN_ID` is defined in `.env`
-  3. The comparison MUST use BigInt-safe equality: `BigInt(env.INITIAL_SUPER_ADMIN_ID) === telegramId` to prevent precision loss for large Telegram IDs (> 2^53)
-  4. If eligible: create user with `SUPER_ADMIN` role, write audit log action `USER_BOOTSTRAP` immediately after creation
-  4a. Bootstrap Conversation: After eligibility is confirmed, the system MUST start a grammY conversation to collect:
-      - Full Name (Arabic, required)
-      - National ID (14-digit Egyptian format, required — extract birthdate and gender via FR-035)
-      - Nickname (optional — auto-generated if empty: firstName + 4-char nanoid)
-      Only after successful data collection does the system create the SUPER_ADMIN user and write the USER_BOOTSTRAP audit log.
-  4b. If the user cancels or sends invalid data 3 times during bootstrap conversation, the conversation ends with an Arabic error message. Bootstrap remains eligible for the next /start attempt.
-  5. If count > 0: bootstrap is permanently disabled — skip `.env` check entirely
-  6. If `INITIAL_SUPER_ADMIN_ID` is undefined: skip bootstrap, route to join-request flow
-  7. Any failure during bootstrap MUST be caught, logged via Pino, and replied to user with Arabic error message
+- **FR-014 (Bootstrap Lock - Unified Flow)**: The system MUST implement the bootstrap lock mechanism as part of the unified join conversation flow:
+  1. On every `/start` command, the handler checks: (a) existing user by telegramId → show menu, (b) pending join request → show pending message, (c) otherwise → enter join conversation
+  2. Bootstrap eligibility is evaluated INSIDE `joinRequestService.createOrBootstrap()` AFTER data collection is complete
+  3. The bootstrap check: `COUNT(*) FROM users WHERE role = 'SUPER_ADMIN'` === 0 AND `BigInt(env.INITIAL_SUPER_ADMIN_ID) === telegramId`
+  4. The comparison MUST use BigInt-safe equality to prevent precision loss for large Telegram IDs (> 2^53)
+  5. If bootstrap eligible: `createOrBootstrap()` creates user with `SUPER_ADMIN` role and writes audit log action `USER_BOOTSTRAP`, returns `{ type: 'bootstrap' }`
+  6. If not bootstrap eligible: `createOrBootstrap()` creates a PENDING join request, returns `{ type: 'join_request', requestId }`
+  7. The join conversation handles both return types: bootstrap → show super admin welcome, join_request → show request received with requestCode
+  8. If `INITIAL_SUPER_ADMIN_ID` is undefined: bootstrap is skipped, all users go through join request flow
+  9. Any failure during the process MUST be caught, logged via Pino, and replied to user with Arabic error message
+  10. NO separate bootstrap conversation exists — the join conversation handles both cases uniformly
 - **FR-015**: System MUST implement RBAC with 4 roles: SUPER_ADMIN, ADMIN, EMPLOYEE, VISITOR
 - **FR-016**: System MUST check user role before processing any action
 - **FR-017**: System MUST implement AdminScope table for scoped permissions (sections/modules)

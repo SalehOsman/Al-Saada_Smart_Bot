@@ -94,9 +94,9 @@
 
 - [x] T022-A [US1] Update prisma/schema.prisma logic for User and JoinRequest based on the new spec (FR-014, FR-035)
 - [x] T022 [US1] Create /start command handler with user lookup logic in `packages/core/src/bot/handlers/start.ts`
-- [x] T022-B [US1] Implement FR-014 Bootstrap Lock security logic (check 0 admins + env var)
+- [x] T022-B [US1] Implement FR-014 Bootstrap Lock security logic inside `joinRequestService.createOrBootstrap()` (check 0 admins + env var)
 - [x] T023 [US1] Implement .env-based Super Admin bootstrap logic using `INITIAL_SUPER_ADMIN_ID`
-- [ ] T023-B [US1] Create Super Admin bootstrap conversation in `packages/core/src/bot/conversations/bootstrap.ts` — collect Full Name, National ID (with FR-035 extraction), optional Nickname. Done when: Super Admin account is created only after successful data collection.
+- [x] T023-B [US1] Bootstrap logic moved to `joinRequestService.createOrBootstrap()` — no separate bootstrap conversation needed. Unified join conversation handles both bootstrap and regular join request cases.
 - [x] T024 [US1] Create welcome message handler for existing users
 
 **Checkpoint**: User & Auth system complete - user registration flow functional
@@ -109,12 +109,13 @@
 
 ### Join Request Implementation
 
-- [ ] T025 [US2] Create join request conversation flow in `packages/core/src/bot/conversations/join.ts` (Full Name, Phone, National ID)
-- [ ] T025-B [US2] Verify National ID extraction and validation (FR-035) and Phone validation (FR-034) with unit tests
-- [ ] T026 [US2] Save join request to database with PENDING status in `packages/core/src/services/join-requests.ts`
+- [x] T025 [US2] Create join request conversation flow in `packages/core/src/bot/conversations/join.ts` (Full Name, Phone, National ID)
+- [x] T025-B [US2] Verify National ID extraction and validation (FR-035) and Phone validation (FR-034) with unit tests
+- [x] T026 [US2] Save join request to database with PENDING status using `joinRequestService` in `packages/core/src/services/join-requests.ts`
 - [ ] T027 [US2] Trigger notification to Super Admins about new join request (uses Notification Service)
-- [ ] T028 [US2] Implement "pending approval" response logic for returning visitors in `packages/core/src/bot/handlers/start.ts`
+- [x] T028 [US2] Implement "pending approval" response logic for returning visitors in `packages/core/src/bot/handlers/start.ts`
 - [ ] T058 [US2] Write integration test for full join request flow (Start -> Submit -> DB -> Notify)
+- [ ] T066-B [P] [US5] Implement audit logging for session events (USER_LOGIN = new session after 24h expiry, USER_LOGOUT = session expiry) in audit service
 
 **Checkpoint**: Join request system complete - users can apply to join
 

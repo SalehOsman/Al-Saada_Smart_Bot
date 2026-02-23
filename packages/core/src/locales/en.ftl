@@ -21,22 +21,130 @@ button_modules = Modules
 button_notifications = Notifications
 
 # Join Request Strings
-join_request_start = We'll help you register your information. Please answer the following questions accurately:
-ask_full_name = What is your full name in Arabic?
-ask_nickname = Would you like to add an optional nickname? (Type /skip to continue)
-nickname_info = (You can skip this question and we'll automatically generate a nickname from your name)
-ask_phone_number = What is your Egyptian phone number? (Example: 01xxxxxxxx)
-phone_info = (Please enter the complete Egyptian number format)
-ask_national_id = What is your Egyptian National ID number?
-national_id_info = (Please enter the 14-digit number)
+join_welcome =
+    👋 Welcome to Al-Saada Smart Bot!
+    
+    You are not recognized in the system.
+    We need some information to complete your join request.
+    
+    You can cancel at any time by sending /cancel
+    ────────────────────
 
-join_request_confirm = Confirm your join request details:
-- Name: { $name }
-- Nickname: { $nickname }
-- Phone: { $phone }
-- National ID: { $nationalId }
-- Birth Date: { $birthDate }
-- Gender: { $gender }
+join_step_name =
+    📝 Step 1 of 4
+    
+    Please enter your full name in Arabic.
+    Example: Ahmed Mohamed Abdullah
+
+join_step_nickname =
+    ✏️ Step 2 of 4
+    
+    Would you like to choose a nickname?
+    It will be used to identify you in the system.
+    
+    - Enter your nickname, or
+    - Send /skip to auto-generate it from your name
+
+join_step_phone =
+    📱 Step 3 of 4
+    
+    Enter your Egyptian phone number.
+    Accepted numbers start with: 010 / 011 / 012 / 015
+
+join_step_national_id =
+    🪪 Step 4 of 4
+    
+    Enter your Egyptian National ID (14 digits).
+
+join_confirm =
+    ✅ Review Your Join Request
+    
+    ────────────────────
+    👤 Full Name      : { $fullName }
+    🏷️ Nickname       : { $nickname }
+    📱 Phone          : { $phone }
+    🪪 National ID    : { $nationalId }
+    🎂 Birth Date     : { $birthDate }
+    ⚧️ Gender         : { $gender }
+    ────────────────────
+    
+    This is the data that will be saved in the system.
+    Do you confirm submitting the request?
+
+join_request_already_pending =
+    ⏳ Your Request is Under Review
+    
+    Your join request was received on { $date }
+    and is now awaiting admin review.
+    
+    You will be notified once a decision is made. 🔔
+
+join_request_received =
+    📨 Your Request Has Been Sent!
+    
+    ────────────────────
+    Request No.   : #{ $requestCode }
+    Status        : ⏳ Under Review
+    Date Sent     : { $date }
+    ────────────────────
+    
+    Your request will be reviewed by the administration.
+    You will receive a message once a decision is made. 🔔
+
+join_cancelled =
+    Join request cancelled.
+    You can try again at any time by sending /start
+
+welcome_super_admin_new =
+    🎉 Welcome, Super Admin!
+    
+    You have been successfully registered as the system's primary administrator.
+    You can now manage all sections and employees.
+
+join_approved =
+    🎉 Congratulations! Your Request Has Been Approved
+    
+    ────────────────────
+    Status   : ✅ Approved
+    Role     : { $role }
+    By       : { $approvedBy }
+    Date     : { $date }
+    ────────────────────
+    
+    Send /start to access your account now. 👇
+
+join_rejected =
+    We regret to inform you that your request was not approved
+    
+    ────────────────────
+    Status   : ❌ Rejected
+    By       : { $rejectedBy }
+    Date     : { $date }
+    ────────────────────
+    
+    For inquiries, please contact the administration.
+
+error_invalid_arabic_name =
+    The name must be in Arabic and contain at least two characters.
+    Try again 👇
+
+error_invalid_phone =
+    Invalid phone number ❌
+    Must be 11 digits starting with 010, 011, 012, or 015
+    Try again 👇
+
+error_phone_exists =
+    This phone number is already registered in the system ❌
+    If you have an account, please contact the administration.
+
+error_invalid_national_id =
+    Invalid National ID ❌
+    Must be exactly 14 digits.
+    Try again 👇
+
+error_national_id_exists =
+    This National ID is already registered in the system ❌
+    If you have an account, please contact the administration.
 
 button_confirm = Confirm
 button_cancel = Cancel
@@ -46,16 +154,7 @@ user_already_exists = You have already registered.
 join_request_pending = You already have a pending join request.
 error_invalid_telegram_id = Invalid Telegram ID.
 error_required_field = This field is required.
-error_invalid_arabic_name = Please enter a valid Arabic name.
 error_name_too_short = Name is too short. Please enter your full name.
-error_invalid_phone = Please enter a valid Egyptian phone number.
-error_phone_exists = This phone number is already registered.
-error_invalid_national_id = Please enter a valid Egyptian National ID (14 digits).
-error_national_id_exists = This National ID is already registered.
-
-join_request_saved = Join request saved successfully! You will receive a message when reviewed.
-join_request_cancelled = Join request cancelled.
-join_request_complete = Registration process completed. Thank you!
 
 notification_join_request_title = New Join Request
 notification_join_request_message = You have a new join request from: { $name } - { $phone }

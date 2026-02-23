@@ -1,9 +1,10 @@
 import { customAlphabet } from 'nanoid'
-import { egyptianNationalId, egyptianPhoneNumber } from '@al-saada/validators'
-import type { Conversation, ConversationFlavor, createConversation } from '@grammyjs/conversations'
+import { egyptianNationalId, egyptianPhoneNumber, extractEgyptianNationalIdInfo } from '@al-saada/validators'
+import type { Conversation, ConversationFlavor } from '@grammyjs/conversations'
 import { prisma } from '../../database/prisma'
 import logger from '../../utils/logger'
 import type { BotContext } from '../../types/context'
+import { joinRequestService } from '../../services/join-requests'
 
 interface JoinRequestData {
   fullName: string
@@ -13,25 +14,6 @@ interface JoinRequestData {
   birthDate?: Date
   gender?: 'MALE' | 'FEMALE'
   confirmed: boolean
-}
-
-// Extract birth date and gender from Egyptian National ID
-export function extractNationalIdInfo(id: string): { birthDate: Date, gender: 'MALE' | 'FEMALE' } {
-  // For Egyptian IDs:
-  // - IDs starting with '2' are for people born between 1900 and 1999
-  // - IDs starting with '3' are for people born between 2000 and 2099
-  const yearPrefix = id.startsWith('2') ? '19' : '20'
-  const year = Number.parseInt(yearPrefix + id.substring(1, 3), 10)
-  const month = Number.parseInt(id.substring(3, 5), 10) - 1 // Month is 0-indexed
-  const day = Number.parseInt(id.substring(5, 7), 10)
-  const genderCode = Number.parseInt(id.substring(12, 13), 10)
-
-  // Gender is determined by odd/even of the 10th digit
-  const gender = genderCode % 2 === 0 ? 'FEMALE' : 'MALE'
-
-  const birthDate = new Date(year, month, day)
-
-  return { birthDate, gender }
 }
 
 export async function joinConversation(conversation: Conversation<ConversationFlavor & BotContext>, ctx: BotContext) {
@@ -52,21 +34,16 @@ export async function joinConversation(conversation: Conversation<ConversationFl
       return
     }
 
-    // Check if there's already a pending join request
-    const pendingRequest = await prisma.joinRequest.findFirst({
-      where: {
-        telegramId,
-        status: 'PENDING',
-      },
-    })
+    // Check if there's already a pending join request using the service
+    const hasPending = await joinRequestService.hasPendingRequest(telegramId)
 
-    if (pendingRequest) {
+    if (hasPending) {
       await ctx.reply(ctx.t('join_request_pending'))
       return
     }
 
     // Start the join request conversation flow
-    await ctx.reply(ctx.t('join_request_start'))
+    await ctx.reply(ctx.t('join_welcome'))
 
     const joinData: JoinRequestData = {
       fullName: '',
@@ -99,8 +76,8 @@ export async function joinConversation(conversation: Conversation<ConversationFl
       return
     }
 
-    // Extract info from National ID
-    const { birthDate, gender } = extractNationalIdInfo(joinData.nationalId)
+    // Extract info from National ID using shared validator logic
+    const { birthDate, gender } = extractEgyptianNationalIdInfo(joinData.nationalId)
     joinData.birthDate = birthDate
     joinData.gender = gender
 
@@ -110,18 +87,37 @@ export async function joinConversation(conversation: Conversation<ConversationFl
     // Wait for user confirmation (callback query)
     const confirmation = await conversation.waitForCallbackQuery(['confirm_join', 'cancel_join'])
     if (confirmation.match === 'confirm_join') {
-      // Save join request to database
-      await saveJoinRequest(ctx, telegramId, joinData)
-      await ctx.editMessageText(ctx.t('join_request_saved'))
-    } else {
-      await ctx.editMessageText(ctx.t('join_request_cancelled'))
-      return
+      // Use createOrBootstrap to handle both bootstrap and join request cases
+      const result = await joinRequestService.createOrBootstrap({
+        telegramId,
+        fullName: joinData.fullName,
+        nickname: joinData.nickname,
+        phone: joinData.phone,
+        nationalId: joinData.nationalId,
+        birthDate: joinData.birthDate,
+        gender: joinData.gender,
+      })
+
+      if (result.type === 'bootstrap') {
+        // Bootstrap successful - show super admin welcome
+        await ctx.editMessageText(ctx.t('welcome_super_admin_new'))
+      }
+      else {
+        // Join request created - show request received message
+        const requestCode = result.requestId.substring(0, 8).toUpperCase()
+        await ctx.editMessageText(ctx.t('join_request_received', {
+          requestCode,
+          date: new Date().toLocaleDateString('ar-EG'),
+        }))
+
+        // Notify admins about new join request
+        // TODO: T053/T054 — Replace with notificationService.queue() when BullMQ is ready. Currently writes directly to DB.
+        await notifyAdmins(ctx, joinData)
+      }
     }
-
-    // Notify admins about new join request
-    await notifyAdmins(ctx, joinData)
-
-    await ctx.reply(ctx.t('join_request_complete'))
+    else {
+      await ctx.editMessageText(ctx.t('join_cancelled'))
+    }
   }
   catch (error) {
     logger.error('Error in join conversation:', error)
@@ -134,7 +130,7 @@ export async function joinConversation(conversation: Conversation<ConversationFl
  */
 async function askForFullName(conversation: Conversation<ConversationFlavor & BotContext>, ctx: BotContext): Promise<string> {
   while (true) {
-    await ctx.reply(ctx.t('ask_full_name'))
+    await ctx.reply(ctx.t('join_step_name'))
     const nextCtx = await conversation.waitFor('message:text')
     const text = nextCtx.message?.text?.trim()
 
@@ -144,7 +140,7 @@ async function askForFullName(conversation: Conversation<ConversationFlavor & Bo
     }
 
     // Validate Arabic name (Unicode support)
-    const arabicNameRegex = /^[\p{sc=Arabic}\s\u0660-\u0669.,'-]+$/u
+    const arabicNameRegex = /^[\p{sc=Arabic}\s.,'-]+$/u
     if (!arabicNameRegex.test(text)) {
       await ctx.reply(ctx.t('error_invalid_arabic_name'))
       continue
@@ -163,8 +159,7 @@ async function askForFullName(conversation: Conversation<ConversationFlavor & Bo
  * Ask for optional nickname
  */
 async function askForNickname(conversation: Conversation<ConversationFlavor & BotContext>, ctx: BotContext, firstName: string): Promise<string | undefined> {
-  await ctx.reply(ctx.t('ask_nickname'))
-  await ctx.reply(ctx.t('nickname_info'))
+  await ctx.reply(ctx.t('join_step_nickname'))
 
   const nextCtx = await conversation.waitFor('message:text')
   const text = nextCtx.message?.text?.trim()
@@ -183,8 +178,7 @@ async function askForNickname(conversation: Conversation<ConversationFlavor & Bo
  */
 async function askForPhoneNumber(conversation: Conversation<ConversationFlavor & BotContext>, ctx: BotContext): Promise<string> {
   while (true) {
-    await ctx.reply(ctx.t('ask_phone_number'))
-    await ctx.reply(ctx.t('phone_info'))
+    await ctx.reply(ctx.t('join_step_phone'))
     const nextCtx = await conversation.waitFor('message:text')
     const text = nextCtx.message?.text?.trim()
 
@@ -219,8 +213,7 @@ async function askForPhoneNumber(conversation: Conversation<ConversationFlavor &
  */
 async function askForNationalId(conversation: Conversation<ConversationFlavor & BotContext>, ctx: BotContext): Promise<string> {
   while (true) {
-    await ctx.reply(ctx.t('ask_national_id'))
-    await ctx.reply(ctx.t('national_id_info'))
+    await ctx.reply(ctx.t('join_step_national_id'))
     const nextCtx = await conversation.waitFor('message:text')
     const text = nextCtx.message?.text?.trim()
 
@@ -253,13 +246,21 @@ async function askForNationalId(conversation: Conversation<ConversationFlavor & 
  * Show join request confirmation with extracted info
  */
 async function showJoinRequestConfirmation(conversation: Conversation<ConversationFlavor & BotContext>, ctx: BotContext, data: JoinRequestData) {
-  const confirmationText = ctx.t('join_request_confirm', {
-    name: data.fullName,
+  // Format birthDate as DD/MM/YYYY
+  const formattedBirthDate = data.birthDate
+    ? `${String(data.birthDate.getDate()).padStart(2, '0')}/${String(data.birthDate.getMonth() + 1).padStart(2, '0')}/${data.birthDate.getFullYear()}`
+    : 'غير محدد'
+
+  // Format gender in Arabic
+  const formattedGender = data.gender === 'MALE' ? 'ذكر' : 'أنثى'
+
+  const confirmationText = ctx.t('join_confirm', {
+    fullName: data.fullName,
     nickname: data.nickname || 'غير محدد',
     phone: data.phone,
     nationalId: data.nationalId,
-    birthDate: data.birthDate?.toLocaleDateString('ar-EG') || 'غير محدد',
-    gender: data.gender === 'MALE' ? 'ذكر' : 'أنثى',
+    birthDate: formattedBirthDate,
+    gender: formattedGender,
   })
 
   const keyboard = [
@@ -277,23 +278,8 @@ async function showJoinRequestConfirmation(conversation: Conversation<Conversati
 }
 
 /**
- * Save join request to database
- */
-async function saveJoinRequest(ctx: BotContext, telegramId: bigint, data: JoinRequestData) {
-  await prisma.joinRequest.create({
-    data: {
-      telegramId,
-      fullName: data.fullName,
-      nickname: data.nickname,
-      phone: data.phone,
-      nationalId: data.nationalId,
-      status: 'PENDING',
-    },
-  })
-}
-
-/**
  * Notify admins about new join request
+ * TODO: T053/T054 — Replace with notificationService.queue() when BullMQ is ready. Currently writes directly to DB.
  */
 async function notifyAdmins(ctx: BotContext, data: JoinRequestData) {
   // Get all admin users
