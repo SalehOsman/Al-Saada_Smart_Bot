@@ -124,6 +124,7 @@
 - [x] T090 [US2] Extract shared formatters and admin notifier into `packages/core/src/bot/utils/formatters.ts`
       (formatArabicDate, formatGender, notifyAdmins)
 - [x] T091 [US2] Refactor join.ts to use bot/utils — all flow messages deleted before final result
+- [ ] T092 [US2] Complete T025-B verification: add unit tests for `approveJoinRequest()`, `rejectJoinRequest()`, `getJoinRequests()` once implemented in Phase 5 (T033)
 
 **Checkpoint**: Join request system complete - users can apply to join
 

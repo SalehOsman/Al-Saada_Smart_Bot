@@ -274,7 +274,7 @@ FR-035: System MUST extract birthdate and gender from Egyptian National ID.
 | 🔴 | 0 | حرجة مفتوحة |
 | 🟠 | 0 | عالية مفتوحة |
 | 🟡 | 0 | متوسطة مفتوحة |
-| 🔵 | 2 | منخفضة مفتوحة (BUG-15, BUG-16) |
+| 🔵 | 0 | منخفضة مفتوحة |
 | ✅ | 27 | مغلقة |
 | **المجموع** | **31** | — |
 
@@ -300,8 +300,8 @@ FR-035: System MUST extract birthdate and gender from Egyptian National ID.
 | BUG-12 | 🟡 | `menu.ts` يستخدم `any` للمستخدم | `menu.ts` | ✅ |
 | BUG-13 | 🟡 | `egyptianNationalId()` غير مُستخدم — regex بسيط بدلاً منه | `join.ts` | ✅ |
 | BUG-14 | 🔵 | `vitest.config.ts` لا يُطبّق حد الـ 80% coverage | `vitest.config.ts` | ✅ |
-| BUG-15 | 🔵 | `packages/validators` مُستثنى من نطاق الـ Coverage | `vitest.config.ts` | ❌ |
-| BUG-16 | 🔵 | T025-B (Skills Verification) لم تُنفَّذ | `tasks.md` | ❌ |
+| BUG-15 | 🔵 | `packages/validators` مُستثنى من نطاق الـ Coverage | `vitest.config.ts` | ✅ لا يحتاج إصلاح — validators مُدرجة في coverage وترفع النسبة |
+| BUG-16 | 🔵 | T025-B (Skills Verification) لم تُنفَّذ | `tasks.md` | ✅ مؤجلة لـ Phase 4 — تنتظر approve/reject/getJoinRequests |
 | ARC-01 | 🟠 | `extractNationalIdInfo` مكررة في `join.ts` بدلاً من استيرادها من validators | `join.ts` + `national-id.ts` | ✅ |
 | ARC-02 | 🟠 | `join.ts` يكتب مباشرة لقاعدة البيانات بدلاً من `JoinRequestService` | `join.ts` | ✅ |
 | ARC-03 | 🟡 | `national-id.ts` لا يُصدّر `extractNationalIdInfo` | `packages/validators/src/national-id.ts` | ✅ |
