@@ -70,7 +70,7 @@ JWT_SECRET=your_jwt_secret_here
 SESSION_SECRET=your_session_secret_here
 
 # Admin Configuration
-FIRST_ADMIN_TELEGRAM_ID=123456789  # Telegram ID of first Super Admin
+INITIAL_SUPER_ADMIN_ID=123456789  # Telegram ID of first Super Admin (see spec.md FR-014)
 ```
 
 ### 4. Start Infrastructure Services

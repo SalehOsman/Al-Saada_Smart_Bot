@@ -405,6 +405,20 @@ Running agent context update to incorporate technical decisions from current pla
 ✅ **Security & Privacy**: Audit logging excludes sensitive data, Redis sessions secure
 ✅ **Monorepo Structure**: Clear package separation in packages/core/
 
+## Post-Plan Additions (Tasks added after initial plan)
+
+> These tasks were identified during implementation and added to `tasks.md` after the initial plan was created.
+
+| Task | Phase | Description | Reason Added |
+|------|-------|-------------|--------------|
+| T083 | 2 | Create input validation and sanitization utilities in `packages/validators/src/` | FR-033 coverage gap discovered during Phase 2 |
+| T084 | 4 | Implement AdminScope authorization logic in `canAccess()` | FR-029 required explicit AdminScope handling beyond basic RBAC |
+| T085 | 6 | Implement `unregisterModule()` API function | FR-030 explicitly requires this function alongside registerModule() |
+| T086 | 7 | Implement Redis pub/sub for maintenance mode propagation | NFR-002 requires 5-second propagation across all instances |
+| T087 | 10 | Implement Redis fallback to in-memory sessions | Edge case defined in spec (Redis unavailability fallback) |
+
+---
+
 ## Next Steps
 
 After plan approval:

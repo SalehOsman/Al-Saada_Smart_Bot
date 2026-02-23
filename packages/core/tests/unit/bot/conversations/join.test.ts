@@ -5,14 +5,19 @@
  * conversation.waitForCallbackQuery(). Mocks must reflect this API.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { joinConversation, extractNationalIdInfo } from '../../../../src/bot/conversations/join'
+import { joinConversation } from '../../../../src/bot/conversations/join'
+import { extractEgyptianNationalIdInfo } from '@al-saada/validators'
+import { joinRequestService } from '../../../../src/services/join-requests'
 import { prisma } from '../../../../src/database/prisma'
-import type { Conversation, ConversationFlavor } from '@grammyjs/conversations'
 import type { BotContext } from '../../../../src/types/context'
+
 // ─── Mocks ─────────────────────────────────────────────────────────────────
 vi.mock('../../../../src/database/prisma')
+vi.mock('../../../../src/services/join-requests')
 vi.mock('../../../../src/utils/logger')
+
 const mockPrisma = prisma as any
+const mockJoinRequestService = joinRequestService as any
 // ─── Translation helper ──────────────────────────────────────────────────────
 function t(key: string, params?: Record<string, string>): string {
   const translations: Record<string, string> = {
@@ -113,10 +118,10 @@ beforeEach(() => {
     findUnique: vi.fn().mockResolvedValue(null),
     findMany: vi.fn().mockResolvedValue([]),
   }
-  mockPrisma.joinRequest = {
-    findFirst: vi.fn().mockResolvedValue(null),
-    create: vi.fn().mockResolvedValue({ id: 'req-001' }),
-  }
+  // Mock service methods
+  mockJoinRequestService.hasPendingRequest = vi.fn().mockResolvedValue(false)
+  mockJoinRequestService.create = vi.fn().mockResolvedValue({ id: 'req-001' })
+
   mockPrisma.notification = {
     create: vi.fn().mockResolvedValue({}),
   }
@@ -143,7 +148,7 @@ describe('T025 — Guard Checks', () => {
     expect(ctx.reply).toHaveBeenCalledWith(t('user_already_exists'))
   })
   it('should reject user with existing PENDING join request', async () => {
-    mockPrisma.joinRequest.findFirst.mockResolvedValueOnce({ id: 'pending-001', status: 'PENDING' })
+    mockJoinRequestService.hasPendingRequest.mockResolvedValueOnce(true)
     const ctx = makeMockCtx()
     await joinConversation(makeConversation([]) as any, ctx)
     expect(ctx.reply).toHaveBeenCalledWith(t('join_request_pending'))
@@ -213,11 +218,9 @@ describe('T025 — Nickname Generation', () => {
     const ctx = makeMockCtx()
     const conv = makeConversation([VALID_NAME, '', VALID_PHONE, VALID_NATIONAL_ID], 'confirm_join')
     await joinConversation(conv as any, ctx)
-    expect(mockPrisma.joinRequest.create).toHaveBeenCalledWith(
+    expect(mockJoinRequestService.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
-          nickname: expect.stringMatching(/^محمد-[a-z0-9]{4}$/),
-        }),
+        nickname: expect.stringMatching(/^محمد-[a-z0-9]{4}$/),
       }),
     )
   })
@@ -225,11 +228,9 @@ describe('T025 — Nickname Generation', () => {
     const ctx = makeMockCtx()
     const conv = makeConversation(['فاطمة محمد', '/skip', VALID_PHONE, VALID_NATIONAL_ID], 'confirm_join')
     await joinConversation(conv as any, ctx)
-    expect(mockPrisma.joinRequest.create).toHaveBeenCalledWith(
+    expect(mockJoinRequestService.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
-          nickname: expect.stringMatching(/^فاطمة-[a-z0-9]{4}$/),
-        }),
+        nickname: expect.stringMatching(/^فاطمة-[a-z0-9]{4}$/),
       }),
     )
   })
@@ -237,16 +238,16 @@ describe('T025 — Nickname Generation', () => {
     const ctx = makeMockCtx()
     const conv = makeConversation(['أحمد بن محمد علي', '', VALID_PHONE, VALID_NATIONAL_ID], 'confirm_join')
     await joinConversation(conv as any, ctx)
-    const created = mockPrisma.joinRequest.create.mock.calls[0][0].data
+    const created = mockJoinRequestService.create.mock.calls[0][0]
     expect(created.nickname).toMatch(/^أحمد-[a-z0-9]{4}$/)
   })
   it('should preserve custom nickname when provided', async () => {
     const ctx = makeMockCtx()
     const conv = makeConversation([VALID_NAME, 'محمدو', VALID_PHONE, VALID_NATIONAL_ID], 'confirm_join')
     await joinConversation(conv as any, ctx)
-    expect(mockPrisma.joinRequest.create).toHaveBeenCalledWith(
+    expect(mockJoinRequestService.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ nickname: 'محمدو' }),
+        nickname: 'محمدو',
       }),
     )
   })
@@ -255,12 +256,14 @@ describe('T025 — Nickname Generation', () => {
     for (let i = 0; i < 2; i++) {
       vi.clearAllMocks()
       mockPrisma.user = { findUnique: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) }
-      mockPrisma.joinRequest = { findFirst: vi.fn().mockResolvedValue(null), create: vi.fn().mockResolvedValue({ id: 'r' }) }
+      // Mock service methods
+      mockJoinRequestService.hasPendingRequest = vi.fn().mockResolvedValue(false)
+      mockJoinRequestService.create = vi.fn().mockResolvedValue({ id: 'r' })
       mockPrisma.notification = { create: vi.fn().mockResolvedValue({}) }
       const ctx = makeMockCtx()
       const conv = makeConversation([VALID_NAME, '', VALID_PHONE, VALID_NATIONAL_ID], 'confirm_join')
       await joinConversation(conv as any, ctx)
-      const nick = mockPrisma.joinRequest.create.mock.calls[0][0].data.nickname
+      const nick = mockJoinRequestService.create.mock.calls[0][0].nickname
       results.push(nick)
     }
     expect(results[0]).toMatch(/^محمد-[a-z0-9]{4}$/)
@@ -361,35 +364,35 @@ describe('T025 — National ID Validation', () => {
   })
 })
 // ═══════════════════════════════════════════════════════════════════════════
-// SUITE 6 — extractNationalIdInfo
+// SUITE 6 — extractEgyptianNationalIdInfo
 // ═══════════════════════════════════════════════════════════════════════════
-describe('extractNationalIdInfo — Birth date & gender extraction', () => {
+describe('extractEgyptianNationalIdInfo — Birth date & gender extraction', () => {
   it('should extract birth date for 19xx century (starts with 2)', () => {
-    const { birthDate } = extractNationalIdInfo('29901010100018')
+    const { birthDate } = extractEgyptianNationalIdInfo('29901010100018')
     expect(birthDate.getFullYear()).toBe(1999)
     expect(birthDate.getMonth()).toBe(0)
     expect(birthDate.getDate()).toBe(1)
   })
   it('should extract birth date for 20xx century (starts with 3)', () => {
-    const { birthDate } = extractNationalIdInfo('30302010100020')
+    const { birthDate } = extractEgyptianNationalIdInfo('30302010100020')
     expect(birthDate.getFullYear()).toBe(2003)
     expect(birthDate.getMonth()).toBe(1)
     expect(birthDate.getDate()).toBe(1)
   })
   it('should extract MALE gender (odd 13th digit)', () => {
-    const { gender } = extractNationalIdInfo('29901010100018')
+    const { gender } = extractEgyptianNationalIdInfo('29901010100018')
     expect(gender).toBe('MALE')
   })
   it('should extract FEMALE gender (even 13th digit)', () => {
-    const { gender } = extractNationalIdInfo('29901010200028')
+    const { gender } = extractEgyptianNationalIdInfo('29901010200028')
     expect(gender).toBe('FEMALE')
   })
   it('should correctly map century code 2 → 1900s', () => {
-    const { birthDate } = extractNationalIdInfo('29001010100018')
+    const { birthDate } = extractEgyptianNationalIdInfo('29001010100018')
     expect(birthDate.getFullYear()).toBe(1990)
   })
   it('should correctly map century code 3 → 2000s', () => {
-    const { birthDate } = extractNationalIdInfo('30001010100020')
+    const { birthDate } = extractEgyptianNationalIdInfo('30001010100020')
     expect(birthDate.getFullYear()).toBe(2000)
   })
 })
@@ -401,15 +404,12 @@ describe('T025/T026 — Confirmation & Save Flow', () => {
     const ctx = makeMockCtx()
     const conv = makeConversation([VALID_NAME, '/skip', VALID_PHONE, VALID_NATIONAL_ID], 'confirm_join')
     await joinConversation(conv as any, ctx)
-    expect(mockPrisma.joinRequest.create).toHaveBeenCalledWith(
+    expect(mockJoinRequestService.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
-          telegramId: 12345n,
-          fullName: VALID_NAME,
-          phone: VALID_PHONE,
-          nationalId: VALID_NATIONAL_ID,
-          status: 'PENDING',
-        }),
+        telegramId: 12345n,
+        fullName: VALID_NAME,
+        phone: VALID_PHONE,
+        nationalId: VALID_NATIONAL_ID,
       }),
     )
   })
@@ -417,7 +417,7 @@ describe('T025/T026 — Confirmation & Save Flow', () => {
     const ctx = makeMockCtx()
     const conv = makeConversation([VALID_NAME, '/skip', VALID_PHONE, VALID_NATIONAL_ID], 'cancel_join')
     await joinConversation(conv as any, ctx)
-    expect(mockPrisma.joinRequest.create).not.toHaveBeenCalled()
+    expect(mockJoinRequestService.create).not.toHaveBeenCalled()
   })
 })
 // ═══════════════════════════════════════════════════════════════════════════

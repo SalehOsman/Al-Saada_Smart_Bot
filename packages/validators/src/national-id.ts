@@ -106,3 +106,25 @@ export function egyptianNationalId() {
     )
     .refine(isValidChecksum, { message: 'Invalid checksum in National ID.' })
 }
+
+/**
+ * Extracts birth date and gender from an Egyptian National ID.
+ * Assumes the ID has already been validated.
+ */
+export function extractEgyptianNationalIdInfo(id: string): { birthDate: Date, gender: 'MALE' | 'FEMALE' } {
+  // For Egyptian IDs:
+  // - IDs starting with '2' are for people born between 1900 and 1999
+  // - IDs starting with '3' are for people born between 2000 and 2099
+  const yearPrefix = id.startsWith('2') ? '19' : '20'
+  const year = Number.parseInt(yearPrefix + id.substring(1, 3), 10)
+  const month = Number.parseInt(id.substring(3, 5), 10) - 1 // Month is 0-indexed
+  const day = Number.parseInt(id.substring(5, 7), 10)
+  const genderCode = Number.parseInt(id.substring(12, 13), 10)
+
+  // Gender is determined by odd/even of the 13th digit (index 12)
+  const gender = genderCode % 2 === 0 ? 'FEMALE' : 'MALE'
+
+  const birthDate = new Date(year, month, day)
+
+  return { birthDate, gender }
+}
