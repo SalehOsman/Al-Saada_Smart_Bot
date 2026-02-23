@@ -157,6 +157,12 @@ System tracks user actions and maintains session state.
   2. The bootstrap is eligible ONLY IF count === 0 AND `INITIAL_SUPER_ADMIN_ID` is defined in `.env`
   3. The comparison MUST use BigInt-safe equality: `BigInt(env.INITIAL_SUPER_ADMIN_ID) === telegramId` to prevent precision loss for large Telegram IDs (> 2^53)
   4. If eligible: create user with `SUPER_ADMIN` role, write audit log action `USER_BOOTSTRAP` immediately after creation
+  4a. Bootstrap Conversation: After eligibility is confirmed, the system MUST start a grammY conversation to collect:
+      - Full Name (Arabic, required)
+      - National ID (14-digit Egyptian format, required — extract birthdate and gender via FR-035)
+      - Nickname (optional — auto-generated if empty: firstName + 4-char nanoid)
+      Only after successful data collection does the system create the SUPER_ADMIN user and write the USER_BOOTSTRAP audit log.
+  4b. If the user cancels or sends invalid data 3 times during bootstrap conversation, the conversation ends with an Arabic error message. Bootstrap remains eligible for the next /start attempt.
   5. If count > 0: bootstrap is permanently disabled — skip `.env` check entirely
   6. If `INITIAL_SUPER_ADMIN_ID` is undefined: skip bootstrap, route to join-request flow
   7. Any failure during bootstrap MUST be caught, logged via Pino, and replied to user with Arabic error message
