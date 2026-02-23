@@ -34,14 +34,6 @@ export async function joinConversation(conversation: Conversation<ConversationFl
       return
     }
 
-    // Check if there's already a pending join request using the service
-    const hasPending = await joinRequestService.hasPendingRequest(telegramId)
-
-    if (hasPending) {
-      await ctx.reply(ctx.t('join_request_pending'))
-      return
-    }
-
     // Start the join request conversation flow
     await ctx.reply(ctx.t('join_welcome'))
 
