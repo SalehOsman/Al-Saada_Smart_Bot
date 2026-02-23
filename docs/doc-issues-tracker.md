@@ -274,7 +274,7 @@ FR-035: System MUST extract birthdate and gender from Egyptian National ID.
 | 🔴 | 0 | حرجة مفتوحة |
 | 🟠 | 0 | عالية مفتوحة |
 | 🟡 | 0 | متوسطة مفتوحة |
-| 🔵 | 3 | منخفضة مفتوحة (BUG-14, BUG-15, BUG-16) |
+| 🔵 | 2 | منخفضة مفتوحة (BUG-15, BUG-16) |
 | ✅ | 27 | مغلقة |
 | **المجموع** | **31** | — |
 
@@ -299,7 +299,7 @@ FR-035: System MUST extract birthdate and gender from Egyptian National ID.
 | BUG-11 | 🟡 | `healthRouter` غير مُربوط بالـ Hono App | `bot/index.ts` | ✅ |
 | BUG-12 | 🟡 | `menu.ts` يستخدم `any` للمستخدم | `menu.ts` | ✅ |
 | BUG-13 | 🟡 | `egyptianNationalId()` غير مُستخدم — regex بسيط بدلاً منه | `join.ts` | ✅ |
-| BUG-14 | 🔵 | `vitest.config.ts` لا يُطبّق حد الـ 80% coverage | `vitest.config.ts` | ❌ |
+| BUG-14 | 🔵 | `vitest.config.ts` لا يُطبّق حد الـ 80% coverage | `vitest.config.ts` | ✅ |
 | BUG-15 | 🔵 | `packages/validators` مُستثنى من نطاق الـ Coverage | `vitest.config.ts` | ❌ |
 | BUG-16 | 🔵 | T025-B (Skills Verification) لم تُنفَّذ | `tasks.md` | ❌ |
 | ARC-01 | 🟠 | `extractNationalIdInfo` مكررة في `join.ts` بدلاً من استيرادها من validators | `join.ts` + `national-id.ts` | ✅ |
@@ -352,5 +352,6 @@ FR-035: System MUST extract birthdate and gender from Egyptian National ID.
 | 2026-02-24 | SYN-01، SYN-02 | تحديث tasks.md ليعكس الواقع: T088-T091 مضافة، حالات محدّثة | إنشاء bot/utils (T088-T091) |
 | 2026-02-24 | overview.md | تحديث حالة المشروع، إضافة bot/utils، بنية الملفات، مبدأ i18n-Only | مراجعة توثيقية 2026-02-24 |
 | 2026-02-24 | BUG-12 | استبدال `user: any` بـ `MenuUser = Prisma.UserGetPayload<...>` في الدوال الأربع | إصلاح BUG-12 |
+| 2026-02-24 | BUG-14 | إضافة thresholds بـ 20% baseline + إصلاح assertion في start.test.ts | إصلاح BUG-14 |
 
 *يُحدَّث هذا الملف بعد كل إصلاح توثيقي*
