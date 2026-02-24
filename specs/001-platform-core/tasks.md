@@ -149,6 +149,8 @@
 
 - [ ] T032 [US1] Create user management handlers (List, Change Role, Activate/Deactivate) in `packages/core/src/bot/handlers/users.ts`
 - [ ] T033 [US2] Create join request approval/rejection handlers in `packages/core/src/bot/handlers/approvals.ts`
+- [ ] T102 [US2] Implement concurrent admin protection in approval/rejection handlers: atomic status check before any DB write — if request already handled, show Arabic error 'تمت معالجة هذا الطلب مسبقاً بواسطة أدمن آخر' (FR-036)
+- [ ] T103 [US2] Verify join request history retention: rejected requests are never overwritten — each new submission after rejection creates a new DB row. Add unit test to confirm (FR-012)
 
 **Checkpoint**: RBAC system complete - permission management functional
 
