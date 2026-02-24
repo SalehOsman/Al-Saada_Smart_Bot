@@ -148,18 +148,17 @@ model AuditLog {
 
 // Notification - Queue Notifications
 model Notification {
-  id        String           @id @default(cuid())
-  userId    BigInt           @map("user_id")
-  type      NotificationType
-  title     String
-  message   String
-  isRead    Boolean          @default(false) @map("is_read")
-  createdAt DateTime         @default(now()) @map("created_at")
+  id           String           @id @default(cuid())
+  targetUserId BigInt           @map("target_user_id")
+  type         NotificationType
+  params       Json?
+  isRead       Boolean          @default(false) @map("is_read")
+  createdAt    DateTime         @default(now()) @map("created_at")
 
   // Relationships
-  user User @relation(fields: [userId], references: [telegramId])
+  user User @relation(fields: [targetUserId], references: [telegramId])
 
-  @@index([userId])
+  @@index([targetUserId])
   @@index([type])
   @@index([isRead])
   @@index([createdAt])
