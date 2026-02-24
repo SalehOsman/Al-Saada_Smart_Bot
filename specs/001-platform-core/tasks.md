@@ -114,8 +114,11 @@
 - [x] T026 [US2] Save join request to database with PENDING status using `joinRequestService` in `packages/core/src/services/join-requests.ts`
 - [ ] T027 [US2] Trigger notification to Super Admins about new join request (uses Notification Service)
 - [x] T028 [US2] Implement "pending approval" response logic for returning visitors in `packages/core/src/bot/handlers/start.ts`
-- [ ] T058 [US2] Write integration test for full join request flow (Start -> Submit -> DB -> Notify)
+- [ ] T058 [US2] Write integration tests for join request flow covering all US2 acceptance scenarios: (1) new user submits full flow (Start → name → phone → ID → confirm → PENDING saved → admins notified), (1a) returning PENDING user sends /start again → sees Arabic pending message with date, (2) Super Admin approves/rejects → user notified, (3) approved user sends /start → sees EMPLOYEE menu (not pending message)
+- [ ] T097 [P] [US2] Integration test: user with PENDING join request sends /start again → system shows 'لديك طلب انضمام قيد المراجعة بالفعل' message AND does NOT create a duplicate request in the database
 - [ ] T066-B [P] [US5] Implement audit logging for session events (USER_LOGIN = new session after 24h expiry, USER_LOGOUT = session expiry) in audit service
+
+# Note: Tasks T088-T091 are NOT duplicates — each adds a distinct shared utility required for Phase 5 RBAC flows: T088=conversation utils, T089=user input collectors, T090=formatters, T091=refactor join.ts to use them.
 
 - [x] T088 [US2] Extract shared conversation utilities into `packages/core/src/bot/utils/conversation.ts`
       (createMessageTracker, trackMessage, deleteTrackedMessages, waitForTextOrCancel, waitForSkippable, waitForConfirm, sendCancelled)
@@ -202,9 +205,9 @@
 
 ### Audit Infrastructure
 
-- [ ] T059 [P] [US5] Create audit log service in `packages/core/src/services/audit.ts`
+- [ ] T059 [P] [US5] Create audit log service in `packages/core/src/services/audit.ts` implementing ALL 23 auditable actions defined in spec.md FR-026. Each log entry: `{ userId: bigint, action: AuditAction, targetType?: string, targetId?: string, details?: Json }`. Complete action list: `USER_BOOTSTRAP`, `USER_LOGIN`, `USER_LOGOUT`, `ROLE_CHANGE`, `USER_APPROVE`, `USER_REJECT`, `USER_ACTIVATE`, `USER_DEACTIVATE`, `JOIN_REQUEST_SUBMIT`, `SECTION_CREATE`, `SECTION_UPDATE`, `SECTION_DELETE`, `SECTION_ENABLE`, `SECTION_DISABLE`, `MODULE_REGISTER`, `MODULE_UNREGISTER`, `MODULE_ENABLE`, `MODULE_DISABLE`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`, `PERMISSION_CHANGE`, `ADMIN_SCOPE_ASSIGN`, `ADMIN_SCOPE_REVOKE`
 - [ ] T060 [P] [US5] Create audit middleware (auto-logs actions) in `packages/core/src/bot/middlewares/audit.ts`
-- [ ] T061 [P] [US5] Define and implement auditable actions list (FR-026)
+- [ ] T061 [P] [US5] Define `AuditAction` TypeScript enum/const in `packages/core/src/types/audit.ts` with all 23 actions from FR-026 — ensures compile-time safety for all audit log calls
 - [ ] T062 [P] [US5] Create audit log viewer for Super Admin in `packages/core/src/bot/handlers/audit.ts`
 - [ ] T063 [P] [US5] Ensure NO sensitive data is logged (filter/sanitize)
 - [ ] T064 [P] Write unit tests for audit service
@@ -212,7 +215,7 @@
 ### Session Management
 
 - [ ] T065 [P] [US5] Create Redis session service with 24-hour TTL
-- [ ] T087 [P] [US5] Implement Redis fallback to in-memory sessions (edge case handling)
+- [ ] T087 [P] [US5] Implement Redis fallback to in-memory sessions: if Redis is unavailable, fall back to in-memory Map for the current request session. Log CRITICAL warning via Pino. On every subsequent request, attempt Redis reconnection with exponential backoff (1s → 2s → 4s). Resume Redis sessions automatically once connection is restored.
 - [ ] T066 [P] [US5] Create session middleware (load/save) in `packages/core/src/bot/middlewares/session.ts`
 - [ ] T067 [P] [US5] Store navigation state (currentSection, currentModule)
 - [ ] T068 [P] [US5] Handle session expiry gracefully
@@ -229,15 +232,42 @@
 ### Final Verification
 
 - [ ] T056 [P] Implement notification history storage in `packages/core/src/services/notifications.ts`
-- [ ] T081 [P] Create notification cleanup cron job (90 days retention)
-- [ ] T070 [US1] End-to-end test: complete user journey (Bootstrap -> Join -> Approve -> Menu)
+- [ ] T081 [P] Create notification cleanup cron job: delete notifications older than 90 days (retention policy per FR-032). Schedule: runs daily at 02:00 AM Africa/Cairo timezone using node-cron.
+- [ ] T070 [US1] End-to-end test: complete user journey covering US1 acceptance scenarios: (1) INITIAL_SUPER_ADMIN_ID user sends /start → completes join flow → receives Super Admin welcome, (2) each of the 4 roles (SUPER_ADMIN, ADMIN, EMPLOYEE, VISITOR) sends /start → sees the correct role-appropriate menu with no cross-role leakage
 - [ ] T071 [US3] End-to-end test: Super Admin journey (Sections -> Modules -> Users)
 - [ ] T072 Verify 80% code coverage across all packages
 - [ ] T073 Code cleanup, formatting, and final linting
 - [ ] T074 Update quickstart.md with actual commands and verification steps
-- [ ] T075 Final commit and tag v0.1.0
+- [ ] T075 Final commit and tag v0.1.0. **Note (M1):** The 90/10 rule (90% config, max 10% hook code per module) cannot be verified until Phase 3 (first business module). Add compliance verification to Phase 3 tasks.
 - [ ] T078 Verify SC-002: Load test with ~200 concurrent simulated users
-- [ ] T079 Verify FR-015: Confirm all 4 roles display correct menus
-- [ ] T080 Verify SC-003: Confirm audit logs capture 100% of defined actions
+- [ ] T079 Verify FR-015: Confirm all 4 roles (SUPER_ADMIN, ADMIN, EMPLOYEE, VISITOR) display correct menus and access levels
+- [ ] T080 Verify SC-003: Confirm audit logs capture 100% of 23 defined actions from FR-026 (no gaps)
+- [ ] T093 Verify SC-001: Manual test — first-time bootstrap user completes full flow (name → phone → national ID → confirm → Super Admin welcome) in ≤ 30 seconds
+- [ ] T094 Verify SC-004: Manual test — session state (current section, navigation) persists correctly across bot interactions within a 24-hour window; new session starts after 24hr inactivity
+- [ ] T095 Verify SC-005 + SC-006: Manual test — maintenance mode toggle propagates to all non-Super Admin users within 5 seconds; module discovery completes within 10 seconds of bot startup
+- [ ] T096 Verify SC-007 + SC-010: Manual test — all user-facing messages are in Arabic with no hardcoded strings; Super Admin can create, rename, reorder, and delete sections without any developer intervention
 
 **Checkpoint**: Platform Core complete - ready for production deployment
+
+---
+
+## مهام تحضير AI الموازية (Parallel AI Prep)
+
+> تُنفَّذ بالتوازي مع التطوير الرئيسي — لا تتعارض مع أي Phase
+> التفاصيل الكاملة في `specs/002-ai-assistant/tasks.md`
+
+### المرحلة A — يوازي Phase 6-7
+
+- [ ] T-AI-01 [P] تحديث docker-compose.yml: استبدال `postgres:16` بـ `pgvector/pgvector:pg16` + إضافة Ollama service
+- [ ] T-AI-02 [P] إنشاء هيكل `packages/ai-assistant/` (package.json, tsconfig.json, مجلدات فارغة)
+- [ ] T-AI-03 [P] تحديث .env.example بمتغيرات AI (OLLAMA_BASE_URL, AI_EMBEDDING_MODEL, AI_LLM_MODEL)
+- [ ] T-AI-04 [P] توثيق أوامر تحميل النماذج في quickstart.md
+
+### المرحلة B — يوازي Phase 8-9
+
+- [ ] T-AI-05 [P] إضافة جدول `Embedding` لـ Prisma Schema + migration
+- [ ] T-AI-06 [P] إنشاء Embedding Service + LLM Client + RAG Service + RBAC Filter
+
+### المرحلة C — بعد Phase 11
+
+- [ ] T-AI-07 تكامل كامل — انظر `specs/002-ai-assistant/tasks.md` للتفاصيل

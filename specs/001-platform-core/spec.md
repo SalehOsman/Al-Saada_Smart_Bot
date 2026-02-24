@@ -154,7 +154,7 @@ System tracks user actions and maintains session state.
 - **FR-013**: System MUST notify all Super Admins about new join requests
 - **FR-014 (Bootstrap Lock - Unified Flow)**: The system MUST implement the bootstrap lock mechanism as part of the unified join conversation flow:
   1. On every `/start` command, the handler checks: (a) existing user by telegramId → show menu, (b) pending join request → show pending message, (c) otherwise → enter join conversation
-  2. Bootstrap eligibility is evaluated INSIDE `joinRequestService.createOrBootstrap()` AFTER data collection is complete
+  2. Bootstrap eligibility is evaluated INSIDE `joinRequestService.createOrBootstrap()` AFTER data collection is complete. **Design Rationale**: This is an intentional architectural decision — full user data (name, phone, national ID) must be collected before creating the Super Admin account. Evaluating eligibility after data collection does NOT create a race condition because: (a) `telegramId` is checked before any DB write, and (b) `superAdminCount === 0` is atomically verified inside the same transaction. A separate bootstrap conversation would add unnecessary complexity with no security benefit.
   3. The bootstrap check: `COUNT(*) FROM users WHERE role = 'SUPER_ADMIN'` === 0 AND `BigInt(env.INITIAL_SUPER_ADMIN_ID) === telegramId`
   4. The comparison MUST use BigInt-safe equality to prevent precision loss for large Telegram IDs (> 2^53)
   5. If bootstrap eligible: `createOrBootstrap()` creates user with `SUPER_ADMIN` role and writes audit log action `USER_BOOTSTRAP`, returns `{ type: 'bootstrap' }`
@@ -204,7 +204,7 @@ System tracks user actions and maintains session state.
 
 ### Al-Saada Smart Bot Development Principles
 
-1. **Platform-First**: The platform (Layer 1 + Layer 2) must be 100% complete before any module is created.
+1. **Platform-First Principle (Constitution Principle I — NON-NEGOTIABLE)**: The platform (Layer 1 + Layer 2) must be 100% complete and tested before any module is created. No module code may be written until Platform Core and Flow Engine are fully operational.
 
 2. **Config-Driven Architecture**: All functionality must be primarily implementable as configuration. Optional lifecycle hooks (beforeValidate, beforeSave, afterSave, beforeDelete, onApproval, onRejection) are allowed for complex business logic that cannot be expressed as configuration. The 90/10 rule applies: 90% config, max 10% hook code per module.
 
@@ -215,6 +215,10 @@ System tracks user actions and maintains session state.
 5. **i18n-Only User Text (No Hardcoded Strings)**: All user-facing text — including messages, labels, button captions, error messages, and status strings — MUST be defined exclusively in `.ftl` locale files (`packages/core/src/locales/ar.ftl` and `en.ftl`). Hardcoding any user-facing string (Arabic or English) directly in TypeScript source files is strictly prohibited. Code must reference translation keys via `ctx.t('key')`. Functions that format or classify data (e.g., gender, status) MUST return i18n keys, not display text. This rule applies to all packages across the entire monorepo.
 
 6. **Flow Block Reusability**: UI components must be reusable across modules with configurable parameters.
+
+7. **Shared-First Principle (مبدأ الوحدات الجاهزة أولاً)**: Before writing any flow or step inside a flow, ask: "Can this code be used elsewhere?" If yes — create it as a shared unit in `bot/utils/` first, then call it from the flow. Duplicate logic between two flows is strictly forbidden. Current shared units: `conversation.ts` (message tracking, waiting, confirm, cancel), `user-inputs.ts` (Arabic name, phone, national ID, nickname), `formatters.ts` (dates, i18n keys for gender/status/role, admin notifications).
+
+8. **AI-Ready Architecture**: The platform is designed from Phase 1 to support AI integration in Phase 11. pgvector is added to PostgreSQL in Phase 6 (parallel to Sections). Ollama + Qwen2.5:7b runs locally — no external API calls. RAG uses RBAC to filter results per user role. Full AI integration begins after the first business module (Phase 11).
 
 ## Success Criteria *(mandatory)*
 
@@ -231,9 +235,9 @@ System tracks user actions and maintains session state.
 - **SC-010**: Super Admin can create and manage sections without requiring developer assistance
 
 ### Non-Functional Requirements
-- **NFR-001 (Performance)**: System must maintain <500ms average response time for 95% of requests under normal load.
+- **NFR-001 (Performance)**: System must maintain <500ms average response time for 95% of requests under normal load (normal load defined as up to 200 concurrent users — see SC-002).
 - **NFR-002 (Maintenance)**: Maintenance mode toggle must propagate to all instances within 5 seconds via Redis pub/sub mechanism.
-- **NFR-003 (Scalability)**: System must support horizontal scaling to ~200 concurrent users without architecture changes, maintaining <500ms p95 response time.
+- **NFR-003 (Scalability)**: System must support horizontal scaling to ~200 concurrent users (normal load) without architecture changes, maintaining <500ms p95 response time.
 - **NFR-004 (Security)**: All API endpoints must validate input and sanitize to prevent injection attacks.
 - **NFR-005 (Availability)**: Core services must maintain 99.9% uptime with automated recovery from failures.
 

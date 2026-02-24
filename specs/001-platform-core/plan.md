@@ -160,6 +160,8 @@ packages/
 
 #### Core Tables
 
+<!-- Source of truth for all entity definitions is spec.md > Key Entities. This section is for implementation reference only. If conflict exists, spec.md takes precedence. -->
+
 **User** - Telegram bot users
 - `telegramId` BIGINT PRIMARY KEY (Telegram user ID)
 - `id` STRING (cuid) UNIQUE
