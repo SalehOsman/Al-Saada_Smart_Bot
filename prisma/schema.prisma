@@ -67,7 +67,7 @@ model User {
 // JoinRequest - Pending User Registrations
 model JoinRequest {
   id         String    @id @default(cuid())
-  telegramId BigInt?   @unique @map("telegram_id")
+  telegramId BigInt    @map("telegram_id")
   fullName   String    @map("full_name")
   nickname   String?
   phone      String
