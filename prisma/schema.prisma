@@ -33,6 +33,31 @@ enum NotificationType {
   MAINTENANCE_OFF
 }
 
+enum AuditAction {
+  USER_BOOTSTRAP
+  USER_LOGIN
+  USER_LOGOUT
+  ROLE_CHANGE
+  USER_APPROVE
+  USER_REJECT
+  USER_ACTIVATE
+  USER_DEACTIVATE
+  JOIN_REQUEST_SUBMIT
+  SECTION_CREATE
+  SECTION_UPDATE
+  SECTION_DELETE
+  SECTION_ENABLE
+  SECTION_DISABLE
+  MODULE_REGISTER
+  MODULE_UNREGISTER
+  MODULE_ENABLE
+  MODULE_DISABLE
+  MAINTENANCE_ON
+  MAINTENANCE_OFF
+  PERMISSION_CHANGE
+  ADMIN_SCOPE_ASSIGN
+  ADMIN_SCOPE_REVOKE
+}
 
 
 // User - Telegram Bot Users
@@ -131,7 +156,7 @@ model Module {
 model AuditLog {
   id         String   @id @default(cuid())
   userId     BigInt   @map("user_id")
-  action     String // Action type (e.g., "LOGIN", "SECTION_CREATE", "USER_APPROVE")
+  action     AuditAction // Action type
   targetType String?  @map("target_type") // Entity type (User, Section, Module, etc.)
   targetId   String?  @map("target_id") // Entity ID
   details    Json? // Additional context as JSON
