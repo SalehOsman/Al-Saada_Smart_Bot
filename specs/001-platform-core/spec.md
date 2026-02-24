@@ -20,7 +20,7 @@ These components are configured in module flow definitions and implemented as pa
 TypeScript interface defining a module's structure, standard fields, and flow steps. Includes:
 - name and nameEn (bilingual module names)
 - slug (unique identifier for the module)
-- sectionSlug (links to organizational section)
+- sectionId (links to organizational section by database ID)
 - icon (emoji for menu display)
 - configPath (path to module configuration file)
 - isActive (enable/disable toggle)

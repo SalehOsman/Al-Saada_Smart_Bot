@@ -102,7 +102,7 @@ packages/
 │   │   │   └── sections.test.ts
 │   │   └── e2e/           # End-to-end tests
 │   └── package.json        # Package dependencies and scripts
-├── validators/             # Egyptian format validators
+├── validators/             # Egyptian format validators (packages/validators/)
 # Infrastructure
 ├── docker-compose.yml # PostgreSQL + Redis + Bot services
 ├── prisma/
@@ -110,7 +110,7 @@ packages/
 └── modules/           # Empty directory for future modules
 ```
 
-**Structure Decision**: Monorepo with `packages/core/` as the Platform Core package and `packages/validators/` for Egyptian format validators. All source code follows the specified architecture with clear separation of concerns.
+**Structure Decision**: Monorepo with `packages/core/` as the Platform Core package and `packages/validators/` for Egyptian format validators. Note: the tree above shows `validators/` as a shorthand — the actual path is `packages/validators/`. All source code follows the specified architecture with clear separation of concerns.
 
 ## Complexity Tracking
 
