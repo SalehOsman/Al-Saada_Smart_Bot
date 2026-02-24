@@ -164,9 +164,9 @@ System tracks user actions and maintains session state.
   9. Any failure during the process MUST be caught, logged via Pino, and replied to user with Arabic error message
   10. NO separate bootstrap conversation exists — the join conversation handles both cases uniformly
 - **FR-015**: System MUST implement RBAC with 4 roles: SUPER_ADMIN, ADMIN, EMPLOYEE, VISITOR
-- **FR-016**: System MUST check user role before processing any action
+- **FR-016**: System MUST check user role before processing any action. Scope: all bot command handlers (/start, /sections, /maintenance, /audit) and all conversation flows. Implementation: via RBAC middleware injected into the Grammy middleware chain. Visitors are restricted to join-request flow only. Unauthenticated requests are rejected with Arabic error message.
 - **FR-017**: System MUST implement AdminScope table for scoped permissions (sections/modules)
-- **FR-018**: System MUST allow Super Admins to create, edit, delete, enable/disable sections
+- **FR-018**: System MUST allow Super Admins to create, edit, delete, enable/disable sections. Deletion constraint: a section can only be deleted if it has ZERO active modules. Attempting to delete a non-empty section MUST show Arabic error: 'لا يمكن حذف القسم لأنه يحتوي على وحدات نشطة'. Name validation: 2-50 characters. Icon: single Unicode emoji only.
 - **FR-019**: System MUST display sections as main menu buttons in the bot
 - **FR-020**: System MUST implement dynamic module discovery at startup
 - **FR-021**: System MUST skip invalid module configs without crashing (log warnings)
@@ -231,7 +231,7 @@ System tracks user actions and maintains session state.
 - **SC-006**: Module discovery completes within 10 seconds of bot startup
 - **SC-007**: All user-facing messages are in Arabic with proper RTL support
 - **SC-008**: System maintains 99.9% uptime for core services (PostgreSQL, Redis, Bot)
-- **SC-009**: Notification delivery rate is above 95% for join request notifications
+- **SC-009**: Notification delivery rate is above 95% for join request notifications. Measurement: within 30 seconds of join request submission, at least 95% of Super Admins must receive the Telegram notification. Verification method: integration test.
 - **SC-010**: Super Admin can create and manage sections without requiring developer assistance
 
 ### Non-Functional Requirements

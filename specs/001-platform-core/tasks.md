@@ -238,6 +238,7 @@
 - [ ] T072 Verify 80% code coverage across all packages
 - [ ] T073 Code cleanup, formatting, and final linting
 - [ ] T074 Update quickstart.md with actual commands and verification steps
+- [ ] T098 [P] Verify Platform-First Gate: confirm `modules/` directory contains ZERO implemented module files. Run: `find modules/ -name '*.ts' | grep -v '.gitkeep'` — must return empty output. Document result in commit message.
 - [ ] T075 Final commit and tag v0.1.0. **Note (M1):** The 90/10 rule (90% config, max 10% hook code per module) cannot be verified until Phase 3 (first business module). Add compliance verification to Phase 3 tasks.
 - [ ] T078 Verify SC-002: Load test with ~200 concurrent simulated users
 - [ ] T079 Verify FR-015: Confirm all 4 roles (SUPER_ADMIN, ADMIN, EMPLOYEE, VISITOR) display correct menus and access levels
