@@ -139,7 +139,7 @@
 
 ### Core RBAC Infrastructure
 
-- [ ] T029 [P] Create RBAC middleware in `packages/core/src/bot/middlewares/rbac.ts`
+- [ ] T029 [P] Create RBAC middleware in `packages/core/src/bot/middlewares/rbac.ts` and register it in the Grammy middleware chain for ALL handlers: /start, /sections, /maintenance, /audit, /users, and all conversation flows (FR-016)
 - [ ] T030 [P] Implement `canAccess(userId, sectionId?, moduleId?)` in `packages/core/src/services/rbac.ts` with Redis caching
 - [ ] T084 [P] Implement AdminScope authorization logic in `canAccess()` (FR-017, FR-029)
 - [ ] T031 [P] Create AdminScope service (assign/revoke permissions) in `packages/core/src/services/admin-scope.ts`
@@ -161,11 +161,11 @@
 ### Section Management
 
 - [ ] T035 [P] [US3] Create section CRUD service in `packages/core/src/services/sections.ts`
-- [ ] T036 [P] [US3] Create section management handlers for Super Admin in `packages/core/src/bot/handlers/sections.ts`
+- [ ] T036 [P] [US3] Create section management handlers for Super Admin in `packages/core/src/bot/handlers/sections.ts` — includes deletion constraint: reject delete if section has active modules, show Arabic error 'لا يمكن حذف القسم لأنه يحتوي على وحدات نشطة' (FR-018)
 - [ ] T037 [P] [US3] Create section menu display (list active sections) in `packages/core/src/bot/menus/sections.ts`
 - [ ] T038 [P] [US3] Create "empty section" message logic
 - [ ] T039 [P] [US3] Create section enable/disable toggle handler
-- [ ] T040 [P] Write integration tests for section CRUD
+- [ ] T040 [P] Write integration tests for section CRUD including: create, edit, enable/disable, delete empty section (success), delete non-empty section (must fail with Arabic error)
 
 ### Module Discovery & Loading
 
@@ -233,6 +233,7 @@
 
 - [ ] T056 [P] Implement notification history storage in `packages/core/src/services/notifications.ts`
 - [ ] T081 [P] Create notification cleanup cron job: delete notifications older than 90 days (retention policy per FR-032). Schedule: runs daily at 02:00 AM Africa/Cairo timezone using node-cron.
+- [ ] T099 [P] [US2] Integration test: verify SC-009 — send join request, confirm 95%+ of Super Admins receive Telegram notification within 30 seconds (FR-013, SC-009)
 - [ ] T070 [US1] End-to-end test: complete user journey covering US1 acceptance scenarios: (1) INITIAL_SUPER_ADMIN_ID user sends /start → completes join flow → receives Super Admin welcome, (2) each of the 4 roles (SUPER_ADMIN, ADMIN, EMPLOYEE, VISITOR) sends /start → sees the correct role-appropriate menu with no cross-role leakage
 - [ ] T071 [US3] End-to-end test: Super Admin journey (Sections -> Modules -> Users)
 - [ ] T072 Verify 80% code coverage across all packages
