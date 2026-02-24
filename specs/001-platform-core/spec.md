@@ -127,7 +127,8 @@ System tracks user actions and maintains session state.
 - What happens if Redis becomes unavailable? The system should gracefully fall back to an in-memory session provider for the current request and log a critical warning. It should attempt to reconnect to Redis on subsequent requests.
 - How are sensitive data handled in logs? Passwords, tokens, and other sensitive info should never appear in audit logs.
 - What happens when a user tries to join with a duplicate National ID? The system should reject the join request and show an error message in Arabic asking the user to provide a different National ID.
-- Can users edit their join request after submission? Users cannot edit existing PENDING join requests. If they need to correct information, their request must be rejected and they must submit a new one with updated information.
+- Can users edit their join request after submission? Users cannot edit existing PENDING join requests. If they need to correct information, their request must be rejected and they must submit a new one with updated information. The system will retain the history of rejected requests for auditing, and create a new row for the new submission.
+- What happens when multiple Super Admins try to act on the same join request notification? The system should show an Arabic error message via i18n key `errors.join_request.already_handled` to the second admin who clicks the button.
 
 ## Requirements *(mandatory)*
 
@@ -253,6 +254,11 @@ System tracks user actions and maintains session state.
 - Q: Should auto-generated nicknames be unique across all users? → A: No uniqueness constraint is required. Auto-generated nickname is derived from the first two name units of the full Arabic name, respecting compound prefixes (e.g., عبد, أبو, آل). Examples: صالح رجب محمد → صالح رجب | عبد الله أحمد → عبد الله | أبو بكر حسين → أبو بكر. Collisions are acceptable and statistically negligible for ≤200 users.
 - Q: Can users submit multiple join requests? → A: No. The system checks for an existing PENDING request by `telegramId` before starting the join flow. If a PENDING request exists, the user is shown their current status and the new request is rejected.
 - Q: What happens if a user with PENDING status tries again? → A: The system shows the message: "لديك طلب انضمام قيد المراجعة بالفعل" and exits the conversation without creating a new request.
+
+### Session 2026-02-24
+
+- Q: How should the system handle concurrent admin actions on the same join request notification? → A: Show an error message like "Already handled" if a second admin clicks the button.
+- Q: Should the system keep historical rejected requests for auditing, or overwrite with the new submission? → A: Keep history for auditing, new row for new submission.
 
 ## Versioning Strategy
 
