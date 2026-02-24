@@ -33,10 +33,7 @@ enum NotificationType {
   MAINTENANCE_OFF
 }
 
-enum ScopeType {
-  SECTION
-  MODULE
-}
+
 
 // User - Telegram Bot Users
 model User {
@@ -58,7 +55,8 @@ model User {
   joinRequests         JoinRequest[]
   auditLogs            AuditLog[]
   notifications        Notification[]
-  adminScopes          AdminScope[]
+  adminScopes        AdminScope[] @relation("AdminScopeUser")
+  createdAdminScopes AdminScope[] @relation("AdminScopeCreator")
   createdSections      Section[]      @relation("SectionCreator")
   reviewedJoinRequests JoinRequest[]  @relation("ReviewAdmin")
 
@@ -100,6 +98,7 @@ model Section {
   // Relationships
   creator User?    @relation("SectionCreator", fields: [createdBy], references: [telegramId])
   modules Module[]
+  adminScopes AdminScope[]
 
   @@index([isActive])
   @@index([orderIndex])
@@ -120,6 +119,7 @@ model Module {
 
   // Relationships
   section Section @relation(fields: [sectionId], references: [id])
+  adminScopes AdminScope[]
 
   @@index([sectionId])
   @@index([isActive])
@@ -165,21 +165,22 @@ model Notification {
   @@map("notifications")
 }
 
-// AdminScope - Admin Permissions
 model AdminScope {
-  id          String    @id @default(cuid())
-  adminUserId BigInt    @map("admin_user_id")
-  scopeType   ScopeType
-  scopeId     String    @map("scope_id")
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id        String   @id @default(cuid())
+  userId    BigInt   @map("user_id")
+  sectionId String   @map("section_id")
+  moduleId  String?  @map("module_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy BigInt   @map("created_by")
 
   // Relationships
-  adminUser User @relation(fields: [adminUserId], references: [telegramId])
-  // Note: scopeId references either Section.id or Module.id based on scopeType
-  // Prisma does not support polymorphic FK, so we handle this in application code
+  user    User    @relation("AdminScopeUser", fields: [userId], references: [telegramId])
+  section Section @relation(fields: [sectionId], references: [id])
+  module  Module? @relation(fields: [moduleId], references: [id])
+  creator User    @relation("AdminScopeCreator", fields: [createdBy], references: [telegramId])
 
-  @@unique([adminUserId, scopeType, scopeId])
-  @@index([adminUserId])
-  @@index([scopeType, scopeId])
+  @@unique([userId, sectionId, moduleId])
+  @@index([userId])
+  @@index([sectionId])
   @@map("admin_scopes")
 }
