@@ -149,8 +149,7 @@
 
 - [ ] T032 [US1] Create user management handlers (List, Change Role, Activate/Deactivate) in `packages/core/src/bot/handlers/users.ts`
 - [ ] T033 [US2] Create join request approval/rejection handlers in `packages/core/src/bot/handlers/approvals.ts`
-- [ ] T102 [US2] Implement concurrent admin protection in approval/rejection handlers: atomic status check before any DB write — if request already handled, show Arabic error 'تمت معالجة هذا الطلب مسبقاً بواسطة أدمن آخر' (FR-036)
-- [ ] T102 [US2] Implement concurrent admin protection in approval/rejection handlers: atomic status check before any DB write — if request already handled, show Arabic error via i18n key `errors.join_request.already_handled` (FR-036)
+- [ ] T102 [US2] Implement concurrent admin protection in approval/rejection handlers: atomic status check before any DB write — if request already handled, show error via i18n key `errors.join_request.already_handled` (FR-036)
 - [ ] T103 [US2] Verify join request history retention: rejected requests are never overwritten — each new submission after rejection creates a new DB row. Add unit test to confirm (FR-012)
 
 **Checkpoint**: RBAC system complete - permission management functional
@@ -164,11 +163,11 @@
 ### Section Management
 
 - [ ] T035 [P] [US3] Create section CRUD service in `packages/core/src/services/sections.ts`
-- [ ] T036 [P] [US3] Create section management handlers for Super Admin in `packages/core/src/bot/handlers/sections.ts` — includes deletion constraint: reject delete if section has active modules, show Arabic error 'لا يمكن حذف القسم لأنه يحتوي على وحدات نشطة' (FR-018)
+- [ ] T036 [P] [US3] Create section management handlers for Super Admin in `packages/core/src/bot/handlers/sections.ts` — includes deletion constraint: reject delete if section has active modules, show error via i18n key `errors.section.has_active_modules` (FR-018)
 - [ ] T037 [P] [US3] Create section menu display (list active sections) in `packages/core/src/bot/menus/sections.ts`
 - [ ] T038 [P] [US3] Create "empty section" message logic
 - [ ] T039 [P] [US3] Create section enable/disable toggle handler
-- [ ] T040 [P] Write integration tests for section CRUD including: create, edit, enable/disable, delete empty section (success), delete non-empty section (must fail with Arabic error)
+- [ ] T040 [P] Write integration tests for section CRUD including: create, edit, enable/disable, delete empty section (success), delete non-empty section (must fail with i18n error `errors.section.has_active_modules`)
 
 ### Module Discovery & Loading
 
