@@ -224,7 +224,7 @@ System tracks user actions and maintains session state.
 
 ### Measurable Outcomes
 - **SC-001**: First user can complete bootstrap process in under 30 seconds
-- **SC-002**: System can handle ~200 concurrent users without performance degradation
+- **SC-002**: System can handle ~200 concurrent users without performance degradation. Degradation is defined as: p95 response time exceeding 1000ms OR error rate exceeding 1% under 200 concurrent users (baseline: <500ms per NFR-001).
 - **SC-003**: Audit log captures all significant actions with 100% accuracy (no gaps)
 - **SC-004**: Session persistence works across bot interactions for 24-hour period
 - **SC-005**: Maintenance mode toggle affects all non-Super Admin users within 5 seconds

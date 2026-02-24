@@ -1,6 +1,6 @@
 # Implementation Plan: Platform Core (Layer 1)
 
-**Branch**: `001-platform-core` | **Date**: 2026-02-17 | **Spec**: [spec.md](./spec.md)
+**Branch**: `001-platform-core` | **Date**: 2026-02-17 | **Spec**: [spec.md](./spec.md) | **Constitution**: v1.9.0
 
 **Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
@@ -394,7 +394,7 @@ npm run test:coverage
 
 ### Agent Context Update
 
-Running agent context update to incorporate technical decisions from current plan...
+Technical decisions incorporated: grammY 1.x webhook mode via Hono, Redis session adapter, RBAC with AdminScope, runtime module discovery. Constitution version: 1.9.0.
 
 ## Constitution Re-check
 
