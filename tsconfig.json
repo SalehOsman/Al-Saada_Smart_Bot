@@ -1,17 +1,17 @@
 {
   "compilerOptions": {
-    "strict": true,
     "target": "ES2022",
+    "baseUrl": ".",
+    "rootDir": ".",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "outDir": "dist",
-    "rootDir": ".",
-    "baseUrl": ".",
     "paths": {
       "@core/*": ["packages/core/src/*"]
-    }
+    },
+    "strict": true,
+    "outDir": "dist",
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "include": [
     "packages/**/src/**/*",

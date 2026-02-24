@@ -1,8 +1,9 @@
-import { BotError, Context } from 'grammy'
+import type { BotError } from 'grammy'
+import type { BotContext } from '../../types/context'
 import logger from '../../utils/logger'
 
 // Error handling middleware for grammY
-export function errorHandler(err: BotError<Context>) {
+export function errorHandler(err: BotError<BotContext>) {
   const ctx = err.ctx
   const e = err.error
 
@@ -14,10 +15,11 @@ export function errorHandler(err: BotError<Context>) {
     update: ctx.update.update_id,
   }, 'Bot error occurred')
 
-  // Send user-friendly Arabic message
+  // Send user-friendly message via i18n
   try {
-    ctx.reply('حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.')
-  } catch {
+    ctx.reply(ctx.t('error_generic'))
+  }
+  catch {
     // If we can't even reply, just log it
     logger.error('Failed to send error message to user')
   }

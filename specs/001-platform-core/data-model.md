@@ -15,15 +15,19 @@ Stores all bot users with their profile and role information.
 
 ```prisma
 model User {
-  telegramId    BigInt   @id @unique @map("telegram_id")
-  firstName     String   @map("first_name")
-  lastName      String?  @map("last_name")
-  phone         String?  // Egyptian phone format: 01[0125][0-9]{8}
-  role          Role     @default(VISITOR)
-  isActive      Boolean  @default(true) @map("is_active")
-  language      String   @default("ar") // ISO 639-1
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  telegramId        BigInt    @id @unique @map("telegram_id")
+  id                String    @default(cuid()) @unique
+  fullName          String    @map("full_name")
+  nickname          String?   @map("nickname")
+  telegramUsername  String?   @map("telegram_username")
+  phone             String?   @unique // Egyptian phone format: /^(010|011|012|015)\d{8}$/
+  nationalId        String?   @unique @map("national_id") // Egyptian National ID: 14 digits
+  role              Role      @default(VISITOR)
+  isActive          Boolean   @default(true) @map("is_active")
+  language          String    @default("ar") // ISO 639-1
+  lastActiveAt      DateTime? @map("last_active_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
 
   // Relationships
   joinRequests  JoinRequest[]
@@ -79,6 +83,7 @@ Dynamic sections that organize modules in the bot interface.
 ```prisma
 model Section {
   id          String    @id @default(cuid())
+  slug        String    @unique
   name        String    // Arabic name
   nameEn      String    // English name
   icon        String    // Emoji (e.g., "📁", "💼")
@@ -102,9 +107,10 @@ Modules discovered at runtime with their configuration metadata.
 ```prisma
 model Module {
   id          String    @id @default(cuid())
+  slug        String    @unique
   name        String    // Module name in Arabic
   nameEn      String    // Module name in English
-  sectionId   String    @map("section_id")
+  sectionSlug String    @map("section_slug")
   icon        String    // Menu icon emoji
   isActive    Boolean   @default(true) @map("is_active")
   orderIndex  Int       @default(0) @map("order_index")
@@ -112,7 +118,7 @@ model Module {
   createdAt   DateTime  @default(now()) @map("created_at")
 
   // Relationships
-  section     Section   @relation(fields: [sectionId], references: [id])
+  section     Section   @relation(fields: [sectionSlug], references: [slug])
 
   @@map("modules")
 }
@@ -174,15 +180,15 @@ model AdminScope {
   id         String           @id @default(cuid())
   adminUserId BigInt           @map("admin_user_id")
   scopeType  ScopeType
-  scopeId    String           @map("scope_id")
+  scopeSlug  String           @map("scope_slug")
   createdAt  DateTime         @default(now()) @map("created_at")
 
   // Relationships
   adminUser  User             @relation(fields: [adminUserId], references: [telegramId])
-  // Note: scopeId references either Section.id or Module.id based on scopeType
+  // Note: scopeSlug references either Section.slug or Module.slug based on scopeType
   // Prisma does not support polymorphic FK, so we handle this in application code
 
-  @@unique([adminUserId, scopeType, scopeId])
+  @@unique([adminUserId, scopeType, scopeSlug])
   @@map("admin_scopes")
 }
 
@@ -211,13 +217,15 @@ model JoinRequest {
 
 // Section indexes
 model Section {
+  @@index([slug])
   @@index([isActive])
   @@index([orderIndex])
 }
 
 // Module indexes
 model Module {
-  @@index([sectionId])
+  @@index([sectionSlug])
+  @@index([slug])
   @@index([isActive])
   @@index([orderIndex])
 }
@@ -240,7 +248,7 @@ model Notification {
 // AdminScope indexes
 model AdminScope {
   @@index([adminUserId])
-  @@index([scopeType, scopeId])
+  @@index([scopeType, scopeSlug])
 }
 ```
 
@@ -248,8 +256,8 @@ model AdminScope {
 
 ### Phone Number Validation
 ```typescript
-// Egyptian mobile numbers only
-const egyptianPhoneRegex = /^01[0125][0-9]{8}$/;
+// Egyptian mobile numbers only — operators: 010 Vodafone, 011 Etisalat, 012 Orange, 015 WE
+const egyptianPhoneRegex = /^(010|011|012|015)\d{8}$/;
 ```
 
 ### Name Validation
@@ -262,6 +270,12 @@ const nameRegex = /^[\p{L}\s\u0621-\u064A\u0660-\u0669]+$/u;
 ```typescript
 // Must be valid Telegram user ID
 const telegramId = telegramId; // BigInt from Telegram
+```
+
+### Slug Validation
+```typescript
+// Lowercase, alphanumeric, dashes only. Max 64 chars.
+const slugRegex = /^[a-z0-9-]+$/;
 ```
 
 ## Enum Definitions
@@ -323,7 +337,8 @@ Any role → INACTIVE (via admin action)
 - Modules must be in modules/ directory at project root
 - Each module must have module.config.ts file
 - Invalid module configs are logged but don't crash the bot
-- Modules are automatically assigned to sections via config
+- Modules are automatically assigned to sections via `sectionSlug`
+- Slugs are stable identifiers guaranteed to not change across renames
 
 ### 4. Audit Log Requirements
 - All user actions are logged except read-only operations

@@ -3,14 +3,14 @@ import { z } from 'zod'
 
 const envSchema = z.object({
   // Bot configuration
-  BOT_TOKEN: z.string({
-    required_error: 'BOT_TOKEN is required',
+  BOT_TOKEN: z.string().min(1, {
+    message: 'BOT_TOKEN is required',
   }),
   WEBHOOK_URL: z.string().url().optional(),
 
   // Database configuration
-  DATABASE_URL: z.string({
-    required_error: 'DATABASE_URL is required',
+  DATABASE_URL: z.string().min(1, {
+    message: 'DATABASE_URL is required',
   }),
 
   // Redis configuration

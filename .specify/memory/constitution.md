@@ -1,11 +1,11 @@
 <!--
 Sync Impact Report:
-- Version change: 1.6.0 → 1.7.0 (MINOR: Formalized integration of AI Agent Skills)
-- Modified principles: Technology Stack, Governance (Added rules for AI Agent Skills usage)
+- Version change: 1.9.0 → 2.0.0 (MAJOR: Added i18n-Only User Text principle)
+- Modified principles: Core Principles (added Principle VII)
 - Added sections: None
 - Removed sections: None
 - Modified sections: Amendment History, Version Metadata
-- Templates requiring updates: ✅ spec.md, ✅ tasks.md (propagated changes to bootstrap logic and US/Task descriptions)
+- Templates requiring updates: ✅ tasks.md (update references to hardcoded Arabic text)
 - No deferred placeholders
 -->
 
@@ -212,6 +212,59 @@ All validators must support Egyptian formats (national ID, phone numbers, tax ID
 - Maintenance mode for safe deployments.
 - Input sanitization on all user inputs.
 
+### VII. i18n-Only User Text (NON-NEGOTIABLE)
+Arabic is the primary language of the application. However, Arabic text is STRICTLY FORBIDDEN in source code files.
+
+**The Rule:** All user-facing text — messages, labels, button captions, error messages, status strings, and any text displayed to users — MUST be defined exclusively in `.ftl` locale files:
+- `packages/core/src/locales/ar.ftl` — Arabic (primary)
+- `packages/core/src/locales/en.ftl` — English (secondary)
+
+**In Code:**
+- Reference translation keys only: `ctx.t('errors.section.has_active_modules')`
+- Functions that classify data (gender, status, role) MUST return i18n keys, not display text
+- No Arabic string literals anywhere in TypeScript/JavaScript source files
+
+**In Specification Documents (spec.md, tasks.md, plan.md):**
+- When documenting error messages, write: via i18n key `errors.example.key`
+- Never write the Arabic text directly in task descriptions
+
+**Violation Examples:**
+- ❌ `ctx.reply('لا يمكن حذف القسم')` — hardcoded Arabic in code
+- ❌ `return 'ذكر'` — Arabic in function return
+- ✅ `ctx.reply(ctx.t('errors.section.has_active_modules'))` — correct
+- ✅ `return 'gender.male'` — returns i18n key
+
+**Why:** Mixing Arabic text in source code causes encoding issues, makes code reviews harder, breaks grep/search tools, and violates single-responsibility principle. Locale files are the single source of truth for all displayed text.
+
+### VIII. Simplicity Over Cleverness
+Start simple, add complexity only when proven necessary. YAGNI principle strictly enforced. No premature optimization. Clear naming conventions (Arabic-friendly). Every file has a single clear purpose.
+
+### IX. Monorepo Structure
+The project uses a monorepo with clear package separation:
+- packages/core — Platform Core (Layer 1)
+- packages/flow-engine — Flow Engine (Layer 2)
+- packages/validators — Egyptian validation library
+- packages/ai-assistant — AI Operational Assistant with RAG (Phase 4)
+- modules/ — All modules (config files only)
+
+### X. Zero-Defect Gate (NON-NEGOTIABLE)
+No phase or task may proceed until all issues from the current phase are fully resolved.
+
+**The Rule:** Never advance with broken code — every step must be 100% correct before moving to the next.
+
+**Mandatory sequence for every Phase:**
+1. Run `/speckit.analyze` → zero issues required before implementation
+2. Fix CRITICAL → fix HIGH → fix MEDIUM
+3. Re-run `/speckit.analyze` → confirm zero issues
+4. Run `/speckit.implement` → execute tasks
+5. All tests must be 100% passing
+6. Final `/speckit.analyze` → confirm clean state
+7. Only then advance to next Phase
+
+**Applies to:** all `/speckit.analyze` findings, all TypeScript/Linting errors, all test failures, all cross-artifact inconsistencies (spec, plan, tasks, constitution).
+
+**Violation:** Advancing to any new step with unresolved issues is an explicit constitutional breach requiring immediate rollback and full remediation before continuing.
+
 ### VII. Simplicity Over Cleverness
 Start simple, add complexity only when proven necessary. YAGNI principle strictly enforced. No premature optimization. Clear naming conventions (Arabic-friendly). Every file has a single clear purpose.
 
@@ -228,7 +281,7 @@ The project uses a monorepo with clear package separation:
 ### Core
 - **Runtime:** Node.js ≥20
 - **Language:** TypeScript 5.x (strict mode)
-- **Bot Framework:** grammY + @grammyjs/conversations + @grammyjs/hydrate
+- **Bot Framework:** grammY 1.x + @grammyjs/conversations + @grammyjs/hydrate
 - **Server:** Hono (webhook + optional API)
 - **ORM:** Prisma with PostgreSQL
 - **Cache:** Redis (ioredis)
@@ -252,17 +305,21 @@ The project uses a monorepo with clear package separation:
 - **Build:** tsup (production) + tsx (development)
 - **Commits:** commitlint (conventional commits)
 - **Changelog:** changelogen
-- **AI Agent Skills:** Curated skills from `antigravity-awesome-skills` installed locally in `.agents/skills/` to empower the AI Executor (e.g., Code Review, TDD, Architecture patterns).
+- **AI Agent Skills:** Curated skills from `antigravity-awesome-skills` installed locally in `.agents/skills/`. Governance rules: (1) Skills must be cherry-picked individually — no bulk installation. (2) Skills must NOT be used to bypass Config-First architecture. (3) Only the Technical Advisor (AI) selects and applies skills — the Executor follows the plan.
 
 ### AI Assistant (Phase 4)
 - **AI Framework:** Vercel AI SDK (@ai-sdk/*) — unified interface for all models
-- **Primary Model (Local):** Qwen3-8B running via Ollama — Apache 2.0 license, excellent Arabic support (100+ languages), 32K-128K context window for RAG, built-in function calling and tool use, handles 90% of daily queries with full data privacy
+- **Primary Model (Local):** Qwen2.5:7b running via Ollama — lighter than Qwen3-8B, excellent Arabic support, handles 90% of daily queries with full data privacy
+- **Embeddings Model:** nomic-embed-text via Ollama — Arabic-capable, fully local, no external APIs
 - **Fallback Models (Cloud):** Gemini API (free tier), Claude API, OpenAI API — for complex analysis when local model is insufficient
-- **RAG Engine:** pgvector (PostgreSQL extension) — embeddings from company database (employees, equipment, finances, sections, modules, audit logs)
-- **Embeddings:** Generated locally via Ollama (Qwen3 embedding model) from company data
+- **RAG Engine:** pgvector (PostgreSQL extension) — embeddings from company database (employees, equipment, finances, sections, modules, audit logs) — no additional DB required
 - **Speech-to-Text (STT):** OpenAI Whisper API or Google STT — converts voice messages to text
 - **Text-to-Speech (TTS):** Google TTS or OpenAI TTS — Arabic voice responses
 - **Model Switching:** All AI settings configurable from bot by Super Admin (no code changes)
+- **Parallel Build Strategy:** AI infrastructure built in parallel with Layer 1 — not after it
+  - Phase A (parallel with Phase 6-7): pgvector + Ollama in docker-compose, empty packages/ai-assistant/ scaffold
+  - Phase B (parallel with Phase 8-9): Embeddings table in Prisma, Embedding Service, RAG Service, LLM Client
+  - Phase C (after Phase 11): Full bot integration, RBAC on RAG, conversation UI
 
 ## Development Phases
 
@@ -291,7 +348,8 @@ The project uses a monorepo with clear package separation:
 
 ### Phase 4: AI Operational Assistant (Feature 004)
 - RAG engine trained on company database using pgvector embeddings — not general AI, but company-specific knowledge
-- Primary local model: Qwen3-8B via Ollama (Apache 2.0, best-in-class Arabic support, function calling, 32K-128K context) for daily queries with full data privacy
+- Primary local model: Qwen2.5:7b via Ollama — lighter, faster, excellent Arabic support, full data privacy
+- Embeddings: nomic-embed-text via Ollama — fully local, Arabic-capable
 - Cloud models (Gemini/Claude/GPT) as fallback for complex tasks
 - All AI configuration managed from bot by Super Admin:
   - Default model selection (local or cloud)
@@ -304,6 +362,10 @@ The project uses a monorepo with clear package separation:
 - All AI responses respect RBAC — user only gets answers about data they have permission to access
 - AI is read-only — no data modification through AI, only queries and reports
 - Provider-agnostic via Vercel AI SDK — switch models by changing one config value from bot
+- **Parallel Build Strategy (decided 2026-02-24):** AI infrastructure is built in parallel with Layer 1 phases, not after full completion:
+  - Phase A (parallel Phase 6-7): docker-compose adds pgvector + Ollama services, packages/ai-assistant/ scaffold created
+  - Phase B (parallel Phase 8-9): Embedding table in Prisma, Embedding Service, RAG Service, LLM Client built
+  - Phase C (after Phase 11): Full integration — RBAC-aware RAG, bot conversation handler, production-ready
 
 ## Governance
 
@@ -325,6 +387,9 @@ The project uses a monorepo with clear package separation:
 - No module-specific code is allowed in platform packages (packages/core, packages/flow-engine)
 - Any deviation from the constitution must be documented and justified
 - Code reviews must verify constitutional compliance
+- **Strict Methodology Adherence (NON-NEGOTIABLE):** The Technical Advisor (AI) and the Executor (AI) MUST strictly follow the operating procedures defined by [github/spec-kit](https://github.com/github/spec-kit) and [sickn33/antigravity-awesome-skills](https://github.com/sickn33/antigravity-awesome-skills).
+  - **Advisor Rule:** The Advisor must plan, create clear task cards, and use specific Antigravity skills (like `architect`, `plan-writing`, `conductor`) without jumping into manual raw bash implementation unless explicitly necessary for a break-glass fix.
+  - **Executor Rule:** The Executor (`/speckit.implement`) must ONLY implement predefined implementation tasks from `tasks.md`. It must NOT be used to hack documentation files (`spec.md`, `tasks.md`, etc.) via bash commands. The `analyze` gate MUST be respected before implementation.
 - **AI Skills Restriction:** AI Agent Skills MUST NOT be used to bypass the Config-First architecture. They must be cherry-picked and installed individually as needed, rather than blindly bulk-installed.
 
 ### Amendment History
@@ -339,5 +404,7 @@ The project uses a monorepo with clear package separation:
 | 1.5.0 | 2026-02-20 | Added Secure Bootstrap rule to Principle VI (Security & Privacy) |
 | 1.6.0 | 2026-02-20 | Updated Principle VI to use Telegram ID (INITIAL_SUPER_ADMIN_ID) instead of phone number for bootstrapping |
 | 1.7.0 | 2026-02-20 | Formalized integration and governance of Antigravity Awesome Skills |
+| 1.8.0 | 2026-02-24 | Updated AI Assistant: Qwen2.5:7b (from Qwen3-8B), added nomic-embed-text for embeddings, defined Parallel Build Strategy (Phase A/B/C) |
+| 2.0.0 | 2026-02-24 | Added Principle VII: i18n-Only User Text — Arabic forbidden in source code, all text via .ftl locale files. Renumbered principles VIII-XI. |
 
-**Version**: 1.7.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-02-20
+**Version**: 2.0.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-02-24

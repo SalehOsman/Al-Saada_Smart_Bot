@@ -1,6 +1,6 @@
 import { Bot } from 'grammy'
 import { hydrate } from '@grammyjs/hydrate'
-import { conversations } from '@grammyjs/conversations'
+import { conversations, createConversation } from '@grammyjs/conversations'
 import { Hono } from 'hono'
 import { env } from '../config/env'
 import logger from '../utils/logger'
@@ -11,6 +11,7 @@ import { errorHandler } from './middlewares/error'
 import { startHandler } from './handlers/start'
 import { menuHandler } from './handlers/menu'
 import { joinConversation } from './conversations/join'
+import { healthRouter } from '../server/health'
 
 // Create grammy bot instance using BOT_TOKEN from environment
 export const bot = new Bot<BotContext>(env.BOT_TOKEN)
@@ -32,6 +33,9 @@ bot.use(i18n)
 // Conversations plugin for multi-step flows
 bot.use(conversations())
 
+// Register join conversation (must be registered before any handlers)
+bot.use(createConversation(joinConversation, 'join'))
+
 // --- Handlers ---
 
 // /start command
@@ -40,11 +44,17 @@ bot.command('start', startHandler)
 // /menu command
 bot.command('menu', menuHandler)
 
-// Register join conversation
-bot.conversation('join', joinConversation)
+// Handle "submit join request" button (shown after cancellation)
+bot.callbackQuery('start_join', async (ctx) => {
+  await ctx.answerCallbackQuery()
+  await ctx.conversation.enter('join')
+})
 
 // Create Hono app instance for webhook server
 export const app = new Hono()
+
+// Health check endpoint
+app.route('/', healthRouter)
 
 // Setup webhook route to receive updates from Telegram
 app.post('/webhook', async (c) => {

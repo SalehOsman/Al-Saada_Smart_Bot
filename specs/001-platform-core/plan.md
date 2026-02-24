@@ -1,6 +1,6 @@
 # Implementation Plan: Platform Core (Layer 1)
 
-**Branch**: `001-platform-core` | **Date**: 2026-02-17 | **Spec**: [spec.md](./spec.md)
+**Branch**: `001-platform-core` | **Date**: 2026-02-17 | **Spec**: [spec.md](./spec.md) | **Constitution**: v1.9.0
 
 **Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
@@ -102,7 +102,7 @@ packages/
 │   │   │   └── sections.test.ts
 │   │   └── e2e/           # End-to-end tests
 │   └── package.json        # Package dependencies and scripts
-├── validators/             # Egyptian format validators
+├── validators/             # Egyptian format validators (packages/validators/)
 # Infrastructure
 ├── docker-compose.yml # PostgreSQL + Redis + Bot services
 ├── prisma/
@@ -110,7 +110,7 @@ packages/
 └── modules/           # Empty directory for future modules
 ```
 
-**Structure Decision**: Monorepo with `packages/core/` as the Platform Core package and `packages/validators/` for Egyptian format validators. All source code follows the specified architecture with clear separation of concerns.
+**Structure Decision**: Monorepo with `packages/core/` as the Platform Core package and `packages/validators/` for Egyptian format validators. Note: the tree above shows `validators/` as a shorthand — the actual path is `packages/validators/`. All source code follows the specified architecture with clear separation of concerns.
 
 ## Complexity Tracking
 
@@ -159,6 +159,8 @@ packages/
 ### Database Schema (`data-model.md`)
 
 #### Core Tables
+
+<!-- Source of truth for all entity definitions is spec.md > Key Entities. This section is for implementation reference only. If conflict exists, spec.md takes precedence. -->
 
 **User** - Telegram bot users
 - `telegramId` BIGINT PRIMARY KEY (Telegram user ID)
@@ -392,7 +394,7 @@ npm run test:coverage
 
 ### Agent Context Update
 
-Running agent context update to incorporate technical decisions from current plan...
+Technical decisions incorporated: grammY 1.x webhook mode via Hono, Redis session adapter, RBAC with AdminScope, runtime module discovery. Constitution version: 1.9.0.
 
 ## Constitution Re-check
 
@@ -404,6 +406,20 @@ Running agent context update to incorporate technical decisions from current pla
 ✅ **Egyptian Context**: All validators support Egyptian phone formats and Arabic UI
 ✅ **Security & Privacy**: Audit logging excludes sensitive data, Redis sessions secure
 ✅ **Monorepo Structure**: Clear package separation in packages/core/
+
+## Post-Plan Additions (Tasks added after initial plan)
+
+> These tasks were identified during implementation and added to `tasks.md` after the initial plan was created.
+
+| Task | Phase | Description | Reason Added |
+|------|-------|-------------|--------------|
+| T083 | 2 | Create input validation and sanitization utilities in `packages/validators/src/` | FR-033 coverage gap discovered during Phase 2 |
+| T084 | 4 | Implement AdminScope authorization logic in `canAccess()` | FR-029 required explicit AdminScope handling beyond basic RBAC |
+| T085 | 6 | Implement `unregisterModule()` API function | FR-030 explicitly requires this function alongside registerModule() |
+| T086 | 7 | Implement Redis pub/sub for maintenance mode propagation | NFR-002 requires 5-second propagation across all instances |
+| T087 | 10 | Implement Redis fallback to in-memory sessions | Edge case defined in spec (Redis unavailability fallback) |
+
+---
 
 ## Next Steps
 
