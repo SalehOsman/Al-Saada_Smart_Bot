@@ -163,7 +163,36 @@ npm run build
 npm start
 ```
 
-## Common Commands
+## Production Deployment & Monitoring
+
+### Uptime Monitoring (SC-008)
+
+For production deployment, set up external uptime monitoring to maintain 99.9% uptime as required by SC-008:
+
+**Recommended Tools:**
+- **UptimeRobot** (Free tier): Monitor HTTP/HTTPS endpoints every 5 minutes
+- **Healthchecks.io**: Monitor webhook endpoints with custom intervals
+- **Datadog**: Full APM monitoring with alerts
+
+**Configuration:**
+```bash
+# Monitor bot webhook endpoint (from docker-compose.yml healthcheck)
+curl -I http://localhost:3000/health
+
+# Monitor PostgreSQL health
+curl -s http://localhost:5434/ || echo "PostgreSQL down"
+
+# Monitor Redis health
+redis-cli ping || echo "Redis down"
+```
+
+**Alert Setup:**
+- Notify on consecutive failures (2-3 checks)
+- Include incident response contacts
+- Schedule maintenance windows for updates
+- Test alerts regularly
+
+### Common Commands
 
 ### Bot Commands (in Telegram)
 - `/start` - Bootstrap new user or show main menu

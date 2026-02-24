@@ -234,6 +234,9 @@
 - [ ] T056 [P] Implement notification history storage in `packages/core/src/services/notifications.ts`
 - [ ] T081 [P] Create notification cleanup cron job: delete notifications older than 90 days (retention policy per FR-032). Schedule: runs daily at 02:00 AM Africa/Cairo timezone using node-cron.
 - [ ] T099 [P] [US2] Integration test: verify SC-009 — send join request, confirm 95%+ of Super Admins receive Telegram notification within 30 seconds (FR-013, SC-009)
+- [ ] T099 [P] [US2] Integration test: verify SC-009 — send join request, confirm 95%+ of Super Admins receive Telegram notification within 30 seconds (FR-013, SC-009)
+- [ ] T100 [P] Verify SC-008: confirm Docker health checks are configured for all services (PostgreSQL, Redis, Bot) in docker-compose.yml
+- [ ] T101 [P] Document uptime monitoring approach: add note in quickstart.md recommending UptimeRobot or similar tool for production deployment
 - [ ] T070 [US1] End-to-end test: complete user journey covering US1 acceptance scenarios: (1) INITIAL_SUPER_ADMIN_ID user sends /start → completes join flow → receives Super Admin welcome, (2) each of the 4 roles (SUPER_ADMIN, ADMIN, EMPLOYEE, VISITOR) sends /start → sees the correct role-appropriate menu with no cross-role leakage
 - [ ] T071 [US3] End-to-end test: Super Admin journey (Sections -> Modules -> Users)
 - [ ] T072 Verify 80% code coverage across all packages
