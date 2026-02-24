@@ -1,11 +1,11 @@
 <!--
 Sync Impact Report:
-- Version change: 1.6.0 → 1.7.0 (MINOR: Formalized integration of AI Agent Skills)
-- Modified principles: Technology Stack, Governance (Added rules for AI Agent Skills usage)
+- Version change: 1.9.0 → 2.0.0 (MAJOR: Added i18n-Only User Text principle)
+- Modified principles: Core Principles (added Principle VII)
 - Added sections: None
 - Removed sections: None
 - Modified sections: Amendment History, Version Metadata
-- Templates requiring updates: ✅ spec.md, ✅ tasks.md (propagated changes to bootstrap logic and US/Task descriptions)
+- Templates requiring updates: ✅ tasks.md (update references to hardcoded Arabic text)
 - No deferred placeholders
 -->
 
@@ -212,6 +212,41 @@ All validators must support Egyptian formats (national ID, phone numbers, tax ID
 - Maintenance mode for safe deployments.
 - Input sanitization on all user inputs.
 
+### VII. i18n-Only User Text (NON-NEGOTIABLE)
+Arabic is the primary language of the application. However, Arabic text is STRICTLY FORBIDDEN in source code files.
+
+**The Rule:** All user-facing text — messages, labels, button captions, error messages, status strings, and any text displayed to users — MUST be defined exclusively in `.ftl` locale files:
+- `packages/core/src/locales/ar.ftl` — Arabic (primary)
+- `packages/core/src/locales/en.ftl` — English (secondary)
+
+**In Code:**
+- Reference translation keys only: `ctx.t('errors.section.has_active_modules')`
+- Functions that classify data (gender, status, role) MUST return i18n keys, not display text
+- No Arabic string literals anywhere in TypeScript/JavaScript source files
+
+**In Specification Documents (spec.md, tasks.md, plan.md):**
+- When documenting error messages, write: via i18n key `errors.example.key`
+- Never write the Arabic text directly in task descriptions
+
+**Violation Examples:**
+- ❌ `ctx.reply('لا يمكن حذف القسم')` — hardcoded Arabic in code
+- ❌ `return 'ذكر'` — Arabic in function return
+- ✅ `ctx.reply(ctx.t('errors.section.has_active_modules'))` — correct
+- ✅ `return 'gender.male'` — returns i18n key
+
+**Why:** Mixing Arabic text in source code causes encoding issues, makes code reviews harder, breaks grep/search tools, and violates single-responsibility principle. Locale files are the single source of truth for all displayed text.
+
+### VIII. Simplicity Over Cleverness
+Start simple, add complexity only when proven necessary. YAGNI principle strictly enforced. No premature optimization. Clear naming conventions (Arabic-friendly). Every file has a single clear purpose.
+
+### IX. Monorepo Structure
+The project uses a monorepo with clear package separation:
+- packages/core — Platform Core (Layer 1)
+- packages/flow-engine — Flow Engine (Layer 2)
+- packages/validators — Egyptian validation library
+- packages/ai-assistant — AI Operational Assistant with RAG (Phase 4)
+- modules/ — All modules (config files only)
+
 ### X. Zero-Defect Gate (NON-NEGOTIABLE)
 No phase or task may proceed until all issues from the current phase are fully resolved.
 
@@ -370,6 +405,6 @@ The project uses a monorepo with clear package separation:
 | 1.6.0 | 2026-02-20 | Updated Principle VI to use Telegram ID (INITIAL_SUPER_ADMIN_ID) instead of phone number for bootstrapping |
 | 1.7.0 | 2026-02-20 | Formalized integration and governance of Antigravity Awesome Skills |
 | 1.8.0 | 2026-02-24 | Updated AI Assistant: Qwen2.5:7b (from Qwen3-8B), added nomic-embed-text for embeddings, defined Parallel Build Strategy (Phase A/B/C) |
-| 1.9.0 | 2026-02-24 | Added Principle X: Zero-Defect Gate — no phase advances until all issues resolved and tests 100% passing |
+| 2.0.0 | 2026-02-24 | Added Principle VII: i18n-Only User Text — Arabic forbidden in source code, all text via .ftl locale files. Renumbered principles VIII-XI. |
 
-**Version**: 1.9.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-02-24
+**Version**: 2.0.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-02-24
