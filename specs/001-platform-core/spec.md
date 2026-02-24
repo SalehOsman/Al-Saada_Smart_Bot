@@ -167,7 +167,7 @@ System tracks user actions and maintains session state.
 - **FR-015**: System MUST implement RBAC with 4 roles: SUPER_ADMIN, ADMIN, EMPLOYEE, VISITOR
 - **FR-016**: System MUST check user role before processing any action. Scope: all bot command handlers (/start, /sections, /maintenance, /audit) and all conversation flows. Implementation: via RBAC middleware injected into the Grammy middleware chain. Visitors are restricted to join-request flow only. Unauthenticated requests are rejected with Arabic error message.
 - **FR-017**: System MUST implement AdminScope table for scoped permissions (sections/modules)
-- **FR-018**: System MUST allow Super Admins to create, edit, delete, enable/disable sections. Deletion constraint: a section can only be deleted if it has ZERO active modules. Attempting to delete a non-empty section MUST show Arabic error: 'لا يمكن حذف القسم لأنه يحتوي على وحدات نشطة'. Name validation: 2-50 characters. Icon: single Unicode emoji only.
+- **FR-018**: System MUST allow Super Admins to create, edit, delete, enable/disable sections. Deletion constraint: a section can only be deleted if it has ZERO active modules. Attempting to delete a non-empty section MUST show Arabic error via i18n key 'errors.section.has_active_modules'. Name validation: 2-50 characters. Icon: single Unicode emoji only.
 - **FR-019**: System MUST display sections as main menu buttons in the bot
 - **FR-020**: System MUST implement dynamic module discovery at startup
 - **FR-021**: System MUST skip invalid module configs without crashing (log warnings)
@@ -253,7 +253,7 @@ System tracks user actions and maintains session state.
 - Q: Should the system allow users to edit their join request after submission? → A: No edits allowed - must reject and resubmit
 - Q: Should auto-generated nicknames be unique across all users? → A: No uniqueness constraint is required. Auto-generated nickname is derived from the first two name units of the full Arabic name, respecting compound prefixes (e.g., عبد, أبو, آل). Examples: صالح رجب محمد → صالح رجب | عبد الله أحمد → عبد الله | أبو بكر حسين → أبو بكر. Collisions are acceptable and statistically negligible for ≤200 users.
 - Q: Can users submit multiple join requests? → A: No. The system checks for an existing PENDING request by `telegramId` before starting the join flow. If a PENDING request exists, the user is shown their current status and the new request is rejected.
-- Q: What happens if a user with PENDING status tries again? → A: The system shows the message: "لديك طلب انضمام قيد المراجعة بالفعل" and exits the conversation without creating a new request.
+- Q: What happens if a user with PENDING status tries again? → A: The system shows the message via i18n key 'errors.join_request.already_pending' and exits the conversation without creating a new request.
 
 ### Session 2026-02-24
 

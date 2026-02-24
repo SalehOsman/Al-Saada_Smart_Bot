@@ -66,7 +66,7 @@
 - [x] T018 Create Prisma client singleton in `packages/core/src/database/`
 - [x] T019 Create grammY session storage adapter using Redis. Depends on T017 (Redis).
 - [x] T020 Create error handling middleware (catches errors, sends Arabic message). Depends on T014 (Logger).
-- [ ] T083 [P] Create input validation and sanitization utilities in `packages/validators/src/` (Zod schemas, XSS sanitization)
+- [ ] T083 [P] Create input validation and sanitization utilities in `packages/validators/src/` (Zod schemas, XSS sanitization, and explicit `egyptianPhoneNumber`, `egyptianNationalId` extraction functions)
 
 ### Internationalization & Utilities
 
@@ -115,7 +115,7 @@
 - [ ] T027 [US2] Trigger notification to Super Admins about new join request (uses Notification Service)
 - [x] T028 [US2] Implement "pending approval" response logic for returning visitors in `packages/core/src/bot/handlers/start.ts`
 - [ ] T058 [US2] Write integration tests for join request flow covering all US2 acceptance scenarios: (1) new user submits full flow (Start → name → phone → ID → confirm → PENDING saved → admins notified), (1a) returning PENDING user sends /start again → sees Arabic pending message with date, (2) Super Admin approves/rejects → user notified, (3) approved user sends /start → sees EMPLOYEE menu (not pending message)
-- [ ] T097 [P] [US2] Integration test: user with PENDING join request sends /start again → system shows 'لديك طلب انضمام قيد المراجعة بالفعل' message AND does NOT create a duplicate request in the database
+- [ ] T097 [P] [US2] Integration test: user with PENDING join request sends /start again → system shows message via i18n key 'errors.join_request.already_pending' AND does NOT create a duplicate request in the database
 - [ ] T066-B [P] [US5] Implement audit logging for session events (USER_LOGIN = new session after 24h expiry, USER_LOGOUT = session expiry) in audit service
 
 # Note: Tasks T088-T091 are NOT duplicates — each adds a distinct shared utility required for Phase 5 RBAC flows: T088=conversation utils, T089=user input collectors, T090=formatters, T091=refactor join.ts to use them.
