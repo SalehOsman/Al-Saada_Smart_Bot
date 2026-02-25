@@ -28,7 +28,7 @@
 
 ### Docker Configuration
 
-- [x] T005 [P] Create docker-compose.yml with PostgreSQL 16 + Redis 7 services
+- [x] T005 [P] Create docker-compose.yml with PostgreSQL 16 + Redis 7 services. Redis MUST be configured with persistence enabled: set `--appendonly yes` (AOF) in the Redis command, and mount a named volume `redis_data` to `/data`. This ensures system settings (e.g., `system:defaultLanguage`, `system:activeNotificationTypes`) survive container restarts (required by T105, T106).
 - [x] T006 [P] Create .env.example with Zod validation schema for environment variables
 
 ### Database Setup
@@ -127,7 +127,7 @@
 - [x] T088 [US2] Extract shared conversation utilities into `packages/core/src/bot/utils/conversation.ts`
       (createMessageTracker, trackMessage, deleteTrackedMessages, waitForTextOrCancel, waitForSkippable, waitForConfirm, sendCancelled)
 - [x] T089 [US2] Extract shared user input collectors into `packages/core/src/bot/utils/user-inputs.ts`
-      (askForArabicName, askForPhone, askForNationalId, generateNickname)
+      (askForArabicName, askForPhone, askForNationalId, generateNickname). ALL conversation prompts sent to users (e.g., "Enter your name", "Enter your phone") MUST use i18n keys via `ctx.t('key')` — no hardcoded Arabic or English strings (Constitution Principle VII).
 - [x] T090 [US2] Extract shared formatters and admin notifier into `packages/core/src/bot/utils/formatters.ts`
       (formatArabicDate, formatGender, notifyAdmins)
 - [x] T091 [US2] Refactor join.ts to use bot/utils — all flow messages deleted before final result
@@ -169,7 +169,7 @@
 ### Section Management
 
 - [ ] T035 [P] [US3] Create section CRUD service in `packages/core/src/services/sections.ts`
-- [ ] T036 [P] [US3] Create section management handlers for Super Admin in `packages/core/src/bot/handlers/sections.ts` — includes deletion constraint: reject delete if section has active modules, show error via i18n key `errors-section-has-active-modules` (FR-018)
+- [ ] T036 [P] [US3] Create section management handlers for Super Admin in `packages/core/src/bot/handlers/sections.ts` — includes: (1) deletion constraint: reject delete if section has active modules, show error via i18n key `errors-section-has-active-modules` (FR-018), (2) input validation via Zod: section name must be 2-50 characters, icon must be exactly one Unicode emoji character — reject invalid input with i18n key `errors-validation-section-name` and `errors-validation-section-icon` respectively (FR-018).
 - [ ] T037 [P] [US3] Create section menu display (list active sections) in `packages/core/src/bot/menus/sections.ts`
 - [ ] T038 [P] [US3] Create "empty section" message logic — reply via i18n key `section-empty-modules` when a section has no active modules. Add key to both `ar.ftl` and `en.ftl`.
 - [ ] T039 [P] [US3] Create section enable/disable toggle handler
@@ -235,7 +235,7 @@
 - [ ] T060 [P] [US5] Create audit middleware (auto-logs actions) in `packages/core/src/bot/middlewares/audit.ts`
 - [x] T061 [P] [US5] ~~Define `AuditAction` in `packages/core/src/types/audit.ts`~~ — SUPERSEDED: `AuditAction` enum is already defined directly in `prisma/schema.prisma` with all 23 actions (migration `20260224231434`). Import via `import { AuditAction } from '@prisma/client'` across the codebase. No separate types file needed.
 - [ ] T062 [P] [US5] Create audit log viewer for Super Admin in `packages/core/src/bot/handlers/audit.ts`
-- [ ] T063 [P] [US5] Ensure NO sensitive data is logged (filter/sanitize)
+- [ ] T063 [P] [US5] Ensure NO sensitive data is logged in AuditLog.details (FR-027). Explicitly NEVER log the following fields in any audit entry: `nationalId`, `phone`, `password`, `token`, API keys. These fields must be stripped or replaced with `[REDACTED]` before writing to AuditLog. `userId` (telegramId) and `fullName` are acceptable in audit logs. Add unit test to verify redaction.
 - [ ] T064 [P] Write unit tests for audit service
 
 ### Session Management
