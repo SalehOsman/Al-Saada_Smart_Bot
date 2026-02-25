@@ -201,7 +201,7 @@ packages/
 - `id` STRING PRIMARY KEY (cuid)
 - `name` VARCHAR(100) NOT NULL
 - `nameEn` VARCHAR(100) NOT NULL
-- `sectionId` UUID REFERENCES Section(id)
+- `sectionId` STRING REFERENCES Section(id)
 - `icon` VARCHAR(10) NOT NULL
 - `isActive` BOOLEAN DEFAULT true
 - `orderIndex` INTEGER DEFAULT 0
@@ -213,7 +213,7 @@ packages/
 - `userId` BIGINT REFERENCES User(telegramId)
 - `action` VARCHAR(50) NOT NULL (action type)
 - `targetType` VARCHAR(50) (e.g., 'User', 'Section', 'Module')
-- `targetId` UUID (target identifier)
+- `targetId` STRING (target identifier — stores cuid for Section/Module/JoinRequest, or BigInt cast to string for User telegramId)
 - `details` JSONB (additional context)
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
@@ -317,6 +317,70 @@ paths:
                 type: object
                 properties:
                   queueId: string
+```
+
+**Module Registry**
+```yaml
+paths:
+  /modules/register:
+    post:
+      summary: Register a discovered module
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sectionId: string
+                name: string
+                nameEn: string
+                icon: string
+                configPath: string
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  moduleId: string
+  /modules/unregister:
+    post:
+      summary: Unregister a module
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                moduleId: string
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: boolean
+  /modules/by-section/{sectionId}:
+    get:
+      summary: Get active modules for a section
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    moduleId: string
+                    name: string
+                    nameEn: string
+                    icon: string
+                    isActive: boolean
 ```
 
 ## Phase 2: Quick Start & Validation
