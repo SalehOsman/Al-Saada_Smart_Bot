@@ -114,11 +114,13 @@
 - [x] T025 [US2] Create join request conversation flow in `packages/core/src/bot/conversations/join.ts` (Full Name, Phone, National ID)
 - [x] T025-B [US2] Verify National ID extraction and validation (FR-035) and Phone validation (FR-034) with unit tests
 - [x] T026 [US2] Save join request to database with PENDING status using `joinRequestService` in `packages/core/src/services/join-requests.ts`
-- [ ] T027 [US2] Trigger notification to Super Admins about new join request (uses Notification Service)
+- [ ] T027 [US2] Trigger notification to Super Admins about new join request — call `notifyAdmins()` from `packages/core/src/bot/utils/formatters.ts` (T090) with type `JOIN_REQUEST_NEW` and params `{ userName, requestCode }`. Do NOT call the Notification Service directly; always use the shared utility (Constitution Principle VIII — Shared-First).
 - [x] T028 [US2] Implement "pending approval" response logic for returning visitors in `packages/core/src/bot/handlers/start.ts`
 - [ ] T058 [US2] Write integration tests for join request flow covering all US2 acceptance scenarios: (1) new user submits full flow (Start → name → phone → ID → confirm → PENDING saved → admins notified), (1a) returning PENDING user sends /start again → sees pending message via i18n key `join-request-status-pending` with submission date, (2) Super Admin approves/rejects → user notified, (3) approved user sends /start → sees EMPLOYEE menu (not pending message)
 - [ ] T097 [P] [US2] Integration test: user with PENDING join request sends /start again → system shows message via i18n key `errors-join-request-already-pending` AND does NOT create a duplicate request in the database
-- [ ] T066-B [P] [US5] Implement audit logging for session events (USER_LOGIN = new session after 24h expiry, USER_LOGOUT = session expiry) in audit service
+- [ ] T066-B [P] [US5] Implement audit logging for session events in audit service:
+  - USER_LOGIN: log when a user sends a message and no active session exists (new session created after 24h expiry) — detected lazily on the NEXT user interaction.
+  - USER_LOGOUT: log at the same lazy detection point (session was expired) — do NOT use Redis Keyspace Notifications (not configured). Both events are inferred from session absence, not from a TTL expiry event.
 
 # Note: Tasks T088-T091 are NOT duplicates — each adds a distinct shared utility required for Phase 5 RBAC flows: T088=conversation utils, T089=user input collectors, T090=formatters, T091=refactor join.ts to use them.
 
@@ -151,7 +153,7 @@
 ### User Management Handlers
 
 - [ ] T032 [US1] Create user management handlers (List, Change Role, Activate/Deactivate) in `packages/core/src/bot/handlers/users.ts`. On deactivation: invalidate user's Redis session immediately and respond via i18n key `errors-account-deactivated`.
-- [ ] T115 [P] [US2] Implement AdminScope assignment/revocation UI in `packages/core/src/bot/handlers/users.ts` — inline buttons under the Users menu allowing Super Admin to assign or revoke section/module scopes for Admin users (FR-017). Uses AdminScope service from T031.
+- [ ] T115 [P] [US2] Implement AdminScope assignment/revocation UI in `packages/core/src/bot/handlers/users.ts` — inline buttons under the Users menu allowing Super Admin to assign or revoke section/module scopes for Admin users (FR-017). Uses AdminScope service from T031. ALL button labels and messages MUST use i18n keys from `.ftl` files (Constitution Principle VII — i18n-Only). No hardcoded Arabic or English strings in source.
 - [ ] T033 [US2] Create join request approval/rejection handlers in `packages/core/src/bot/handlers/approvals.ts`
 - [ ] T102 [US2] Implement concurrent admin protection in approval/rejection handlers: atomic status check before any DB write — if request already handled, show error via i18n key `errors-join-request-already-handled` (see spec.md Edge Cases + Clarifications Session 2026-02-24)
 - [ ] T103 [US2] Verify join request history retention: rejected requests are never overwritten — each new submission after rejection creates a new DB row. Add unit test to confirm (FR-012)
@@ -240,7 +242,7 @@
 
 - [ ] T065 [P] [US5] Create Redis session service with 24-hour TTL
 - [ ] T087 [P] [US5] Implement Redis fallback to in-memory sessions: if Redis is unavailable, fall back to in-memory Map for the current request session. Log CRITICAL warning via Pino. On every subsequent request, attempt Redis reconnection with exponential backoff (1s → 2s → 4s). Resume Redis sessions automatically once connection is restored.
-- [ ] T066 [P] [US5] Create session middleware (load/save) in `packages/core/src/bot/middlewares/session.ts`
+- [ ] T066 [P] [US5] Create session middleware (load/save) in `packages/core/src/bot/middlewares/session.ts`. On new session creation (no existing session found), initialize `locale` from `User.language` field (DB lookup by telegramId). If user not found in DB (e.g., first-ever request before bootstrap), default `locale` to `'ar'`.
 - [ ] T067 [P] [US5] Store navigation state as `currentMenu` array (navigation breadcrumb stack) in Redis session — aligns with FR-028 session contract. Example: `['sections', 'section-id-123']`. Do NOT use separate currentSection/currentModule fields.
 - [ ] T068 [P] [US5] Handle session expiry gracefully — when a session expires after 24h inactivity, clear session state and redirect user to /start flow. No i18n message needed (user simply restarts); log expiry via Pino at debug level.
 - [ ] T069 [P] Write unit tests for session service
