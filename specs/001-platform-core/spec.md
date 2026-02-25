@@ -233,7 +233,7 @@ Super Admin configures bot-wide settings.
 
 ### Key Entities *(include if feature involves data)*
 
-- **User**: Represents bot users with `telegramId` (BigInt, database primary key — directly used as PK, no separate auto-generated id), `telegramUsername`, `fullName`, `nickname` (optional, auto-generated if empty), `phone`, `nationalId` (`@unique` — one real-world identity per account; deactivated users retain their National ID), `role`, `isActive`, `lastActiveAt`, and `createdAt`. All foreign key references to User (e.g., in AuditLog, JoinRequest, AdminScope, Notification) use `telegramId`.
+- **User**: Represents bot users with `telegramId` (BigInt, database primary key — directly used as PK, no separate auto-generated id), `telegramUsername`, `fullName`, `nickname` (optional, auto-generated if empty), `phone`, `nationalId` (`@unique` — one real-world identity per account; deactivated users retain their National ID), `role`, `isActive`, `language` (ar/en preference, persists independently of Redis session TTL), `lastActiveAt`, and `createdAt`. All foreign key references to User (e.g., in AuditLog, JoinRequest, AdminScope, Notification) use `telegramId`.
 - **JoinRequest**: Pending user registrations with `fullName`, `nickname` (optional), `phone`, `nationalId`, and `status`. Rejected requests are retained indefinitely for auditing and compliance (no automatic purge).
 - **Section**: Dynamic departments with Arabic/English names, icons, active state, ordering. Section icons must be standard Unicode emoji characters (e.g., 📁, 💼, 🔧). No custom images or icon files.
 - **Module**: Discovered modules with configuration, section assignment (many-to-one: each module belongs to exactly one section via `sectionId`), permissions
