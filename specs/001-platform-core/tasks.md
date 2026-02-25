@@ -195,7 +195,7 @@
 ### Maintenance Implementation
 
 - [ ] T048 [P] [US4] Create maintenance mode middleware in `packages/core/src/bot/middlewares/maintenance.ts`
-- [ ] T049 [P] [US4] Create maintenance toggle command (Super Admin only)
+- [ ] T049 [P] [US4] Create maintenance toggle command (Super Admin only) — implement as `toggleMaintenance()` utility function in `packages/core/src/services/maintenance.ts`. This function is shared with T104 (Settings > Maintenance Toggle) to avoid duplication (FR-022 + FR-036 alias).
 - [ ] T050 [P] [US4] Create maintenance message for blocked users via i18n key `maintenance-active-message`
 - [ ] T051 [P] Store maintenance status in Redis
 - [ ] T086 [P] Implement Redis pub/sub for maintenance mode propagation (NFR-002)
@@ -212,8 +212,8 @@
 ### Settings Implementation
 
 - [ ] T104 [P] [US6] Create settings menu handler in `packages/core/src/bot/handlers/settings.ts` — main menu with 5 sub-items (Maintenance Toggle, Default Language, Notification Preferences, System Info, Backup)
-- [ ] T105 [P] [US6] Implement Default Language setting: bot-level default language (AR/EN) for new users, stored in Redis config
-- [ ] T106 [P] [US6] Implement Notification Preferences: configure active notification types and delivery settings
+- [ ] T105 [P] [US6] Implement Default Language setting: bot-level default language (AR/EN) for new users. Store in Redis as a persistent key `system:defaultLanguage` (survives restarts via Redis persistence). On bot restart, read this key to restore the setting. Does NOT affect existing users — only applied when creating new User records (User.language field default).
+- [ ] T106 [P] [US6] Implement Notification Preferences: Super Admin can mute/unmute each of the 6 NotificationType values (`JOIN_REQUEST_NEW`, `JOIN_REQUEST_APPROVED`, `JOIN_REQUEST_REJECTED`, `USER_DEACTIVATED`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`). "Delivery settings" in FR-036 means mute/unmute toggle only — no email/SMS (bot-only in Phase 1). Store active types as a Redis set `system:activeNotificationTypes`. Default: all 6 types active.
 - [ ] T107 [P] [US6] Implement System Info Display: read-only view (bot version, uptime, connected services status, environment)
 - [ ] T113 [P] [US6] Configure Docker for backup support (prerequisite for T108): (1) add `backup_data` named volume to `docker-compose.yml` mounted at `/backups` in the bot service, (2) ensure `postgresql-client` is installed in the bot's Dockerfile so `pg_dump`/`pg_restore` binaries are available at runtime.
 - [ ] T108 [P] [US6] Implement Backup (Full Control): trigger DB backup (pg_dump), download, view history, restore
@@ -241,7 +241,7 @@
 - [ ] T065 [P] [US5] Create Redis session service with 24-hour TTL
 - [ ] T087 [P] [US5] Implement Redis fallback to in-memory sessions: if Redis is unavailable, fall back to in-memory Map for the current request session. Log CRITICAL warning via Pino. On every subsequent request, attempt Redis reconnection with exponential backoff (1s → 2s → 4s). Resume Redis sessions automatically once connection is restored.
 - [ ] T066 [P] [US5] Create session middleware (load/save) in `packages/core/src/bot/middlewares/session.ts`
-- [ ] T067 [P] [US5] Store navigation state (currentSection, currentModule)
+- [ ] T067 [P] [US5] Store navigation state as `currentMenu` array (navigation breadcrumb stack) in Redis session — aligns with FR-028 session contract. Example: `['sections', 'section-id-123']`. Do NOT use separate currentSection/currentModule fields.
 - [ ] T068 [P] [US5] Handle session expiry gracefully — when a session expires after 24h inactivity, clear session state and redirect user to /start flow. No i18n message needed (user simply restarts); log expiry via Pino at debug level.
 - [ ] T069 [P] Write unit tests for session service
 
