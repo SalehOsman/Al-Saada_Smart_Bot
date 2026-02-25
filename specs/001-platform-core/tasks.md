@@ -99,7 +99,7 @@
 - [x] T022-B [US1] Implement FR-014 Bootstrap Lock security logic inside `joinRequestService.createOrBootstrap()` (check 0 admins + env var)
 - [x] T023 [US1] Implement .env-based Super Admin bootstrap logic using `INITIAL_SUPER_ADMIN_ID`
 - [x] T023-B [US1] Bootstrap logic moved to `joinRequestService.createOrBootstrap()` — no separate bootstrap conversation needed. Unified join conversation handles both bootstrap and regular join request cases.
-- [x] T024 [US1] Create welcome message handler for existing users
+- [x] T024 [US1] Create welcome message handler for existing users — reply via i18n key `welcome-user` (for EMPLOYEE/VISITOR) or `welcome-admin` (for ADMIN/SUPER_ADMIN). No hardcoded strings (Constitution Principle VII).
 
 **Checkpoint**: User & Auth system complete - user registration flow functional
 
