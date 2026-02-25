@@ -28,7 +28,7 @@ export async function menuHandler(ctx: BotContext) {
     })
 
     if (!user || !user.isActive) {
-      return ctx.reply(ctx.t('user_inactive'))
+      return ctx.reply(ctx.t('user-inactive'))
     }
 
     // Get role-specific menu text
@@ -48,21 +48,9 @@ export async function menuHandler(ctx: BotContext) {
       default:
         await showVisitorMenu(ctx, user)
     }
-
-    // Log menu access
-    await prisma.auditLog.create({
-      data: {
-        userId: telegramId,
-        action: 'MENU_ACCESS',
-        targetType: 'User',
-        targetId: user.id,
-        details: { role: user.role },
-      },
-    })
-  }
-  catch (error) {
+  } catch (error) {
     logger.error('Error in menu handler:', error)
-    return ctx.reply(ctx.t('error_generic'))
+    return ctx.reply(ctx.t('error-generic'))
   }
 }
 
@@ -70,21 +58,21 @@ export async function menuHandler(ctx: BotContext) {
  * Shows menu for Super Admin users with full system access
  */
 async function showSuperAdminMenu(ctx: BotContext, user: MenuUser) {
-  const menuText = ctx.t('menu_super_admin', { name: user.fullName })
+  const menuText = ctx.t('menu-super-admin', { name: user.fullName })
 
   // Create keyboard buttons
   const keyboard = [
     [
-      { text: ctx.t('button_sections'), callback_data: 'menu_sections' },
-      { text: ctx.t('button_users'), callback_data: 'menu_users' },
+      { text: ctx.t('button-sections'), callback_data: 'menu-sections' },
+      { text: ctx.t('button-users'), callback_data: 'menu-users' },
     ],
     [
-      { text: ctx.t('button_maintenance'), callback_data: 'menu_maintenance' },
-      { text: ctx.t('button_audit'), callback_data: 'menu_audit' },
+      { text: ctx.t('button-maintenance'), callback_data: 'menu-maintenance' },
+      { text: ctx.t('button-audit'), callback_data: 'menu-audit' },
     ],
     [
-      { text: ctx.t('button_modules'), callback_data: 'menu_modules' },
-      { text: ctx.t('button_notifications'), callback_data: 'menu_notifications' },
+      { text: ctx.t('button-modules'), callback_data: 'menu-modules' },
+      { text: ctx.t('button-notifications'), callback_data: 'menu-notifications' },
     ],
   ]
 
@@ -99,17 +87,17 @@ async function showSuperAdminMenu(ctx: BotContext, user: MenuUser) {
  * Shows menu for Admin users with management capabilities
  */
 async function showAdminMenu(ctx: BotContext, user: MenuUser) {
-  const menuText = ctx.t('menu_admin', { name: user.fullName })
+  const menuText = ctx.t('menu-admin', { name: user.fullName })
 
   // Create keyboard buttons
   const keyboard = [
     [
-      { text: ctx.t('button_sections'), callback_data: 'menu_sections' },
-      { text: ctx.t('button_users'), callback_data: 'menu_users' },
+      { text: ctx.t('button-sections'), callback_data: 'menu-sections' },
+      { text: ctx.t('button-users'), callback_data: 'menu-users' },
     ],
     [
-      { text: ctx.t('button_maintenance'), callback_data: 'menu_maintenance' },
-      { text: ctx.t('button_audit'), callback_data: 'menu_audit' },
+      { text: ctx.t('button-maintenance'), callback_data: 'menu-maintenance' },
+      { text: ctx.t('button-audit'), callback_data: 'menu-audit' },
     ],
   ]
 
@@ -124,12 +112,12 @@ async function showAdminMenu(ctx: BotContext, user: MenuUser) {
  * Shows menu for Employee users with limited access
  */
 async function showEmployeeMenu(ctx: BotContext, user: MenuUser) {
-  const menuText = ctx.t('menu_employee', { name: user.fullName })
+  const menuText = ctx.t('menu-employee', { name: user.fullName })
 
   // Create keyboard buttons for employee-level access
   const keyboard = [
     [
-      { text: ctx.t('button_sections'), callback_data: 'menu_sections' },
+      { text: ctx.t('button-sections'), callback_data: 'menu-sections' },
     ],
   ]
 
@@ -144,13 +132,13 @@ async function showEmployeeMenu(ctx: BotContext, user: MenuUser) {
  * Shows menu for Visitor users with basic access
  */
 async function showVisitorMenu(ctx: BotContext, user: MenuUser) {
-  const menuText = ctx.t('menu_visitor', { name: user.fullName })
+  const menuText = ctx.t('menu-visitor', { name: user.fullName })
 
   await ctx.reply(menuText, {
     reply_markup: {
       inline_keyboard: [
         [
-          { text: ctx.t('button_sections'), callback_data: 'menu_sections' },
+          { text: ctx.t('button-sections'), callback_data: 'menu-sections' },
         ],
       ],
     },
