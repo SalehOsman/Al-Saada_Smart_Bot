@@ -218,7 +218,8 @@
 - [ ] T106 [P] [US6] Implement Notification Preferences: Super Admin can mute/unmute each of the 6 NotificationType values (`JOIN_REQUEST_NEW`, `JOIN_REQUEST_APPROVED`, `JOIN_REQUEST_REJECTED`, `USER_DEACTIVATED`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`). "Delivery settings" in FR-036 means mute/unmute toggle only — no email/SMS (bot-only in Phase 1). Store active types as a Redis set `system:activeNotificationTypes`. Default: all 6 types active.
 - [ ] T107 [P] [US6] Implement System Info Display: read-only view (bot version, uptime, connected services status, environment)
 - [ ] T113 [P] [US6] Configure Docker for backup support (prerequisite for T108): (1) add `backup_data` named volume to `docker-compose.yml` mounted at `/backups` in the bot service, (2) ensure `postgresql-client` is installed in the bot's Dockerfile so `pg_dump`/`pg_restore` binaries are available at runtime.
-- [ ] T108 [P] [US6] Implement Backup (Full Control): trigger DB backup (pg_dump), download, view history, restore
+- [ ] T108 [P] [US6] Implement Backup (Full Control): trigger DB backup (pg_dump), download, view history, restore. The double-confirmation prompt for restore MUST use i18n key `backup-restore-confirm` (NOT hardcoded text). The confirmation keyword the user must type MUST be read from i18n key `backup-restore-confirm-keyword` — this allows Arabic/English versions (e.g., "تأكيد" / "CONFIRM") without hardcoded strings (Constitution Principle VII).
+- [ ] T116 [P] [US6] Manual verification: confirm Docker backup/restore works end-to-end — (1) trigger `pg_dump` from within the bot container, verify `.sql` file appears in `/backups` volume, (2) trigger `pg_restore` from the same file, verify data integrity after restore. Document verification steps in `quickstart.md` under a "Backup & Restore" section (FR-036).
 - [ ] T109 [P] Write unit tests for settings handlers
 
 **Checkpoint**: Settings menu complete - Super Admin configuration functional
