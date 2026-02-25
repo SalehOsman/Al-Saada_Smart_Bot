@@ -151,6 +151,7 @@
 ### User Management Handlers
 
 - [ ] T032 [US1] Create user management handlers (List, Change Role, Activate/Deactivate) in `packages/core/src/bot/handlers/users.ts`. On deactivation: invalidate user's Redis session immediately and respond via i18n key `errors-account-deactivated`.
+- [ ] T115 [P] [US2] Implement AdminScope assignment/revocation UI in `packages/core/src/bot/handlers/users.ts` — inline buttons under the Users menu allowing Super Admin to assign or revoke section/module scopes for Admin users (FR-017). Uses AdminScope service from T031.
 - [ ] T033 [US2] Create join request approval/rejection handlers in `packages/core/src/bot/handlers/approvals.ts`
 - [ ] T102 [US2] Implement concurrent admin protection in approval/rejection handlers: atomic status check before any DB write — if request already handled, show error via i18n key `errors-join-request-already-handled` (see spec.md Edge Cases + Clarifications Session 2026-02-24)
 - [ ] T103 [US2] Verify join request history retention: rejected requests are never overwritten — each new submission after rejection creates a new DB row. Add unit test to confirm (FR-012)
@@ -210,12 +211,12 @@
 
 ### Settings Implementation
 
-- [ ] T104 [P] [US1] Create settings menu handler in `packages/core/src/bot/handlers/settings.ts` — main menu with 5 sub-items (Maintenance Toggle, Default Language, Notification Preferences, System Info, Backup)
-- [ ] T105 [P] [US1] Implement Default Language setting: bot-level default language (AR/EN) for new users, stored in Redis config
-- [ ] T106 [P] [US1] Implement Notification Preferences: configure active notification types and delivery settings
-- [ ] T107 [P] [US1] Implement System Info Display: read-only view (bot version, uptime, connected services status, environment)
-- [ ] T113 [P] [US1] Configure Docker for backup support (prerequisite for T108): (1) add `backup_data` named volume to `docker-compose.yml` mounted at `/backups` in the bot service, (2) ensure `postgresql-client` is installed in the bot's Dockerfile so `pg_dump`/`pg_restore` binaries are available at runtime.
-- [ ] T108 [P] [US1] Implement Backup (Full Control): trigger DB backup (pg_dump), download, view history, restore
+- [ ] T104 [P] [US6] Create settings menu handler in `packages/core/src/bot/handlers/settings.ts` — main menu with 5 sub-items (Maintenance Toggle, Default Language, Notification Preferences, System Info, Backup)
+- [ ] T105 [P] [US6] Implement Default Language setting: bot-level default language (AR/EN) for new users, stored in Redis config
+- [ ] T106 [P] [US6] Implement Notification Preferences: configure active notification types and delivery settings
+- [ ] T107 [P] [US6] Implement System Info Display: read-only view (bot version, uptime, connected services status, environment)
+- [ ] T113 [P] [US6] Configure Docker for backup support (prerequisite for T108): (1) add `backup_data` named volume to `docker-compose.yml` mounted at `/backups` in the bot service, (2) ensure `postgresql-client` is installed in the bot's Dockerfile so `pg_dump`/`pg_restore` binaries are available at runtime.
+- [ ] T108 [P] [US6] Implement Backup (Full Control): trigger DB backup (pg_dump), download, view history, restore
 - [ ] T109 [P] Write unit tests for settings handlers
 
 **Checkpoint**: Settings menu complete - Super Admin configuration functional
@@ -265,6 +266,7 @@
 - [ ] T073 Code cleanup, formatting, and final linting
 - [ ] T074 Update quickstart.md with actual commands and verification steps
 - [ ] T098 [P] Verify Platform-First Gate: confirm `modules/` directory contains ZERO implemented module files. Run: `find modules/ -name '*.ts' | grep -v '.gitkeep'` — must return empty output. Document result in commit message.
+- [ ] T114 [P] Run final `/speckit.analyze` and confirm zero issues before tagging — Constitution Principle X Zero-Defect Gate. Do NOT proceed to T075 if any issues are found.
 - [ ] T075 Final commit and tag v0.1.0. **Note (M1):** The 90/10 rule (90% config, max 10% hook code per module) cannot be verified until Phase 3 (first business module). Add compliance verification to Phase 3 tasks.
 - [ ] T078 Verify SC-002: Load test with ~200 concurrent simulated users
 - [ ] T079 Verify FR-015: Confirm all 4 roles (SUPER_ADMIN, ADMIN, EMPLOYEE, VISITOR) display correct menus and access levels

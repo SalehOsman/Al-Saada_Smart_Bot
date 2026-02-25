@@ -17,7 +17,7 @@ vi.mock('../../../../src/utils/logger', () => ({ default: mockLogger }))
 vi.mock('../../../../src/bot/handlers/menu', () => ({ menuHandler: mockMenuHandler }))
 
 // ─── Context factory ─────────────────────────────────────────────────────
-function makeCtx(opts: { id?: number; firstName?: string; username?: string; languageCode?: string } = {}): BotContext {
+function makeCtx(opts: { id?: number, firstName?: string, username?: string, languageCode?: string } = {}): BotContext {
   const id = opts.id ?? 12345
   const firstName = opts.firstName ?? 'Test User'
   const username = opts.username ?? 'testuser'
@@ -29,15 +29,15 @@ function makeCtx(opts: { id?: number; firstName?: string; username?: string; lan
     t: vi.fn((key: string, params?: Record<string, unknown>) => {
       const date = String(params?.date ?? '')
       const map: Record<string, string> = {
-        join_request_already_pending: `Your request is pending since ${date}`,
-        error_generic: 'An error occurred',
+        'join-request-already-pending': `Your request is pending since ${date}`,
+        'error-generic': 'An error occurred',
       }
       return map[key] ?? key
     }),
   } as unknown as BotContext
 }
 
-describe('Start Handler Tests (Unified Flow)', () => {
+describe('start handler tests (unified flow)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockPrisma.user.findUnique = vi.fn()
@@ -51,7 +51,7 @@ describe('Start Handler Tests (Unified Flow)', () => {
     vi.restoreAllMocks()
   })
 
-  describe('Case 1: Existing User', () => {
+  describe('case 1: existing user', () => {
     it('should call menuHandler for existing user', async () => {
       const ctx = makeCtx()
       mockPrisma.user.findUnique.mockResolvedValue({
@@ -87,7 +87,7 @@ describe('Start Handler Tests (Unified Flow)', () => {
     })
   })
 
-  describe('Case 2: Pending Join Request', () => {
+  describe('case 2: pending join request', () => {
     it('should show pending message when user has pending join request', async () => {
       const ctx = makeCtx()
       mockPrisma.user.findUnique.mockResolvedValue(null)
@@ -112,7 +112,7 @@ describe('Start Handler Tests (Unified Flow)', () => {
     })
   })
 
-  describe('Case 3: New User - Enter Join Conversation', () => {
+  describe('case 3: new user - enter join conversation', () => {
     it('should enter join conversation for new user without pending request', async () => {
       const ctx = makeCtx()
       mockPrisma.user.findUnique.mockResolvedValue(null)
@@ -125,7 +125,7 @@ describe('Start Handler Tests (Unified Flow)', () => {
     })
   })
 
-  describe('Edge Cases', () => {
+  describe('edge cases', () => {
     it('should return early for invalid telegram ID (0)', async () => {
       const ctx = makeCtx({ id: 0 })
       await startHandler(ctx)

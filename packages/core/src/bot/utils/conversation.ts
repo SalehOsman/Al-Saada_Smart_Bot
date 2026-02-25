@@ -82,7 +82,7 @@ export function trackMessage(tracker: MessageTracker, messageId: number): void {
  *
  * @example
  * await deleteTrackedMessages(ctx, tracker)
- * await ctx.reply(ctx.t('welcome_super_admin_new'))
+ * await ctx.reply(ctx.t('welcome-super-admin-new'))
  */
 export async function deleteTrackedMessages(
   ctx: BotContext,
@@ -117,7 +117,7 @@ export async function waitForTextOrCancel(
   const sent = await ctx.reply(prompt, {
     reply_markup: {
       inline_keyboard: [
-        [{ text: ctx.t('button_cancel_flow'), callback_data: 'cancel_flow' }],
+        [{ text: ctx.t('button-cancel-flow'), callback_data: 'cancel_flow' }],
       ],
     },
   })
@@ -156,7 +156,7 @@ export async function waitForSkippable(
     reply_markup: {
       inline_keyboard: [[
         { text: skipLabel, callback_data: skipData },
-        { text: ctx.t('button_cancel_flow'), callback_data: 'cancel_flow' },
+        { text: ctx.t('button-cancel-flow'), callback_data: 'cancel_flow' },
       ]],
     },
   })
@@ -197,8 +197,8 @@ export async function waitForConfirm(
   const sent = await ctx.reply(text, {
     reply_markup: {
       inline_keyboard: [[
-        { text: ctx.t('button_confirm'), callback_data: confirmData },
-        { text: ctx.t('button_cancel'), callback_data: cancelData },
+        { text: ctx.t('button-confirm'), callback_data: confirmData },
+        { text: ctx.t('button-cancel'), callback_data: cancelData },
       ]],
     },
   })
@@ -213,8 +213,8 @@ export async function waitForConfirm(
  * Sends a standardized cancellation message with optional retry button.
  *
  * @example
- * await sendCancelled(ctx, ctx.t('join_cancelled'), {
- *   retryLabel: ctx.t('button_submit_join_request'),
+ * await sendCancelled(ctx, ctx.t('join-cancelled'), {
+ *   retryLabel: ctx.t('button-submit-join-request'),
  *   retryData: 'start_join',
  * })
  */

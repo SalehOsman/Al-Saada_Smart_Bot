@@ -1,6 +1,6 @@
 # Implementation Plan: Platform Core (Layer 1)
 
-**Branch**: `001-platform-core` | **Date**: 2026-02-17 | **Spec**: [spec.md](./spec.md) | **Constitution**: v1.9.0
+**Branch**: `001-platform-core` | **Date**: 2026-02-17 | **Spec**: [spec.md](./spec.md) | **Constitution**: v2.0.0
 
 **Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
@@ -163,23 +163,20 @@ packages/
 <!-- Source of truth for all entity definitions is spec.md > Key Entities. This section is for implementation reference only. If conflict exists, spec.md takes precedence. -->
 
 **User** - Telegram bot users
-- `telegramId` BIGINT PRIMARY KEY (Telegram user ID)
-- `id` STRING (cuid) UNIQUE
+- `telegramId` BIGINT PRIMARY KEY (Telegram user ID — no separate auto-generated id)
 - `fullName` VARCHAR(100) NOT NULL
 - `nickname` VARCHAR(100)
 - `phone` VARCHAR(20) UNIQUE (Egyptian format)
-- `nationalId` VARCHAR(14) UNIQUE (Egyptian format)
+- `nationalId` VARCHAR(14) UNIQUE (Egyptian format — one real-world identity per account)
 - `telegramUsername` VARCHAR(100)
 - `role` ENUM('SUPER_ADMIN', 'ADMIN', 'EMPLOYEE', 'VISITOR') DEFAULT 'VISITOR'
 - `isActive` BOOLEAN DEFAULT true
-- `language` VARCHAR(5) DEFAULT 'ar'
 - `lastActiveAt` TIMESTAMP
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-- `updatedAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
 **JoinRequest** - Pending user registrations
 - `id` STRING PRIMARY KEY (cuid)
-- `telegramId` BIGINT UNIQUE
+- `telegramId` BIGINT NOT NULL (not unique — rejected users can re-apply with new row)
 - `fullName` VARCHAR(100) NOT NULL
 - `nickname` VARCHAR(100)
 - `phone` VARCHAR(20) NOT NULL (Egyptian format)
@@ -220,21 +217,21 @@ packages/
 - `details` JSONB (additional context)
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
-**Notification** - Queue notifications
+**Notification** - Queue notifications (i18n-compliant: type maps to .ftl key pattern)
 - `id` STRING PRIMARY KEY (cuid)
-- `userId` BIGINT REFERENCES User(telegramId)
-- `type` ENUM('SYSTEM', 'JOIN_REQUEST', 'APPROVAL', 'REJECTION', 'ANNOUNCEMENT') NOT NULL
-- `title` VARCHAR(200) NOT NULL
-- `message` TEXT NOT NULL
+- `targetUserId` BIGINT REFERENCES User(telegramId)
+- `type` ENUM('JOIN_REQUEST_NEW', 'JOIN_REQUEST_APPROVED', 'JOIN_REQUEST_REJECTED', 'USER_DEACTIVATED', 'MAINTENANCE_ON', 'MAINTENANCE_OFF') NOT NULL
+- `params` JSONB (i18n template parameters, e.g. { "userName": "...", "requestCode": "..." })
 - `isRead` BOOLEAN DEFAULT false
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
-**AdminScope** - Admin permissions
+**AdminScope** - Admin permissions (section-level or module-level scoping)
 - `id` STRING PRIMARY KEY (cuid)
-- `adminUserId` BIGINT REFERENCES User(telegramId)
-- `scopeType` ENUM('section', 'module') NOT NULL
-- `scopeId` UUID NOT NULL (reference to Section or Module id)
+- `userId` BIGINT REFERENCES User(telegramId)
+- `sectionId` STRING REFERENCES Section(id) NOT NULL
+- `moduleId` STRING REFERENCES Module(id) (nullable — when null, grants access to entire section; when set, grants access to specific module only)
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+- `createdBy` BIGINT REFERENCES User(telegramId) (the Super Admin who assigned the scope)
 
 ### API Contracts
 
@@ -253,12 +250,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  userId: string
                   role: string
-                  language: string
-                  currentSection: string
-                  currentModule: string
-                  lastActivity: string
+                  currentMenu: array    # navigation breadcrumb stack
+                  telegramId: bigint
+                  locale: string        # ar/en
     put:
       summary: Update user session
       requestBody:
@@ -268,9 +263,8 @@ paths:
             schema:
               type: object
               properties:
-                currentSection: string
-                currentModule: string
-                lastActivity: string
+                currentMenu: array
+                locale: string
 ```
 
 **RBAC Service**
@@ -286,7 +280,7 @@ paths:
             schema:
               type: object
               properties:
-                userId: string
+                userId: bigint    # telegramId (BigInt PK)
                 sectionId: string
                 moduleId: string
       responses:
@@ -312,10 +306,9 @@ paths:
             schema:
               type: object
               properties:
-                userId: string
+                targetUserId: bigint    # telegramId (BigInt PK)
                 type: string
-                title: string
-                message: string
+                params: object    # i18n template parameters (JSONB)
       responses:
         200:
           content:
@@ -390,11 +383,12 @@ npm run test:coverage
 - `/sections` - View/manage sections (Super Admin only)
 - `/maintenance on|off` - Toggle maintenance mode (Super Admin only)
 - `/audit` - View recent audit logs (Super Admin only)
+- `/settings` - Bot settings: language, notifications, system info, backup (Super Admin only)
 ```
 
 ### Agent Context Update
 
-Technical decisions incorporated: grammY 1.x webhook mode via Hono, Redis session adapter, RBAC with AdminScope, runtime module discovery. Constitution version: 1.9.0.
+Technical decisions incorporated: grammY 1.x webhook mode via Hono, Redis session adapter, RBAC with AdminScope, runtime module discovery. Constitution version: 2.0.0.
 
 ## Constitution Re-check
 
@@ -405,7 +399,9 @@ Technical decisions incorporated: grammY 1.x webhook mode via Hono, Redis sessio
 ✅ **Config-Driven**: Module discovery system loads configuration with optional hooks (90/10 rule)
 ✅ **Egyptian Context**: All validators support Egyptian phone formats and Arabic UI
 ✅ **Security & Privacy**: Audit logging excludes sensitive data, Redis sessions secure
+✅ **i18n-Only User Text**: All user-facing text via .ftl locale files, no hardcoded strings in source
 ✅ **Monorepo Structure**: Clear package separation in packages/core/
+✅ **Zero-Defect Gate**: /speckit.analyze must pass with zero issues before implementation proceeds
 
 ## Post-Plan Additions (Tasks added after initial plan)
 

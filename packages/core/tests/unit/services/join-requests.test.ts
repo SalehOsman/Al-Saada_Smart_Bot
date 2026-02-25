@@ -97,7 +97,7 @@ describe('joinRequestService', () => {
 
       const result = await joinRequestService.createOrBootstrap(baseParams)
 
-      expect(result).toEqual({ type: 'join_request', requestId: 'jr1' })
+      expect(result).toEqual({ type: 'join-request', requestId: 'jr1' })
       expect(mockPrisma.joinRequest.create).toHaveBeenCalled()
       expect(mockPrisma.user.create).not.toHaveBeenCalled()
     })
@@ -113,7 +113,7 @@ describe('joinRequestService', () => {
 
       const result = await joinRequestService.createOrBootstrap(baseParams)
 
-      expect(result).toEqual({ type: 'join_request', requestId: 'jr2' })
+      expect(result).toEqual({ type: 'join-request', requestId: 'jr2' })
       expect(mockPrisma.joinRequest.create).toHaveBeenCalled()
     })
 
@@ -128,7 +128,7 @@ describe('joinRequestService', () => {
 
       const result = await joinRequestService.createOrBootstrap(baseParams)
 
-      expect(result).toEqual({ type: 'join_request', requestId: 'jr3' })
+      expect(result).toEqual({ type: 'join-request', requestId: 'jr3' })
     })
   })
 

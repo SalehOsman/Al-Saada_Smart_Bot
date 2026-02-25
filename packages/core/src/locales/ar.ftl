@@ -1,27 +1,27 @@
 welcome = أهلاً بك في بوت السعادة الذكي!
-error_generic = حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.
-error_network = حدث خطأ في الاتصال. يرجى التحقق من اتصالك بالإنترنت.
-maintenance_msg = النظام في وضع الصيانة حالياً. يرجى المحاولة لاحقاً.
-status_pending = طلب انضمامك قيد المراجعة حالياً. ستصلك رسالة عند الرد.
-welcome_back = أهلاً بعودتك يا { $name }!
-welcome_super_admin = أهلاً بك يا { $name } بصفتك المسؤول الأعلى للنظام (Super Admin). يمكنك البدء بإعداد الأقسام والمستخدمين.
-welcome_visitor = أهلاً بك! هذا النظام مخصص لموظفي الشركة. يرجى تقديم طلب انضمام للبدء.
+error-generic = حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.
+error-network = حدث خطأ في الاتصال. يرجى التحقق من اتصالك بالإنترنت.
+maintenance-msg = النظام في وضع الصيانة حالياً. يرجى المحاولة لاحقاً.
+status-pending = طلب انضمامك قيد المراجعة حالياً. ستصلك رسالة عند الرد.
+welcome-back = أهلاً بعودتك يا { $name }!
+welcome-super-admin = أهلاً بك يا { $name } بصفتك المسؤول الأعلى للنظام (Super Admin). يمكنك البدء بإعداد الأقسام والمستخدمين.
+welcome-visitor = أهلاً بك! هذا النظام مخصص لموظفي الشركة. يرجى تقديم طلب انضمام للبدء.
 
 # Menu Strings
-menu_super_admin = مرحباً { $name }! بصفتك المسؤول الأعلى، لديك صلاحيات كاملة للنظام:
-menu_admin = مرحباً { $name }! بصفتك مسؤولاً، يمكنك إدارة الأقسام والمستخدمين:
-menu_employee = مرحباً { $name }! يمكنك الوصول إلى الأقسام المخصصة لك:
-menu_visitor = مرحباً { $name }! لديك حق الوصول الأساسي للنظام.
+menu-super-admin = مرحباً { $name }! بصفتك المسؤول الأعلى، لديك صلاحيات كاملة للنظام:
+menu-admin = مرحباً { $name }! بصفتك مسؤولاً، يمكنك إدارة الأقسام والمستخدمين:
+menu-employee = مرحباً { $name }! يمكنك الوصول إلى الأقسام المخصصة لك:
+menu-visitor = مرحباً { $name }! لديك حق الوصول الأساسي للنظام.
 
-button_sections = الأقسام
-button_users = المستخدمون
-button_maintenance = الصيانة
-button_audit = سجل العمليات
-button_modules = الوحدات
-button_notifications = الإشعارات
+button-sections = الأقسام
+button-users = المستخدمون
+button-maintenance = الصيانة
+button-audit = سجل العمليات
+button-modules = الوحدات
+button-notifications = الإشعارات
 
 # Join Request Strings
-join_welcome =
+join-welcome =
     👋 أهلاً بك في بوت السعادة الذكي!
     
     لم يتم التعرف عليك في النظام.
@@ -30,13 +30,13 @@ join_welcome =
     يمكنك إلغاء العملية في أي وقت بإرسال /cancel
     ────────────────
 
-join_step_name =
+join-step-name =
     📝 الخطوة 1 من 4
     
     من فضلك أدخل اسمك الكامل باللغة العربية.
     مثال: أحمد محمد عبدالله
 
-join_step_nickname =
+join-step-nickname =
     ✏️ الخطوة 2 من 4
     
     هل تريد اختيار اسم شهرة (اسم مستعار)؟
@@ -44,18 +44,18 @@ join_step_nickname =
     
     أدخل الاسم، أو اضغط «تخطي» ليُولَّد تلقائياً
 
-join_step_phone =
+join-step-phone =
     📱 الخطوة 3 من 4
     
     أدخل رقم هاتفك المصري.
     الأرقام المقبولة تبدأ بـ: 010 / 011 / 012 / 015
 
-join_step_national_id =
+join-step-national-id =
     🪪 الخطوة 4 من 4
     
     أدخل رقمك القومي المصري (14 رقماً).
 
-join_confirm =
+join-confirm =
     ✅ مراجعة بيانات طلب الانضمام
     ────────────────
     👤 الاسم الكامل  : { $fullName }
@@ -68,7 +68,7 @@ join_confirm =
     هذه هي البيانات التي ستُحفظ في النظام.
     هل تؤكد إرسال الطلب؟
 
-join_request_already_pending =
+join-request-already-pending =
     ⏳ طلبك قيد المراجعة
     
     تم استلام طلب انضمامك بتاريخ { $date }
@@ -76,7 +76,7 @@ join_request_already_pending =
     
     سيصلك إشعار فور اتخاذ القرار. 🔔
 
-join_request_received =
+join-request-received =
     📨 تم إرسال طلبك بنجاح!
     
     ────────────────
@@ -88,19 +88,19 @@ join_request_received =
     سيتم مراجعة طلبك من قِبَل الإدارة.
     ستصلك رسالة فور اتخاذ القرار. 🔔
 
-join_cancelled =
+join-cancelled =
     ⛔️ تم إلغاء طلب الانضمام.
     يمكنك تقديم طلب جديد في أي وقت.
 
-button_submit_join_request = 📝 تقديم طلب انضمام
+button-submit-join-request = 📝 تقديم طلب انضمام
 
-welcome_super_admin_new =
+welcome-super-admin-new =
     🎉 مرحباً يا سوبر أدمين!
     
     تم تسجيلك بنجاح كمسؤول أول عن النظام.
     يمكنك الآن إدارة جميع أقسام وموظفي البوت.
 
-join_approved =
+join-approved =
     🎉 تهانينا! تمت الموافقة على طلبك
     
     ────────────────
@@ -112,7 +112,7 @@ join_approved =
     
     أرسل /start للدخول إلى حسابك الآن. 👇
 
-join_rejected =
+join-rejected =
     نأسف، لم تتم الموافقة على طلبك
     
     ────────────────
@@ -123,44 +123,85 @@ join_rejected =
     
     للاستفسار تواصل مع الإدارة.
 
-error_invalid_arabic_name =
+error-invalid-arabic-name =
     الاسم يجب أن يكون باللغة العربية ويحتوي على حرفين على الأقل.
     حاول مرة أخرى 👇
 
-error_invalid_phone =
+error-invalid-phone =
     رقم الهاتف غير صحيح ❌
     يجب أن يكون 11 رقماً ويبدأ بـ 010 أو 011 أو 012 أو 015
     حاول مرة أخرى 👇
 
-error_phone_exists =
+error-phone-exists =
     هذا الرقم مسجل بالفعل في النظام ❌
     إذا كان لديك حساب، تواصل مع الإدارة.
 
-error_invalid_national_id =
+error-invalid-national-id =
     الرقم القومي غير صحيح ❌
     يجب أن يكون 14 رقماً بالضبط.
     حاول مرة أخرى 👇
 
-error_national_id_exists =
+error-national-id-exists =
     هذا الرقم القومي مسجل بالفعل في النظام ❌
     إذا كان لديك حساب، تواصل مع الإدارة.
 
-button_confirm = تأكيد
-button_cancel = إلغاء
-button_skip_nickname = تخطي ←
-button_cancel_flow = ❌ إلغاء العملية
+button-confirm = تأكيد
+button-cancel = إلغاء
+button-skip-nickname = تخطي ←
+button-cancel-flow = ❌ إلغاء العملية
 
-user_inactive = حسابك غير نشط حالياً. يرجى التواصل مع المسؤول.
-user_already_exists = لقد قمت بالتسجيل مسبقاً.
-join_request_pending = لديك طلب انضمام قيد المراجعة بالفعل.
-error_invalid_telegram_id = معرّف Telegram غير صالح.
-error_required_field = هذا الحقل مطلوب.
-error_name_too_short = الاسم قصير جداً. يرجى إدخال اسم كامل.
+user-inactive = حسابك غير نشط حالياً. يرجى التواصل مع المسؤول.
+user-already-exists = لقد قمت بالتسجيل مسبقاً.
+join-request-pending = لديك طلب انضمام قيد المراجعة بالفعل.
+error-invalid-telegram-id = معرّف Telegram غير صالح.
+error-required-field = هذا الحقل مطلوب.
+error-name-too-short = الاسم قصير جداً. يرجى إدخال اسم كامل.
 
-gender_male = ذكر
-gender_female = أنثى
-gender_unknown = غير محدد
-value_unknown = غير محدد
+gender-male = ذكر
+gender-female = أنثى
+gender-unknown = غير محدد
+value-unknown = غير محدد
 
-notification_join_request_title = طلب انضمام جديد
-notification_join_request_message = لديك طلب انضمام جديد من: { $name } - { $phone }
+notification-join-request-title = طلب انضمام جديد
+notification-join-request-message = لديك طلب انضمام جديد من: { $name } - { $phone }
+
+# --- Keys referenced in spec.md (added by /speckit.analyze remediation) ---
+
+# FR-005: Error middleware fallback
+errors-system-internal = حدث خطأ داخلي في النظام. يرجى المحاولة لاحقاً.
+
+# Edge Case: Deactivated user access blocking
+errors-account-deactivated = تم تعطيل حسابك. يرجى التواصل مع المسؤول الأعلى.
+
+# Edge Case: Concurrent admin approval
+errors-join-request-already-handled = تم التعامل مع هذا الطلب مسبقاً من قِبَل مسؤول آخر.
+
+# Edge Case: Unsupported message types
+errors-unsupported-message =
+    هذا النوع من الرسائل غير مدعوم ❌
+    يرجى استخدام الأوامر المتاحة أو إرسال رسالة نصية.
+
+# FR-018: Section deletion constraint
+errors-section-has-active-modules = لا يمكن حذف هذا القسم لأنه يحتوي على وحدات نشطة.
+
+# FR-016: Unauthenticated access
+errors-auth-unauthorized = غير مصرح لك بتنفيذ هذا الإجراء.
+
+# US4: Maintenance mode active message
+maintenance-active-message = النظام في وضع الصيانة حالياً. يرجى المحاولة لاحقاً.
+
+# FR-034: Phone validation
+errors-validation-invalid-phone =
+    رقم الهاتف غير صحيح ❌
+    يجب أن يكون 11 رقماً ويبدأ بـ 010 أو 011 أو 012 أو 015
+
+# FR-035: National ID validation
+errors-validation-invalid-national-id =
+    الرقم القومي غير صحيح ❌
+    يجب أن يكون 14 رقماً بالضبط.
+
+# Edge Case: Duplicate National ID
+errors-join-request-duplicate-national-id = هذا الرقم القومي مسجل بالفعل في النظام. لا يمكن تقديم طلب انضمام جديد.
+
+# Clarifications: PENDING user re-attempt
+errors-join-request-already-pending = لديك طلب انضمام قيد المراجعة بالفعل. لا يمكنك تقديم طلب جديد حتى يتم الرد على الطلب الحالي.
