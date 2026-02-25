@@ -318,6 +318,7 @@ Super Admin configures bot-wide settings.
 - Q: Should `nationalId` be unique across the entire User table? → A: Yes — `@unique` constraint on User. Deactivated users retain their National ID; re-entry requires reactivation by Super Admin, not a new account.
 - Q: Where should input sanitization be implemented? → A: Global grammY middleware sanitizes all incoming text before handlers. Prisma parameterized queries prevent SQLi. No per-handler sanitization needed.
 - Q: What should the Super Admin "Settings" menu include in Phase 1? → A: Maintenance Toggle, Default Language, Notification Preferences, System Info Display (read-only), and Backup (Full Control).
+- Q: Should users be able to change their own language preference via a bot command (e.g., `/lang`)? → A: No. User language toggle is explicitly OUT OF SCOPE for Phase 1. The `User.language` field is set once at account creation using the bot's default language (FR-036 Default Language setting). Individual language switching will be considered for a future phase if needed. Do NOT add tasks for this feature in Phase 1.
 
 ## Versioning Strategy
 
