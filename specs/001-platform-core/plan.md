@@ -172,6 +172,7 @@ packages/
 - `role` ENUM('SUPER_ADMIN', 'ADMIN', 'EMPLOYEE', 'VISITOR') DEFAULT 'VISITOR'
 - `isActive` BOOLEAN DEFAULT true
 - `lastActiveAt` TIMESTAMP
+- `language` VARCHAR(2) DEFAULT 'ar' (user language preference — 'ar' or 'en'; persists across sessions independently of Redis TTL)
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
 **JoinRequest** - Pending user registrations
