@@ -65,8 +65,10 @@
 - [x] T017 Create Redis connection (ioredis singleton) in `packages/core/src/cache/`
 - [x] T018 Create Prisma client singleton in `packages/core/src/database/`
 - [x] T019 Create grammY session storage adapter using Redis. Depends on T017 (Redis).
-- [x] T020 Create error handling middleware (catches errors, sends Arabic message). Depends on T014 (Logger).
+- [x] T020 Create error handling middleware (catches errors, sends message via i18n key `errors-system-internal`). Depends on T014 (Logger).
 - [ ] T083 [P] Create input validation and sanitization utilities in `packages/validators/src/` (Zod schemas, XSS sanitization, and explicit `egyptianPhoneNumber`, `egyptianNationalId` extraction functions)
+- [ ] T110 [P] Create global input sanitization middleware in `packages/core/src/bot/middlewares/sanitize.ts` — strips/escapes HTML entities from all incoming text fields before handlers process them (FR-033). Register in grammY middleware chain.
+- [ ] T112 [P] Create unsupported message type handler in `packages/core/src/bot/handlers/fallback.ts` — for stickers, voice messages, photos, documents, locations, and other non-text messages received outside an active conversation flow, reply via i18n key `errors-unsupported-message` guiding user to supported commands (spec Edge Case + FR-033)
 
 ### Internationalization & Utilities
 
@@ -79,8 +81,8 @@
 
 - [ ] T053 [P] Setup BullMQ with Redis connection in `packages/core/src/services/queue.ts`
 - [ ] T054 [P] Create notification service (queue-based message sending) in `packages/core/src/services/notifications.ts`
-- [ ] T055 [P] Define notification types enum (SYSTEM, JOIN_REQUEST, etc.) in `packages/core/src/types/notification.ts`
-- [ ] T057 [P] Create notification delivery worker in `packages/core/src/workers/notification.ts`
+- [ ] T055 [P] Define notification types in `packages/core/src/types/notification.ts`. Use the 6 types from the Prisma `NotificationType` enum: `JOIN_REQUEST_NEW`, `JOIN_REQUEST_APPROVED`, `JOIN_REQUEST_REJECTED`, `USER_DEACTIVATED`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`. Each type maps to i18n params passed via `params` field (JSONB) — no title/body fields. Re-export `NotificationType` from `@prisma/client` for use across the codebase.
+- [ ] T057 [P] Create notification delivery worker in `packages/core/src/workers/notification.ts`. Configure BullMQ rate limiter at max 30 messages per 1000ms to comply with Telegram API flood control limits (FR-024).
 
 **Checkpoint**: Bot foundation complete - core infrastructure services ready
 
@@ -114,8 +116,8 @@
 - [x] T026 [US2] Save join request to database with PENDING status using `joinRequestService` in `packages/core/src/services/join-requests.ts`
 - [ ] T027 [US2] Trigger notification to Super Admins about new join request (uses Notification Service)
 - [x] T028 [US2] Implement "pending approval" response logic for returning visitors in `packages/core/src/bot/handlers/start.ts`
-- [ ] T058 [US2] Write integration tests for join request flow covering all US2 acceptance scenarios: (1) new user submits full flow (Start → name → phone → ID → confirm → PENDING saved → admins notified), (1a) returning PENDING user sends /start again → sees Arabic pending message with date, (2) Super Admin approves/rejects → user notified, (3) approved user sends /start → sees EMPLOYEE menu (not pending message)
-- [ ] T097 [P] [US2] Integration test: user with PENDING join request sends /start again → system shows message via i18n key 'errors.join_request.already_pending' AND does NOT create a duplicate request in the database
+- [ ] T058 [US2] Write integration tests for join request flow covering all US2 acceptance scenarios: (1) new user submits full flow (Start → name → phone → ID → confirm → PENDING saved → admins notified), (1a) returning PENDING user sends /start again → sees pending message via i18n key `join-request-status-pending` with submission date, (2) Super Admin approves/rejects → user notified, (3) approved user sends /start → sees EMPLOYEE menu (not pending message)
+- [ ] T097 [P] [US2] Integration test: user with PENDING join request sends /start again → system shows message via i18n key `errors-join-request-already-pending` AND does NOT create a duplicate request in the database
 - [ ] T066-B [P] [US5] Implement audit logging for session events (USER_LOGIN = new session after 24h expiry, USER_LOGOUT = session expiry) in audit service
 
 # Note: Tasks T088-T091 are NOT duplicates — each adds a distinct shared utility required for Phase 5 RBAC flows: T088=conversation utils, T089=user input collectors, T090=formatters, T091=refactor join.ts to use them.
@@ -144,12 +146,13 @@
 - [ ] T084 [P] Implement AdminScope authorization logic in `canAccess()` (FR-017, FR-029)
 - [ ] T031 [P] Create AdminScope service (assign/revoke permissions) in `packages/core/src/services/admin-scope.ts`
 - [ ] T034 [P] Write unit tests for RBAC middleware and canAccess function
+- [ ] T111 [P] [US1] Implement `isActive` check middleware in `packages/core/src/bot/middlewares/rbac.ts` — on every incoming request, verify `user.isActive === true` before allowing any handler to process. If `isActive === false`, respond via i18n key `errors-account-deactivated` and halt. Ensure T032 (deactivation handler) also invalidates the user's Redis session immediately.
 
 ### User Management Handlers
 
-- [ ] T032 [US1] Create user management handlers (List, Change Role, Activate/Deactivate) in `packages/core/src/bot/handlers/users.ts`
+- [ ] T032 [US1] Create user management handlers (List, Change Role, Activate/Deactivate) in `packages/core/src/bot/handlers/users.ts`. On deactivation: invalidate user's Redis session immediately and respond via i18n key `errors-account-deactivated`.
 - [ ] T033 [US2] Create join request approval/rejection handlers in `packages/core/src/bot/handlers/approvals.ts`
-- [ ] T102 [US2] Implement concurrent admin protection in approval/rejection handlers: atomic status check before any DB write — if request already handled, show error via i18n key `errors.join_request.already_handled` (FR-036)
+- [ ] T102 [US2] Implement concurrent admin protection in approval/rejection handlers: atomic status check before any DB write — if request already handled, show error via i18n key `errors-join-request-already-handled` (see spec.md Edge Cases + Clarifications Session 2026-02-24)
 - [ ] T103 [US2] Verify join request history retention: rejected requests are never overwritten — each new submission after rejection creates a new DB row. Add unit test to confirm (FR-012)
 
 **Checkpoint**: RBAC system complete - permission management functional
@@ -163,11 +166,11 @@
 ### Section Management
 
 - [ ] T035 [P] [US3] Create section CRUD service in `packages/core/src/services/sections.ts`
-- [ ] T036 [P] [US3] Create section management handlers for Super Admin in `packages/core/src/bot/handlers/sections.ts` — includes deletion constraint: reject delete if section has active modules, show error via i18n key `errors.section.has_active_modules` (FR-018)
+- [ ] T036 [P] [US3] Create section management handlers for Super Admin in `packages/core/src/bot/handlers/sections.ts` — includes deletion constraint: reject delete if section has active modules, show error via i18n key `errors-section-has-active-modules` (FR-018)
 - [ ] T037 [P] [US3] Create section menu display (list active sections) in `packages/core/src/bot/menus/sections.ts`
-- [ ] T038 [P] [US3] Create "empty section" message logic
+- [ ] T038 [P] [US3] Create "empty section" message logic — reply via i18n key `section-empty-modules` when a section has no active modules. Add key to both `ar.ftl` and `en.ftl`.
 - [ ] T039 [P] [US3] Create section enable/disable toggle handler
-- [ ] T040 [P] Write integration tests for section CRUD including: create, edit, enable/disable, delete empty section (success), delete non-empty section (must fail with i18n error `errors.section.has_active_modules`)
+- [ ] T040 [P] Write integration tests for section CRUD including: create, edit, enable/disable, delete empty section (success), delete non-empty section (must fail with i18n error `errors-section-has-active-modules`)
 
 ### Module Discovery & Loading
 
@@ -192,12 +195,30 @@
 
 - [ ] T048 [P] [US4] Create maintenance mode middleware in `packages/core/src/bot/middlewares/maintenance.ts`
 - [ ] T049 [P] [US4] Create maintenance toggle command (Super Admin only)
-- [ ] T050 [P] [US4] Create Arabic maintenance message for blocked users
+- [ ] T050 [P] [US4] Create maintenance message for blocked users via i18n key `maintenance-active-message`
 - [ ] T051 [P] Store maintenance status in Redis
 - [ ] T086 [P] Implement Redis pub/sub for maintenance mode propagation (NFR-002)
 - [ ] T052 [P] Write unit test for maintenance middleware
 
 **Checkpoint**: Maintenance mode complete - system control functional
+
+---
+
+## Phase 7b: Settings Menu (FR-036)
+
+**Purpose**: Super Admin bot settings interface
+
+### Settings Implementation
+
+- [ ] T104 [P] [US1] Create settings menu handler in `packages/core/src/bot/handlers/settings.ts` — main menu with 5 sub-items (Maintenance Toggle, Default Language, Notification Preferences, System Info, Backup)
+- [ ] T105 [P] [US1] Implement Default Language setting: bot-level default language (AR/EN) for new users, stored in Redis config
+- [ ] T106 [P] [US1] Implement Notification Preferences: configure active notification types and delivery settings
+- [ ] T107 [P] [US1] Implement System Info Display: read-only view (bot version, uptime, connected services status, environment)
+- [ ] T113 [P] [US1] Configure Docker for backup support (prerequisite for T108): (1) add `backup_data` named volume to `docker-compose.yml` mounted at `/backups` in the bot service, (2) ensure `postgresql-client` is installed in the bot's Dockerfile so `pg_dump`/`pg_restore` binaries are available at runtime.
+- [ ] T108 [P] [US1] Implement Backup (Full Control): trigger DB backup (pg_dump), download, view history, restore
+- [ ] T109 [P] Write unit tests for settings handlers
+
+**Checkpoint**: Settings menu complete - Super Admin configuration functional
 
 ---
 
@@ -209,7 +230,7 @@
 
 - [ ] T059 [P] [US5] Create audit log service in `packages/core/src/services/audit.ts` implementing ALL 23 auditable actions defined in spec.md FR-026. Each log entry: `{ userId: bigint, action: AuditAction, targetType?: string, targetId?: string, details?: Json }`. Complete action list: `USER_BOOTSTRAP`, `USER_LOGIN`, `USER_LOGOUT`, `ROLE_CHANGE`, `USER_APPROVE`, `USER_REJECT`, `USER_ACTIVATE`, `USER_DEACTIVATE`, `JOIN_REQUEST_SUBMIT`, `SECTION_CREATE`, `SECTION_UPDATE`, `SECTION_DELETE`, `SECTION_ENABLE`, `SECTION_DISABLE`, `MODULE_REGISTER`, `MODULE_UNREGISTER`, `MODULE_ENABLE`, `MODULE_DISABLE`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`, `PERMISSION_CHANGE`, `ADMIN_SCOPE_ASSIGN`, `ADMIN_SCOPE_REVOKE`
 - [ ] T060 [P] [US5] Create audit middleware (auto-logs actions) in `packages/core/src/bot/middlewares/audit.ts`
-- [ ] T061 [P] [US5] Define `AuditAction` TypeScript enum/const in `packages/core/src/types/audit.ts` with all 23 actions from FR-026 — ensures compile-time safety for all audit log calls
+- [x] T061 [P] [US5] ~~Define `AuditAction` in `packages/core/src/types/audit.ts`~~ — SUPERSEDED: `AuditAction` enum is already defined directly in `prisma/schema.prisma` with all 23 actions (migration `20260224231434`). Import via `import { AuditAction } from '@prisma/client'` across the codebase. No separate types file needed.
 - [ ] T062 [P] [US5] Create audit log viewer for Super Admin in `packages/core/src/bot/handlers/audit.ts`
 - [ ] T063 [P] [US5] Ensure NO sensitive data is logged (filter/sanitize)
 - [ ] T064 [P] Write unit tests for audit service
@@ -220,7 +241,7 @@
 - [ ] T087 [P] [US5] Implement Redis fallback to in-memory sessions: if Redis is unavailable, fall back to in-memory Map for the current request session. Log CRITICAL warning via Pino. On every subsequent request, attempt Redis reconnection with exponential backoff (1s → 2s → 4s). Resume Redis sessions automatically once connection is restored.
 - [ ] T066 [P] [US5] Create session middleware (load/save) in `packages/core/src/bot/middlewares/session.ts`
 - [ ] T067 [P] [US5] Store navigation state (currentSection, currentModule)
-- [ ] T068 [P] [US5] Handle session expiry gracefully
+- [ ] T068 [P] [US5] Handle session expiry gracefully — when a session expires after 24h inactivity, clear session state and redirect user to /start flow. No i18n message needed (user simply restarts); log expiry via Pino at debug level.
 - [ ] T069 [P] Write unit tests for session service
 
 **Checkpoint**: Audit & Session system complete
