@@ -1,4 +1,4 @@
-import type { JoinRequest } from '@prisma/client'
+import { AuditAction, type JoinRequest } from '@prisma/client'
 import { prisma } from '../database/prisma'
 import { env } from '../config/env'
 import logger from '../utils/logger'
@@ -16,7 +16,7 @@ export interface CreateJoinRequestParams {
 
 export type CreateOrBootstrapResult =
   | { type: 'bootstrap' }
-  | { type: 'join_request'; requestId: string }
+  | { type: 'join-request'; requestId: string }
 
 export const joinRequestService = {
   /**
@@ -89,7 +89,7 @@ export const joinRequestService = {
       await prisma.auditLog.create({
         data: {
           userId: params.telegramId,
-          action: 'USER_BOOTSTRAP',
+          action: AuditAction.USER_BOOTSTRAP,
           targetType: 'User',
           targetId: superAdmin.id,
           details: { role: 'SUPER_ADMIN' },
@@ -113,6 +113,6 @@ export const joinRequestService = {
 
     logger.info({ requestId: request.id, userId: params.telegramId.toString() }, 'Join request created')
 
-    return { type: 'join_request', requestId: request.id }
+    return { type: 'join-request', requestId: request.id }
   },
 }
