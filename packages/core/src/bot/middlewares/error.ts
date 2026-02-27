@@ -17,7 +17,7 @@ export function errorHandler(err: BotError<BotContext>) {
 
   // Send user-friendly message via i18n
   try {
-    ctx.reply(ctx.t('error_generic'))
+    ctx.reply(ctx.t('error-generic'))
   }
   catch {
     // If we can't even reply, just log it

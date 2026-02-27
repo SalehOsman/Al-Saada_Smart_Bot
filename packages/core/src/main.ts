@@ -3,9 +3,14 @@ import { serve } from '@hono/node-server'
 import { bot, app } from './bot/index'
 import { env } from './config/env'
 import logger from './utils/logger'
+import { handleGracefulShutdown } from './utils/shutdown'
+import './workers/notification' // Start the notification worker
 
 async function main() {
   logger.info('Starting Al-Saada Smart Bot...')
+
+  // Register graceful shutdown handler
+  await handleGracefulShutdown(bot)
 
   if (env.WEBHOOK_URL) {
     await bot.api.setWebhook(env.WEBHOOK_URL)

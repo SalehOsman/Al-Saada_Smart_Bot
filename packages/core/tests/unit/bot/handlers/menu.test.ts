@@ -25,18 +25,18 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
     reply: vi.fn(),
     t: vi.fn((key: string, params?: any) => {
       const translations: Record<string, string> = {
-        'user_inactive': 'User is inactive',
-        'error_generic': 'An error occurred',
-        'menu_super_admin': 'Welcome Super Admin {name}',
-        'menu_admin': 'Welcome Admin {name}',
-        'menu_employee': 'Welcome Employee {name}',
-        'menu_visitor': 'Welcome Visitor {name}',
-        'button_sections': 'Sections',
-        'button_users': 'Users',
-        'button_maintenance': 'Maintenance',
-        'button_audit': 'Audit',
-        'button_modules': 'Modules',
-        'button_notifications': 'Notifications',
+        'user-inactive': 'User is inactive',
+        'error-generic': 'An error occurred',
+        'menu-super-admin': 'Welcome Super Admin {name}',
+        'menu-admin': 'Welcome Admin {name}',
+        'menu-employee': 'Welcome Employee {name}',
+        'menu-visitor': 'Welcome Visitor {name}',
+        'button-sections': 'Sections',
+        'button-users': 'Users',
+        'button-maintenance': 'Maintenance',
+        'button-audit': 'Audit',
+        'button-modules': 'Modules',
+        'button-notifications': 'Notifications',
       }
       let msg = translations[key] || key
       if (params) {
@@ -75,10 +75,10 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
       expect(call[0]).toContain('Super Admin')
       expect(call[1]?.reply_markup?.inline_keyboard).toHaveLength(3)
       expect(call[1]?.reply_markup?.inline_keyboard[0]).toContainEqual(
-        expect.objectContaining({ text: 'Sections', callback_data: 'menu_sections' })
+        expect.objectContaining({ text: 'Sections', callback_data: 'menu-sections' })
       )
       expect(call[1]?.reply_markup?.inline_keyboard[0]).toContainEqual(
-        expect.objectContaining({ text: 'Users', callback_data: 'menu_users' })
+        expect.objectContaining({ text: 'Users', callback_data: 'menu-users' })
       )
     })
 
@@ -105,7 +105,7 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
       expect(call[1]?.reply_markup?.inline_keyboard).not.toEqual(
         expect.arrayContaining([
           expect.arrayContaining([
-            expect.objectContaining({ text: 'Modules', callback_data: 'menu_modules' })
+            expect.objectContaining({ text: 'Modules', callback_data: 'menu-modules' })
           ])
         ])
       )
@@ -132,7 +132,7 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
       expect(call[1]?.reply_markup?.inline_keyboard).toHaveLength(1)
       // Employee should only see sections button
       expect(call[1]?.reply_markup?.inline_keyboard[0]).toEqual([
-        expect.objectContaining({ text: 'Sections', callback_data: 'menu_sections' })
+        expect.objectContaining({ text: 'Sections', callback_data: 'menu-sections' })
       ])
     })
 
@@ -157,7 +157,7 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
       expect(call[1]?.reply_markup?.inline_keyboard).toHaveLength(1)
       // Visitor should only see sections button
       expect(call[1]?.reply_markup?.inline_keyboard[0]).toEqual([
-        expect.objectContaining({ text: 'Sections', callback_data: 'menu_sections' })
+        expect.objectContaining({ text: 'Sections', callback_data: 'menu-sections' })
       ])
     })
 
@@ -181,7 +181,7 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
       expect(call[0]).toContain('Unknown Role User')
       // Should fall back to visitor menu
       expect(call[1]?.reply_markup?.inline_keyboard[0]).toEqual([
-        expect.objectContaining({ text: 'Sections', callback_data: 'menu_sections' })
+        expect.objectContaining({ text: 'Sections', callback_data: 'menu-sections' })
       ])
     })
 
@@ -297,12 +297,12 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
       // Admin should NOT see modules and notifications (Super Admin only)
       expect(keyboard).toHaveLength(2)
       expect(keyboard[0]).toEqual([
-        expect.objectContaining({ text: 'Sections', callback_data: 'menu_sections' }),
-        expect.objectContaining({ text: 'Users', callback_data: 'menu_users' }),
+        expect.objectContaining({ text: 'Sections', callback_data: 'menu-sections' }),
+        expect.objectContaining({ text: 'Users', callback_data: 'menu-users' }),
       ])
       expect(keyboard[1]).toEqual([
-        expect.objectContaining({ text: 'Maintenance', callback_data: 'menu_maintenance' }),
-        expect.objectContaining({ text: 'Audit', callback_data: 'menu_audit' }),
+        expect.objectContaining({ text: 'Maintenance', callback_data: 'menu-maintenance' }),
+        expect.objectContaining({ text: 'Audit', callback_data: 'menu-audit' }),
       ])
     })
 
@@ -328,7 +328,7 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
       // Employee should only see sections
       expect(keyboard).toHaveLength(1)
       expect(keyboard[0]).toEqual([
-        expect.objectContaining({ text: 'Sections', callback_data: 'menu_sections' }),
+        expect.objectContaining({ text: 'Sections', callback_data: 'menu-sections' }),
       ])
     })
 
@@ -354,7 +354,7 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
       // Visitor should see same as Employee (only sections)
       expect(keyboard).toHaveLength(1)
       expect(keyboard[0]).toEqual([
-        expect.objectContaining({ text: 'Sections', callback_data: 'menu_sections' }),
+        expect.objectContaining({ text: 'Sections', callback_data: 'menu-sections' }),
       ])
     })
   })

@@ -49,7 +49,7 @@ export async function joinConversation(
   const telegramUsername = ctx.from?.username
 
   if (telegramId === 0n) {
-    await ctx.reply(ctx.t('error_invalid_telegram_id'))
+    await ctx.reply(ctx.t('error-invalid-telegram-id'))
     return
   }
 
@@ -58,14 +58,14 @@ export async function joinConversation(
 
   async function cancel() {
     await deleteTrackedMessages(ctx, tracker)
-    await sendCancelled(ctx, ctx.t('join_cancelled'), {
-      retryLabel: ctx.t('button_submit_join_request'),
+    await sendCancelled(ctx, ctx.t('join-cancelled'), {
+      retryLabel: ctx.t('button-submit-join-request'),
       retryData: 'start_join',
     })
   }
 
   try {
-    const welcome = await ctx.reply(ctx.t('join_welcome'))
+    const welcome = await ctx.reply(ctx.t('join-welcome'))
     tracker.ids.push(welcome.message_id)
 
     // ── Step 1: Full Name ────────────────────────────────────────────────
@@ -75,8 +75,8 @@ export async function joinConversation(
     // ── Step 2: Nickname (optional) ──────────────────────────────────────
     const nickResult = await waitForSkippable(
       conversation, ctx,
-      ctx.t('join_step_nickname'),
-      ctx.t('button_skip_nickname'),
+      ctx.t('join-step-nickname'),
+      ctx.t('button-skip-nickname'),
       { tracker, skipData: 'skip_nickname' },
     )
     if (nickResult === null) { await cancel(); return }
@@ -94,12 +94,12 @@ export async function joinConversation(
     const { nationalId, birthDate, gender } = idInfo
 
     // ── Step 5: Confirmation ─────────────────────────────────────────────
-    const confirmText = ctx.t('join_confirm', {
+    const confirmText = ctx.t('join-confirm', {
       fullName,
-      nickname: nickname || ctx.t('value_unknown'),
+      nickname: nickname || ctx.t('value-unknown'),
       phone,
       nationalId,
-      birthDate: birthDate ? formatArabicDate(birthDate) : ctx.t('value_unknown'),
+      birthDate: birthDate ? formatArabicDate(birthDate) : ctx.t('value-unknown'),
       gender: ctx.t(formatGender(gender)),
     })
 
@@ -113,8 +113,8 @@ export async function joinConversation(
     await deleteTrackedMessages(ctx, tracker)
 
     if (!confirmed) {
-      await sendCancelled(ctx, ctx.t('join_cancelled'), {
-        retryLabel: ctx.t('button_submit_join_request'),
+      await sendCancelled(ctx, ctx.t('join-cancelled'), {
+        retryLabel: ctx.t('button-submit-join-request'),
         retryData: 'start_join',
       })
       return
@@ -133,20 +133,17 @@ export async function joinConversation(
     })
 
     if (result.type === 'bootstrap') {
-      await ctx.reply(ctx.t('welcome_super_admin_new'))
+      await ctx.reply(ctx.t('welcome-super-admin-new'))
     }
     else {
       const requestCode = result.requestId.substring(0, 8).toUpperCase()
-      await ctx.reply(ctx.t('join_request_received', {
+      await ctx.reply(ctx.t('join-request-received', {
         requestCode,
         date: new Date().toLocaleDateString('ar-EG'),
       }))
-      // TODO: T053/T054 — Replace with notificationService.queue() when BullMQ is ready.
-      await notifyAdmins(ctx, {
-        type: 'JOIN_REQUEST',
-        titleKey: 'notification_join_request_title',
-        messageKey: 'notification_join_request_message',
-        messageParams: { name: fullName, phone },
+      await notifyAdmins({
+        type: 'JOIN_REQUEST_NEW',
+        params: { userName: fullName, requestCode: result.requestId },
       })
     }
   }

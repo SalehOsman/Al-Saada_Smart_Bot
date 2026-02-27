@@ -13,7 +13,9 @@
       "Bash(\".specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks\")",
       "Bash(ls:*)",
       "Bash(grep:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks)",
+      "Bash(.specify/scripts/powershell/check-prerequisites.ps1 -Json)"
     ]
   }
 }

@@ -25,17 +25,42 @@ enum Status {
 }
 
 enum NotificationType {
-  SYSTEM
-  JOIN_REQUEST
-  APPROVAL
-  REJECTION
-  ANNOUNCEMENT
+  JOIN_REQUEST_NEW
+  JOIN_REQUEST_APPROVED
+  JOIN_REQUEST_REJECTED
+  USER_DEACTIVATED
+  MAINTENANCE_ON
+  MAINTENANCE_OFF
 }
 
-enum ScopeType {
-  SECTION
-  MODULE
+enum AuditAction {
+  USER_BOOTSTRAP
+  USER_LOGIN
+  USER_LOGOUT
+  ROLE_CHANGE
+  USER_APPROVE
+  USER_REJECT
+  USER_ACTIVATE
+  USER_DEACTIVATE
+  JOIN_REQUEST_SUBMIT
+  SECTION_CREATE
+  SECTION_UPDATE
+  SECTION_DELETE
+  SECTION_ENABLE
+  SECTION_DISABLE
+  MODULE_REGISTER
+  MODULE_UNREGISTER
+  MODULE_ENABLE
+  MODULE_DISABLE
+  MAINTENANCE_ON
+  MAINTENANCE_OFF
+  PERMISSION_CHANGE
+  ADMIN_SCOPE_ASSIGN
+  ADMIN_SCOPE_REVOKE
+  BACKUP_TRIGGER
+  BACKUP_RESTORE
 }
+
 
 // User - Telegram Bot Users
 model User {
@@ -57,7 +82,8 @@ model User {
   joinRequests         JoinRequest[]
   auditLogs            AuditLog[]
   notifications        Notification[]
-  adminScopes          AdminScope[]
+  adminScopes        AdminScope[] @relation("AdminScopeUser")
+  createdAdminScopes AdminScope[] @relation("AdminScopeCreator")
   createdSections      Section[]      @relation("SectionCreator")
   reviewedJoinRequests JoinRequest[]  @relation("ReviewAdmin")
 
@@ -67,7 +93,7 @@ model User {
 // JoinRequest - Pending User Registrations
 model JoinRequest {
   id         String    @id @default(cuid())
-  telegramId BigInt?   @unique @map("telegram_id")
+  telegramId BigInt    @map("telegram_id")
   fullName   String    @map("full_name")
   nickname   String?
   phone      String
@@ -99,6 +125,7 @@ model Section {
   // Relationships
   creator User?    @relation("SectionCreator", fields: [createdBy], references: [telegramId])
   modules Module[]
+  adminScopes AdminScope[]
 
   @@index([isActive])
   @@index([orderIndex])
@@ -119,6 +146,7 @@ model Module {
 
   // Relationships
   section Section @relation(fields: [sectionId], references: [id])
+  adminScopes AdminScope[]
 
   @@index([sectionId])
   @@index([isActive])
@@ -130,7 +158,7 @@ model Module {
 model AuditLog {
   id         String   @id @default(cuid())
   userId     BigInt   @map("user_id")
-  action     String // Action type (e.g., "LOGIN", "SECTION_CREATE", "USER_APPROVE")
+  action     AuditAction // Action type
   targetType String?  @map("target_type") // Entity type (User, Section, Module, etc.)
   targetId   String?  @map("target_id") // Entity ID
   details    Json? // Additional context as JSON
@@ -147,39 +175,39 @@ model AuditLog {
 
 // Notification - Queue Notifications
 model Notification {
-  id        String           @id @default(cuid())
-  userId    BigInt           @map("user_id")
-  type      NotificationType
-  title     String
-  message   String
-  isRead    Boolean          @default(false) @map("is_read")
-  createdAt DateTime         @default(now()) @map("created_at")
+  id           String           @id @default(cuid())
+  targetUserId BigInt           @map("target_user_id")
+  type         NotificationType
+  params       Json?
+  isRead       Boolean          @default(false) @map("is_read")
+  createdAt    DateTime         @default(now()) @map("created_at")
 
   // Relationships
-  user User @relation(fields: [userId], references: [telegramId])
+  user User @relation(fields: [targetUserId], references: [telegramId])
 
-  @@index([userId])
+  @@index([targetUserId])
   @@index([type])
   @@index([isRead])
   @@index([createdAt])
   @@map("notifications")
 }
 
-// AdminScope - Admin Permissions
 model AdminScope {
-  id          String    @id @default(cuid())
-  adminUserId BigInt    @map("admin_user_id")
-  scopeType   ScopeType
-  scopeId     String    @map("scope_id")
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id        String   @id @default(cuid())
+  userId    BigInt   @map("user_id")
+  sectionId String   @map("section_id")
+  moduleId  String?  @map("module_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy BigInt   @map("created_by")
 
   // Relationships
-  adminUser User @relation(fields: [adminUserId], references: [telegramId])
-  // Note: scopeId references either Section.id or Module.id based on scopeType
-  // Prisma does not support polymorphic FK, so we handle this in application code
+  user    User    @relation("AdminScopeUser", fields: [userId], references: [telegramId])
+  section Section @relation(fields: [sectionId], references: [id])
+  module  Module? @relation(fields: [moduleId], references: [id])
+  creator User    @relation("AdminScopeCreator", fields: [createdBy], references: [telegramId])
 
-  @@unique([adminUserId, scopeType, scopeId])
-  @@index([adminUserId])
-  @@index([scopeType, scopeId])
+  @@unique([userId, sectionId, moduleId])
+  @@index([userId])
+  @@index([sectionId])
   @@map("admin_scopes")
 }

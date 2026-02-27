@@ -265,17 +265,6 @@ No phase or task may proceed until all issues from the current phase are fully r
 
 **Violation:** Advancing to any new step with unresolved issues is an explicit constitutional breach requiring immediate rollback and full remediation before continuing.
 
-### VII. Simplicity Over Cleverness
-Start simple, add complexity only when proven necessary. YAGNI principle strictly enforced. No premature optimization. Clear naming conventions (Arabic-friendly). Every file has a single clear purpose.
-
-### VIII. Monorepo Structure
-The project uses a monorepo with clear package separation:
-- packages/core — Platform Core (Layer 1)
-- packages/flow-engine — Flow Engine (Layer 2)
-- packages/validators — Egyptian validation library
-- packages/ai-assistant — AI Operational Assistant with RAG (Phase 4)
-- modules/ — All modules (config files only)
-
 ## Technology Stack
 
 ### Core

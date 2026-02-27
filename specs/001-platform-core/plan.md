@@ -1,6 +1,6 @@
 # Implementation Plan: Platform Core (Layer 1)
 
-**Branch**: `001-platform-core` | **Date**: 2026-02-17 | **Spec**: [spec.md](./spec.md) | **Constitution**: v1.9.0
+**Branch**: `001-platform-core` | **Date**: 2026-02-17 | **Spec**: [spec.md](./spec.md) | **Constitution**: v2.0.0
 
 **Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
@@ -11,7 +11,9 @@ Platform Core (Layer 1) implementation for Al-Saada Smart Bot - the foundational
 ## Technical Context
 
 **Language/Version**: Node.js ≥20 with TypeScript 5.x (strict mode)
-**Primary Dependencies**: grammY 1.x, @grammyjs/conversations, @grammyjs/hydrate, Hono, Prisma, ioredis, BullMQ, Pino, Zod, @grammyjs/i18n, nanoid, dayjs
+**Primary Dependencies**: grammY 1.x, @grammyjs/conversations, @grammyjs/hydrate, Hono, Prisma, ioredis, BullMQ, Pino, Zod, @grammyjs/i18n, nanoid, dayjs, node-cron
+
+**ID Generation Strategy**: `cuid` is used for all primary database IDs (Section, Module, JoinRequest, AuditLog, Notification, AdminScope) via Prisma's `@default(cuid())`. `nanoid` is only used for generating short, user-friendly request codes (e.g., ticket/reference IDs displayed to users) where a human-readable format is needed.
 **Storage**: PostgreSQL 16 (primary), Redis 7 (cache/sessions)
 **Testing**: Vitest with 80% coverage requirement
 **Target Platform**: Linux server with Docker Compose
@@ -23,6 +25,8 @@ Platform Core (Layer 1) implementation for Al-Saada Smart Bot - the foundational
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+
+**Note**: Task T114 (Zero-Defect Gate verification) MUST be completed before closing any phase.
 
 ### Al-Saada Smart Bot Principle Checks
 
@@ -163,25 +167,23 @@ packages/
 <!-- Source of truth for all entity definitions is spec.md > Key Entities. This section is for implementation reference only. If conflict exists, spec.md takes precedence. -->
 
 **User** - Telegram bot users
-- `telegramId` BIGINT PRIMARY KEY (Telegram user ID)
-- `id` STRING (cuid) UNIQUE
+- `telegramId` BIGINT PRIMARY KEY (Telegram user ID — no separate auto-generated id)
 - `fullName` VARCHAR(100) NOT NULL
-- `nickname` VARCHAR(100)
+- `nickname` VARCHAR(100) NULL (optional field — auto-generated if empty)
 - `phone` VARCHAR(20) UNIQUE (Egyptian format)
-- `nationalId` VARCHAR(14) UNIQUE (Egyptian format)
+- `nationalId` VARCHAR(14) UNIQUE (Egyptian format — one real-world identity per account)
 - `telegramUsername` VARCHAR(100)
 - `role` ENUM('SUPER_ADMIN', 'ADMIN', 'EMPLOYEE', 'VISITOR') DEFAULT 'VISITOR'
 - `isActive` BOOLEAN DEFAULT true
-- `language` VARCHAR(5) DEFAULT 'ar'
 - `lastActiveAt` TIMESTAMP
+- `language` VARCHAR(2) DEFAULT 'ar' (user language preference — 'ar' or 'en'; persists across sessions independently of Redis TTL)
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-- `updatedAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
 **JoinRequest** - Pending user registrations
 - `id` STRING PRIMARY KEY (cuid)
-- `telegramId` BIGINT UNIQUE
+- `telegramId` BIGINT NOT NULL (not unique — rejected users can re-apply with new row)
 - `fullName` VARCHAR(100) NOT NULL
-- `nickname` VARCHAR(100)
+- `nickname` VARCHAR(100) NULL (optional field — auto-generated if empty)
 - `phone` VARCHAR(20) NOT NULL (Egyptian format)
 - `nationalId` VARCHAR(14) NOT NULL (Egyptian format)
 - `status` ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING'
@@ -204,7 +206,7 @@ packages/
 - `id` STRING PRIMARY KEY (cuid)
 - `name` VARCHAR(100) NOT NULL
 - `nameEn` VARCHAR(100) NOT NULL
-- `sectionId` UUID REFERENCES Section(id)
+- `sectionId` STRING REFERENCES Section(id)
 - `icon` VARCHAR(10) NOT NULL
 - `isActive` BOOLEAN DEFAULT true
 - `orderIndex` INTEGER DEFAULT 0
@@ -216,25 +218,25 @@ packages/
 - `userId` BIGINT REFERENCES User(telegramId)
 - `action` VARCHAR(50) NOT NULL (action type)
 - `targetType` VARCHAR(50) (e.g., 'User', 'Section', 'Module')
-- `targetId` UUID (target identifier)
+- `targetId` STRING (target identifier — stores cuid for Section/Module/JoinRequest, or BigInt cast to string for User telegramId)
 - `details` JSONB (additional context)
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
-**Notification** - Queue notifications
+**Notification** - Queue notifications (i18n-compliant: type maps to .ftl key pattern)
 - `id` STRING PRIMARY KEY (cuid)
-- `userId` BIGINT REFERENCES User(telegramId)
-- `type` ENUM('SYSTEM', 'JOIN_REQUEST', 'APPROVAL', 'REJECTION', 'ANNOUNCEMENT') NOT NULL
-- `title` VARCHAR(200) NOT NULL
-- `message` TEXT NOT NULL
+- `targetUserId` BIGINT REFERENCES User(telegramId)
+- `type` ENUM('JOIN_REQUEST_NEW', 'JOIN_REQUEST_APPROVED', 'JOIN_REQUEST_REJECTED', 'USER_DEACTIVATED', 'MAINTENANCE_ON', 'MAINTENANCE_OFF') NOT NULL
+- `params` JSONB (i18n template parameters, e.g. { "userName": "...", "requestCode": "..." })
 - `isRead` BOOLEAN DEFAULT false
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
-**AdminScope** - Admin permissions
+**AdminScope** - Admin permissions (section-level or module-level scoping)
 - `id` STRING PRIMARY KEY (cuid)
-- `adminUserId` BIGINT REFERENCES User(telegramId)
-- `scopeType` ENUM('section', 'module') NOT NULL
-- `scopeId` UUID NOT NULL (reference to Section or Module id)
+- `userId` BIGINT REFERENCES User(telegramId)
+- `sectionId` STRING REFERENCES Section(id) NOT NULL
+- `moduleId` STRING REFERENCES Module(id) (nullable — when null, grants access to entire section; when set, grants access to specific module only)
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+- `createdBy` BIGINT REFERENCES User(telegramId) (the Super Admin who assigned the scope)
 
 ### API Contracts
 
@@ -253,12 +255,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  userId: string
                   role: string
-                  language: string
-                  currentSection: string
-                  currentModule: string
-                  lastActivity: string
+                  currentMenu: array    # navigation breadcrumb stack
+                  telegramId: bigint
+                  locale: string        # ar/en
     put:
       summary: Update user session
       requestBody:
@@ -268,9 +268,8 @@ paths:
             schema:
               type: object
               properties:
-                currentSection: string
-                currentModule: string
-                lastActivity: string
+                currentMenu: array
+                locale: string
 ```
 
 **RBAC Service**
@@ -286,7 +285,7 @@ paths:
             schema:
               type: object
               properties:
-                userId: string
+                userId: bigint    # telegramId (BigInt PK)
                 sectionId: string
                 moduleId: string
       responses:
@@ -312,10 +311,9 @@ paths:
             schema:
               type: object
               properties:
-                userId: string
+                targetUserId: bigint    # telegramId (BigInt PK)
                 type: string
-                title: string
-                message: string
+                params: object    # i18n template parameters (JSONB)
       responses:
         200:
           content:
@@ -324,6 +322,70 @@ paths:
                 type: object
                 properties:
                   queueId: string
+```
+
+**Module Registry**
+```yaml
+paths:
+  /modules/register:
+    post:
+      summary: Register a discovered module
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sectionId: string
+                name: string
+                nameEn: string
+                icon: string
+                configPath: string
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  moduleId: string
+  /modules/unregister:
+    post:
+      summary: Unregister a module
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                moduleId: string
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: boolean
+  /modules/by-section/{sectionId}:
+    get:
+      summary: Get active modules for a section
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    moduleId: string
+                    name: string
+                    nameEn: string
+                    icon: string
+                    isActive: boolean
 ```
 
 ## Phase 2: Quick Start & Validation
@@ -390,11 +452,36 @@ npm run test:coverage
 - `/sections` - View/manage sections (Super Admin only)
 - `/maintenance on|off` - Toggle maintenance mode (Super Admin only)
 - `/audit` - View recent audit logs (Super Admin only)
+- `/settings` - Bot settings: language, notifications, system info, backup (Super Admin only)
 ```
+
+## Phase 9: Integration & Polish
+
+**Purpose**: End-to-end testing, final verification, and production readiness
+
+### Phase Gate - Zero-Defect Gate (NON-NEGOTIABLE)
+
+**CRITICAL BLOCKING REQUIREMENT**: Before Phase 9 can be considered complete, the following conditions MUST be met:
+
+1. **100% Test Coverage**: All unit tests, integration tests, and end-to-end tests MUST pass with zero failures
+2. **Zero Spec Issues**: `/speckit.analyze` MUST return zero issues (CRITICAL, HIGH, MEDIUM, LOW)
+3. **Zero Lint Errors**: All TypeScript compilation and ESLint checks MUST pass without errors
+4. **Spec Alignment**: All three artifacts (spec.md, plan.md, tasks.md) MUST be fully aligned with no contradictions
+5. **Constitution Compliance**: All 10 constitutional principles MUST be verified as satisfied
+
+**Enforcement**: Task T114 (Zero-Defect Gate verification) is MANDATORY and BLOCKING. No phase advancement, tagging, or production deployment is permitted until T114 passes with all criteria satisfied.
+
+### Verification Activities
+- Load testing with ~200 concurrent users (NFR-002/005 verification)
+- Redis fallback behavior testing (NFR-003 verification)
+- End-to-end user journey testing across all roles
+- Manual verification of all success criteria (SC-001 through SC-010)
+- Platform-First Gate verification (no modules in `modules/` directory)
+- Code coverage verification (minimum 80% across all packages)
 
 ### Agent Context Update
 
-Technical decisions incorporated: grammY 1.x webhook mode via Hono, Redis session adapter, RBAC with AdminScope, runtime module discovery. Constitution version: 1.9.0.
+Technical decisions incorporated: grammY 1.x webhook mode via Hono, Redis session adapter, RBAC with AdminScope, runtime module discovery. Constitution version: 2.0.0.
 
 ## Constitution Re-check
 
@@ -405,7 +492,9 @@ Technical decisions incorporated: grammY 1.x webhook mode via Hono, Redis sessio
 ✅ **Config-Driven**: Module discovery system loads configuration with optional hooks (90/10 rule)
 ✅ **Egyptian Context**: All validators support Egyptian phone formats and Arabic UI
 ✅ **Security & Privacy**: Audit logging excludes sensitive data, Redis sessions secure
+✅ **i18n-Only User Text**: All user-facing text via .ftl locale files, no hardcoded strings in source
 ✅ **Monorepo Structure**: Clear package separation in packages/core/
+✅ **Zero-Defect Gate**: /speckit.analyze must pass with zero issues before implementation proceeds
 
 ## Post-Plan Additions (Tasks added after initial plan)
 

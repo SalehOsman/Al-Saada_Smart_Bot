@@ -72,11 +72,11 @@ export function normalizeDigits(input: string): string {
 export async function askForArabicName(ctx: BotContext, wait: WaitFn): Promise<string> {
   const arabicNameRegex = /^[\p{sc=Arabic}\s.,'-]+$/u
   while (true) {
-    const text = await wait(ctx.t('join_step_name'))
+    const text = await wait(ctx.t('join-step-name'))
     if (text === null) return ''
-    if (!text) { await ctx.reply(ctx.t('error_required_field')); continue }
-    if (!arabicNameRegex.test(text)) { await ctx.reply(ctx.t('error_invalid_arabic_name')); continue }
-    if (text.length < 2) { await ctx.reply(ctx.t('error_name_too_short')); continue }
+    if (!text) { await ctx.reply(ctx.t('error-required-field')); continue }
+    if (!arabicNameRegex.test(text)) { await ctx.reply(ctx.t('error-invalid-arabic-name')); continue }
+    if (text.length < 2) { await ctx.reply(ctx.t('error-name-too-short')); continue }
     return text
   }
 }
@@ -138,14 +138,14 @@ export function generateNickname(fullName: string): string {
  */
 export async function askForPhone(ctx: BotContext, wait: WaitFn): Promise<string> {
   while (true) {
-    const raw = await wait(ctx.t('join_step_phone'))
+    const raw = await wait(ctx.t('join-step-phone'))
     if (raw === null) return ''
-    if (!raw) { await ctx.reply(ctx.t('error_required_field')); continue }
+    if (!raw) { await ctx.reply(ctx.t('error-required-field')); continue }
     const text = normalizeDigits(raw)
     const validation = egyptianPhoneNumber().safeParse(text)
-    if (!validation.success) { await ctx.reply(ctx.t('error_invalid_phone')); continue }
+    if (!validation.success) { await ctx.reply(ctx.t('error-invalid-phone')); continue }
     const exists = await prisma.user.findUnique({ where: { phone: validation.data } })
-    if (exists) { await ctx.reply(ctx.t('error_phone_exists')); continue }
+    if (exists) { await ctx.reply(ctx.t('error-phone-exists')); continue }
     return validation.data
   }
 }
@@ -168,14 +168,14 @@ export async function askForPhone(ctx: BotContext, wait: WaitFn): Promise<string
  */
 export async function askForNationalId(ctx: BotContext, wait: WaitFn): Promise<NationalIdInfo | null> {
   while (true) {
-    const raw = await wait(ctx.t('join_step_national_id'))
+    const raw = await wait(ctx.t('join-step-national-id'))
     if (raw === null) return null
-    if (!raw) { await ctx.reply(ctx.t('error_required_field')); continue }
+    if (!raw) { await ctx.reply(ctx.t('error-required-field')); continue }
     const text = normalizeDigits(raw)
     const validation = egyptianNationalId().safeParse(text)
-    if (!validation.success) { await ctx.reply(ctx.t('error_invalid_national_id')); continue }
+    if (!validation.success) { await ctx.reply(ctx.t('error-invalid-national-id')); continue }
     const exists = await prisma.user.findUnique({ where: { nationalId: validation.data } })
-    if (exists) { await ctx.reply(ctx.t('error_national_id_exists')); continue }
+    if (exists) { await ctx.reply(ctx.t('error-national-id-exists')); continue }
     const { birthDate, gender } = extractEgyptianNationalIdInfo(validation.data)
     return { nationalId: validation.data, birthDate, gender }
   }

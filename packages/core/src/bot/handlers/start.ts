@@ -29,7 +29,7 @@ export async function startHandler(ctx: BotContext) {
 
     if (pendingRequest) {
       // User has pending request - show pending message
-      return ctx.reply(ctx.t('join_request_already_pending', {
+      return ctx.reply(ctx.t('join-request-already-pending', {
         date: pendingRequest.createdAt.toLocaleDateString('ar-EG'),
       }))
     }
@@ -39,6 +39,6 @@ export async function startHandler(ctx: BotContext) {
   }
   catch (error) {
     logger.error({ err: error }, `Error in /start handler: ${String(error)}`)
-    return ctx.reply(ctx.t('error_generic'))
+    return ctx.reply(ctx.t('error-generic'))
   }
 }
