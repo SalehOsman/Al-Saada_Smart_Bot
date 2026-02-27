@@ -453,6 +453,30 @@ npm run test:coverage
 - `/settings` - Bot settings: language, notifications, system info, backup (Super Admin only)
 ```
 
+## Phase 9: Integration & Polish
+
+**Purpose**: End-to-end testing, final verification, and production readiness
+
+### Phase Gate - Zero-Defect Gate (NON-NEGOTIABLE)
+
+**CRITICAL BLOCKING REQUIREMENT**: Before Phase 9 can be considered complete, the following conditions MUST be met:
+
+1. **100% Test Coverage**: All unit tests, integration tests, and end-to-end tests MUST pass with zero failures
+2. **Zero Spec Issues**: `/speckit.analyze` MUST return zero issues (CRITICAL, HIGH, MEDIUM, LOW)
+3. **Zero Lint Errors**: All TypeScript compilation and ESLint checks MUST pass without errors
+4. **Spec Alignment**: All three artifacts (spec.md, plan.md, tasks.md) MUST be fully aligned with no contradictions
+5. **Constitution Compliance**: All 10 constitutional principles MUST be verified as satisfied
+
+**Enforcement**: Task T114 (Zero-Defect Gate verification) is MANDATORY and BLOCKING. No phase advancement, tagging, or production deployment is permitted until T114 passes with all criteria satisfied.
+
+### Verification Activities
+- Load testing with ~200 concurrent users (NFR-002/005 verification)
+- Redis fallback behavior testing (NFR-003 verification)
+- End-to-end user journey testing across all roles
+- Manual verification of all success criteria (SC-001 through SC-010)
+- Platform-First Gate verification (no modules in `modules/` directory)
+- Code coverage verification (minimum 80% across all packages)
+
 ### Agent Context Update
 
 Technical decisions incorporated: grammY 1.x webhook mode via Hono, Redis session adapter, RBAC with AdminScope, runtime module discovery. Constitution version: 2.0.0.
