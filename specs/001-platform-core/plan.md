@@ -11,7 +11,9 @@ Platform Core (Layer 1) implementation for Al-Saada Smart Bot - the foundational
 ## Technical Context
 
 **Language/Version**: Node.js ≥20 with TypeScript 5.x (strict mode)
-**Primary Dependencies**: grammY 1.x, @grammyjs/conversations, @grammyjs/hydrate, Hono, Prisma, ioredis, BullMQ, Pino, Zod, @grammyjs/i18n, nanoid, dayjs
+**Primary Dependencies**: grammY 1.x, @grammyjs/conversations, @grammyjs/hydrate, Hono, Prisma, ioredis, BullMQ, Pino, Zod, @grammyjs/i18n, nanoid, dayjs, node-cron
+
+**ID Generation Strategy**: `cuid` is used for all primary database IDs (Section, Module, JoinRequest, AuditLog, Notification, AdminScope) via Prisma's `@default(cuid())`. `nanoid` is only used for generating short, user-friendly request codes (e.g., ticket/reference IDs displayed to users) where a human-readable format is needed.
 **Storage**: PostgreSQL 16 (primary), Redis 7 (cache/sessions)
 **Testing**: Vitest with 80% coverage requirement
 **Target Platform**: Linux server with Docker Compose

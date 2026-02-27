@@ -21,7 +21,7 @@
 
 ### Project Initialization
 
-- [x] T001 [P] Create root package.json with Node.js ≥20, TypeScript 5.x, and essential scripts
+- [x] T001 [P] Create root package.json with Node.js ≥20, TypeScript 5.x, essential scripts, and dependencies including node-cron and dayjs
 - [x] T002 [P] Create root tsconfig.json with strict mode configuration
 - [x] T003 [P] Create root .gitignore, .eslintrc, and .prettierrc configuration files
 - [x] T004 [P] Initialize packages/core/ with its own package.json and tsconfig
@@ -97,8 +97,7 @@
 - [x] T022-A [US1] Update prisma/schema.prisma logic for User and JoinRequest based on the new spec (FR-014, FR-035)
 - [x] T022 [US1] Create /start command handler with user lookup logic in `packages/core/src/bot/handlers/start.ts`
 - [x] T022-B [US1] Implement FR-014 Bootstrap Lock security logic inside `joinRequestService.createOrBootstrap()` (check 0 admins + env var)
-- [x] T023 [US1] Implement .env-based Super Admin bootstrap logic using `INITIAL_SUPER_ADMIN_ID`
-- [x] T023-B [US1] Bootstrap logic moved to `joinRequestService.createOrBootstrap()` — no separate bootstrap conversation needed. Unified join conversation handles both bootstrap and regular join request cases.
+- [x] T023 [US1] Implement .env-based Super Admin bootstrap logic using `INITIAL_SUPER_ADMIN_ID` — bootstrap logic is handled by `joinRequestService.createOrBootstrap()` which evaluates eligibility (0 admins + matching telegramId) AFTER data collection. No separate bootstrap conversation needed; unified join conversation handles both bootstrap and regular join request cases.
 - [x] T024 [US1] Create welcome message handler for existing users — reply via i18n key `welcome-user` (for EMPLOYEE/VISITOR) or `welcome-admin` (for ADMIN/SUPER_ADMIN). No hardcoded strings (Constitution Principle VII).
 
 **Checkpoint**: User & Auth system complete - user registration flow functional
@@ -169,7 +168,7 @@
 ### Section Management
 
 - [ ] T035 [P] [US3] Create section CRUD service in `packages/core/src/services/sections.ts`
-- [ ] T036 [P] [US3] Create section management handlers for Super Admin in `packages/core/src/bot/handlers/sections.ts` — includes: (1) deletion constraint: reject delete if section has active modules, show error via i18n key `errors-section-has-active-modules` (FR-018), (2) input validation via Zod: section name must be 2-50 characters, icon must be exactly one Unicode emoji character — reject invalid input with i18n key `errors-validation-section-name` and `errors-validation-section-icon` respectively (FR-018).
+- [ ] T036 [P] [US3] Create section management handlers for Super Admin in `packages/core/src/bot/handlers/sections.ts` — includes: (1) deletion constraint: reject delete if section has active modules, show error via i18n key `errors-section-has-active-modules` (FR-018), (2) input validation via Zod: section name must be 2-50 characters, icon must be exactly one Unicode emoji character — use Zod regex pattern `/^\p{Emoji}$/u` to validate emoji, reject invalid input with i18n key `errors-validation-section-name` and `errors-validation-section-icon` respectively (FR-018).
 - [ ] T037 [P] [US3] Create section menu display (list active sections) in `packages/core/src/bot/menus/sections.ts`
 - [ ] T038 [P] [US3] Create "empty section" message logic — reply via i18n key `section-empty-modules` when a section has no active modules. Add key to both `ar.ftl` and `en.ftl`.
 - [ ] T039 [P] [US3] Create section enable/disable toggle handler
@@ -233,9 +232,9 @@
 
 ### Audit Infrastructure
 
-- [ ] T059 [P] [US5] Create audit log service in `packages/core/src/services/audit.ts` implementing ALL 23 auditable actions defined in spec.md FR-026. Each log entry: `{ userId: bigint, action: AuditAction, targetType?: string, targetId?: string, details?: Json }`. Complete action list: `USER_BOOTSTRAP`, `USER_LOGIN`, `USER_LOGOUT`, `ROLE_CHANGE`, `USER_APPROVE`, `USER_REJECT`, `USER_ACTIVATE`, `USER_DEACTIVATE`, `JOIN_REQUEST_SUBMIT`, `SECTION_CREATE`, `SECTION_UPDATE`, `SECTION_DELETE`, `SECTION_ENABLE`, `SECTION_DISABLE`, `MODULE_REGISTER`, `MODULE_UNREGISTER`, `MODULE_ENABLE`, `MODULE_DISABLE`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`, `PERMISSION_CHANGE`, `ADMIN_SCOPE_ASSIGN`, `ADMIN_SCOPE_REVOKE`
+- [ ] T059 [P] [US5] Create audit log service in `packages/core/src/services/audit.ts` implementing ALL 25 auditable actions defined in spec.md FR-026. Each log entry: `{ userId: bigint, action: AuditAction, targetType?: string, targetId?: string, details?: Json }`. Complete action list: `USER_BOOTSTRAP`, `USER_LOGIN`, `USER_LOGOUT`, `ROLE_CHANGE`, `USER_APPROVE`, `USER_REJECT`, `USER_ACTIVATE`, `USER_DEACTIVATE`, `JOIN_REQUEST_SUBMIT`, `SECTION_CREATE`, `SECTION_UPDATE`, `SECTION_DELETE`, `SECTION_ENABLE`, `SECTION_DISABLE`, `MODULE_REGISTER`, `MODULE_UNREGISTER`, `MODULE_ENABLE`, `MODULE_DISABLE`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`, `PERMISSION_CHANGE`, `ADMIN_SCOPE_ASSIGN`, `ADMIN_SCOPE_REVOKE`, `BACKUP_TRIGGER`, `BACKUP_RESTORE`
 - [ ] T060 [P] [US5] Create audit middleware (auto-logs actions) in `packages/core/src/bot/middlewares/audit.ts`
-- [x] T061 [P] [US5] ~~Define `AuditAction` in `packages/core/src/types/audit.ts`~~ — SUPERSEDED: `AuditAction` enum is already defined directly in `prisma/schema.prisma` with all 23 actions (migration `20260224231434`). Import via `import { AuditAction } from '@prisma/client'` across the codebase. No separate types file needed.
+- [x] T061 [P] [US5] ~~Define `AuditAction` in `packages/core/src/types/audit.ts`~~ — SUPERSEDED: `AuditAction` enum is already defined directly in `prisma/schema.prisma` with all 25 actions (migration pending). Import via `import { AuditAction } from '@prisma/client'` across the codebase. No separate types file needed.
 - [ ] T062 [P] [US5] Create audit log viewer for Super Admin in `packages/core/src/bot/handlers/audit.ts`
 - [ ] T063 [P] [US5] Ensure NO sensitive data is logged in AuditLog.details (FR-027). Explicitly NEVER log the following fields in any audit entry: `nationalId`, `phone`, `password`, `token`, API keys. These fields must be stripped or replaced with `[REDACTED]` before writing to AuditLog. `userId` (telegramId) and `fullName` are acceptable in audit logs. Add unit test to verify redaction.
 - [ ] T064 [P] Write unit tests for audit service
@@ -274,7 +273,7 @@
 - [ ] T075 Final commit and tag v0.1.0. **Note (M1):** The 90/10 rule (90% config, max 10% hook code per module) cannot be verified until Phase 3 (first business module). Add compliance verification to Phase 3 tasks.
 - [ ] T078 [P] [NFR-002/005] Write and execute load test script using k6 to verify bot handles 200 concurrent users and maintains <500ms p95 response time.
 - [ ] T079 [P] [NFR-003] Write integration test to verify Redis fallback behavior (switching to in-memory map when Redis is down and auto-reconnecting).
-- [ ] T080 Verify SC-003: Confirm audit logs capture 100% of 23 defined actions from FR-026 (no gaps)
+- [ ] T080 Verify SC-003: Confirm audit logs capture 100% of 25 defined actions from FR-026 (no gaps)
 - [ ] T093 Verify SC-001: Manual test — first-time bootstrap user completes full flow (name → phone → national ID → confirm → Super Admin welcome) in ≤ 30 seconds
 - [ ] T094 Verify SC-004: Manual test — session state (current section, navigation) persists correctly across bot interactions within a 24-hour window; new session starts after 24hr inactivity
 - [ ] T095 Verify SC-005 + SC-006: Manual test — maintenance mode toggle propagates to all non-Super Admin users within 5 seconds; module discovery completes within 10 seconds of bot startup
