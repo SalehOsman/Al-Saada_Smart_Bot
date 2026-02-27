@@ -210,7 +210,7 @@ errors-unsupported-message =
 errors-section-has-active-modules = لا يمكن حذف هذا القسم لأنه يحتوي على وحدات نشطة.
 
 # FR-016: Unauthenticated access
-errors-auth-unauthorized = غير مصرح لك بتنفيذ هذا الإجراء.
+errors-unauthorized = غير مصرح لك بتنفيذ هذا الإجراء.
 
 # US4: Maintenance mode active message
 maintenance-active-message = النظام في وضع الصيانة حالياً. يرجى المحاولة لاحقاً.

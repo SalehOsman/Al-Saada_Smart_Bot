@@ -210,7 +210,7 @@ errors-unsupported-message =
 errors-section-has-active-modules = This section cannot be deleted because it has active modules.
 
 # FR-016: Unauthenticated access
-errors-auth-unauthorized = You are not authorized to perform this action.
+errors-unauthorized = You are not authorized to perform this action.
 
 # US4: Maintenance mode active message
 maintenance-active-message = The system is currently under maintenance. Please try again later.

@@ -32,6 +32,10 @@ bot.use(sessionMiddleware)
 // Lazy session tracking (USER_LOGIN audit)
 bot.use(lazySessionMiddleware)
 
+// RBAC and user status check (T111, T029)
+import { rbacMiddleware } from './middlewares/rbac'
+bot.use(rbacMiddleware)
+
 // i18n middleware for bilingual support
 bot.use(i18n)
 

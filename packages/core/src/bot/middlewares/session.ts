@@ -7,7 +7,7 @@ import { auditService } from '../../services/audit-logs'
 import { AuditAction } from '@prisma/client'
 
 // Default session data
-function defaultSession(): SessionData {
+export function defaultSession(): SessionData {
   return {
     userId: undefined,
     role: 'VISITOR',

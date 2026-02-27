@@ -143,12 +143,12 @@
 
 ### Core RBAC Infrastructure
 
-- [ ] T029 [P] Create RBAC middleware in `packages/core/src/bot/middlewares/rbac.ts` and register it in the Grammy middleware chain for ALL handlers: /start, /sections, /maintenance, /audit, /users, and all conversation flows (FR-016)
-- [ ] T030 [P] Implement `canAccess(userId, sectionId?, moduleId?)` in `packages/core/src/services/rbac.ts` with Redis caching
-- [ ] T084 [P] Implement AdminScope authorization logic in `canAccess()` (FR-017, FR-029)
-- [ ] T031 [P] Create AdminScope service (assign/revoke permissions) in `packages/core/src/services/admin-scope.ts`
+- [x] T029 [P] Create RBAC middleware in `packages/core/src/bot/middlewares/rbac.ts` and register it in the Grammy middleware chain for ALL handlers: /start, /sections, /maintenance, /audit, /users, and all conversation flows (FR-016)
+- [x] T030 [P] Implement `canAccess(userId, sectionId?, moduleId?)` in `packages/core/src/services/rbac.ts` with Redis caching
+- [x] T084 [P] Implement AdminScope authorization logic in `canAccess()` (FR-017, FR-029)
+- [x] T031 [P] Create AdminScope service (assign/revoke permissions) in `packages/core/src/services/admin-scope.ts`
 - [ ] T034 [P] Write unit tests for RBAC middleware and canAccess function
-- [ ] T111 [P] [US1] Implement `isActive` check middleware in `packages/core/src/bot/middlewares/rbac.ts` — on every incoming request, verify `user.isActive === true` before allowing any handler to process. If `isActive === false`, respond via i18n key `errors-account-deactivated` and halt. Ensure T032 (deactivation handler) also invalidates the user's Redis session immediately.
+- [x] T111 [P] [US1] Implement `isActive` check middleware in `packages/core/src/bot/middlewares/rbac.ts` — on every incoming request, verify `user.isActive === true` before allowing any handler to process. If `isActive === false`, respond via i18n key `errors-account-deactivated` and halt. Ensure T032 (deactivation handler) also invalidates the user's Redis session immediately.
 
 ### User Management Handlers
 
