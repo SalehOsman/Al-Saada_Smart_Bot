@@ -11,6 +11,8 @@
 
 import type { NotificationType } from '@prisma/client'
 import { prisma } from '../../database/prisma'
+import { queueBulkNotifications } from '../../services/notifications'
+import type { NotificationJobData } from '../../types/notification'
 import logger from '../../utils/logger'
 
 // ---------------------------------------------------------------------------
@@ -66,7 +68,7 @@ export interface AdminNotificationPayload {
 
 /**
  * Writes a notification record for every active Super Admin and Admin.
- * @todo T053/T054 - Replace with notificationService.queue() when BullMQ is ready.
+ * Uses notificationService.queueBulkNotifications to add to BullMQ.
  */
 export async function notifyAdmins(payload: AdminNotificationPayload): Promise<void> {
   const admins = await prisma.user.findMany({
@@ -77,17 +79,14 @@ export async function notifyAdmins(payload: AdminNotificationPayload): Promise<v
     logger.warn('notifyAdmins: No active admins found - notification skipped')
     return
   }
-  await Promise.allSettled(
-    admins.map(admin =>
-      prisma.notification.create({
-        data: {
-          targetUserId: admin.telegramId,
-          type: payload.type,
-          params: payload.params ?? {},
-          isRead: false,
-        },
-      }),
-    ),
-  )
-  logger.info(`notifyAdmins: Sent '${payload.type}' to ${admins.length} admin(s)`)
+
+  const jobs: NotificationJobData[] = admins.map(admin => ({
+    targetUserId: admin.telegramId,
+    type: payload.type,
+    params: payload.params ?? {},
+  }))
+
+  await queueBulkNotifications(jobs)
+
+  logger.info(`notifyAdmins: Queued '${payload.type}' for ${admins.length} admin(s)`)
 }

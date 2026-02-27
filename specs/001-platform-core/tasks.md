@@ -114,11 +114,11 @@
 - [x] T025 [US2] Create join request conversation flow in `packages/core/src/bot/conversations/join.ts` (Full Name, Phone, National ID)
 - [x] T025-B [US2] Verify National ID extraction and validation (FR-035) and Phone validation (FR-034) with unit tests
 - [x] T026 [US2] Save join request to database with PENDING status using `joinRequestService` in `packages/core/src/services/join-requests.ts`
-- [ ] T027 [US2] Trigger notification to Super Admins about new join request — call `notifyAdmins()` from `packages/core/src/bot/utils/formatters.ts` (T090) with type `JOIN_REQUEST_NEW` and params `{ userName, requestCode }`. Do NOT call the Notification Service directly; always use the shared utility (Constitution Principle VIII — Shared-First).
+- [x] T027 [US2] Trigger notification to Super Admins about new join request — call `notifyAdmins()` from `packages/core/src/bot/utils/formatters.ts` (T090) with type `JOIN_REQUEST_NEW` and params `{ userName, requestCode }`. Do NOT call the Notification Service directly; always use the shared utility (Constitution Principle VIII — Shared-First).
 - [x] T028 [US2] Implement "pending approval" response logic for returning visitors in `packages/core/src/bot/handlers/start.ts`
 - [ ] T058 [US2] Write integration tests for join request flow covering all US2 acceptance scenarios: (1) new user submits full flow (Start → name → phone → ID → confirm → PENDING saved → admins notified), (1a) returning PENDING user sends /start again → sees pending message via i18n key `join-request-status-pending` with submission date, (2) Super Admin approves/rejects → user notified, (3) approved user sends /start → sees EMPLOYEE menu (not pending message)
 - [ ] T097 [P] [US2] Integration test: user with PENDING join request sends /start again → system shows message via i18n key `errors-join-request-already-pending` AND does NOT create a duplicate request in the database
-- [ ] T066-B [P] [US5] Implement audit logging for session events in audit service:
+- [x] T066-B [P] [US5] Implement audit logging for session events in audit service:
   - USER_LOGIN: log when a user sends a message and no active session exists (new session created after 24h expiry) — detected lazily on the NEXT user interaction.
   - USER_LOGOUT: log at the same lazy detection point (session was expired) — do NOT use Redis Keyspace Notifications (not configured). Both events are inferred from session absence, not from a TTL expiry event.
 

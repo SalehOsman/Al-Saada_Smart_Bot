@@ -1,7 +1,10 @@
-import { type StorageAdapter, session } from 'grammy'
+import { type StorageAdapter, session, Middleware } from 'grammy'
 import { redis } from '../../cache/redis'
-import type { SessionData } from '../../types/context'
+import type { SessionData, BotContext } from '../../types/context'
 import logger from '../../utils/logger'
+import { prisma } from '../../database/prisma'
+import { auditService } from '../../services/audit-logs'
+import { AuditAction } from '@prisma/client'
 
 // Default session data
 function defaultSession(): SessionData {
@@ -53,3 +56,40 @@ export const sessionMiddleware = session({
   initial: defaultSession,
   storage: redisStorage,
 })
+
+/**
+ * Lazy session tracking middleware (FR-026 + T066-B).
+ * Detects USER_LOGIN events when a session is missing but the user exists in DB.
+ */
+export const lazySessionMiddleware: Middleware<BotContext> = async (ctx, next) => {
+  // Only process if it's a message/callback from a user and they don't have a userId in session
+  if (ctx.from?.id && !ctx.session.userId) {
+    const telegramId = BigInt(ctx.from.id)
+
+    // Check if this is a known user in the database
+    const user = await prisma.user.findUnique({
+      where: { telegramId },
+      select: { telegramId: true },
+    })
+
+    if (user) {
+      // Known user re-interacting after session expiry
+      // Both events are inferred from session absence (T066-B)
+      await auditService.log({
+        userId: telegramId,
+        action: AuditAction.USER_LOGOUT,
+        details: { reason: 'session_expired_lazy' },
+      })
+
+      await auditService.log({
+        userId: telegramId,
+        action: AuditAction.USER_LOGIN,
+      })
+
+      // Update session with known userId
+      ctx.session.userId = ctx.from.id
+    }
+  }
+
+  await next()
+}

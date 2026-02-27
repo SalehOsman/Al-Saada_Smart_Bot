@@ -6,7 +6,7 @@ import { env } from '../config/env'
 import logger from '../utils/logger'
 import type { BotContext } from '../types/context'
 import { i18n } from './i18n'
-import { sessionMiddleware } from './middlewares/session'
+import { sessionMiddleware, lazySessionMiddleware } from './middlewares/session'
 import { sanitizeMiddleware } from './middlewares/sanitize'
 import { errorHandler } from './middlewares/error'
 import { startHandler } from './handlers/start'
@@ -28,6 +28,9 @@ bot.use(hydrate())
 
 // Session middleware with Redis storage
 bot.use(sessionMiddleware)
+
+// Lazy session tracking (USER_LOGIN audit)
+bot.use(lazySessionMiddleware)
 
 // i18n middleware for bilingual support
 bot.use(i18n)

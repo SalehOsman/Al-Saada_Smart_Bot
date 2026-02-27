@@ -141,10 +141,9 @@ export async function joinConversation(
         requestCode,
         date: new Date().toLocaleDateString('ar-EG'),
       }))
-      // TODO: T053/T054 — Replace with notificationService.queue() when BullMQ is ready.
       await notifyAdmins({
         type: 'JOIN_REQUEST_NEW',
-        params: { name: fullName, phone },
+        params: { userName: fullName, requestCode: result.requestId },
       })
     }
   }
