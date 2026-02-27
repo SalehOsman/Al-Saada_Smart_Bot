@@ -11,6 +11,8 @@ import { sanitizeMiddleware } from './middlewares/sanitize'
 import { errorHandler } from './middlewares/error'
 import { startHandler } from './handlers/start'
 import { menuHandler } from './handlers/menu'
+import { usersHandler, userActionsHandler } from './handlers/users'
+import { approvalsHandler } from './handlers/approvals'
 import { fallbackHandler } from './handlers/fallback'
 import { joinConversation } from './conversations/join'
 import { healthRouter } from '../server/health'
@@ -56,11 +58,20 @@ bot.command('start', startHandler)
 // /menu command
 bot.command('menu', menuHandler)
 
+// /users command (Super Admin only)
+bot.command('users', usersHandler)
+
 // Handle "submit join request" button (shown after cancellation)
 bot.callbackQuery('start_join', async (ctx) => {
   await ctx.answerCallbackQuery()
   await ctx.conversation.enter('join')
 })
+
+// User management callback queries
+bot.callbackQuery(/^user:/, userActionsHandler)
+
+// Join request approval/rejection callback queries
+bot.callbackQuery(/^(approve|reject):/, approvalsHandler)
 
 // Fallback for all other unsupported messages (T112)
 bot.on('message', fallbackHandler)
