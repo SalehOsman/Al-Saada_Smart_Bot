@@ -79,10 +79,10 @@
 
 ### Notification Infrastructure (Prerequisite for US2)
 
-- [ ] T053 [P] Setup BullMQ with Redis connection in `packages/core/src/services/queue.ts`
-- [ ] T054 [P] Create notification service (queue-based message sending) in `packages/core/src/services/notifications.ts`
-- [ ] T055 [P] Define notification types in `packages/core/src/types/notification.ts`. Use the 6 types from the Prisma `NotificationType` enum: `JOIN_REQUEST_NEW`, `JOIN_REQUEST_APPROVED`, `JOIN_REQUEST_REJECTED`, `USER_DEACTIVATED`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`. Each type maps to i18n params passed via `params` field (JSONB) — no title/body fields. Re-export `NotificationType` from `@prisma/client` for use across the codebase.
-- [ ] T057 [P] Create notification delivery worker in `packages/core/src/workers/notification.ts`. Configure BullMQ rate limiter at max 30 messages per 1000ms to comply with Telegram API flood control limits (FR-024).
+- [x] T053 [P] Setup BullMQ with Redis connection in `packages/core/src/services/queue.ts`
+- [x] T054 [P] Create notification service (queue-based message sending) in `packages/core/src/services/notifications.ts`
+- [x] T055 [P] Define notification types in `packages/core/src/types/notification.ts`. Use the 6 types from the Prisma `NotificationType` enum: `JOIN_REQUEST_NEW`, `JOIN_REQUEST_APPROVED`, `JOIN_REQUEST_REJECTED`, `USER_DEACTIVATED`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`. Each type maps to i18n params passed via `params` field (JSONB) — no title/body fields. Re-export `NotificationType` from `@prisma/client` for use across the codebase.
+- [x] T057 [P] Create notification delivery worker in `packages/core/src/workers/notification.ts`. Configure BullMQ rate limiter at max 30 messages per 1000ms to comply with Telegram API flood control limits (FR-024).
 
 **Checkpoint**: Bot foundation complete - core infrastructure services ready
 

@@ -2,9 +2,12 @@ import process from 'node:process'
 import type { Bot } from 'grammy'
 import { disconnect as disconnectRedis } from '../cache/redis'
 import { disconnect as disconnectPrisma } from '../database/prisma'
+import { closeQueue } from '../services/queue'
+import { closeWorker } from '../workers/notification'
+import type { BotContext } from '../types/context'
 import logger from './logger'
 
-export async function handleGracefulShutdown(bot: Bot): Promise<void> {
+export async function handleGracefulShutdown(bot: Bot<BotContext>): Promise<void> {
   logger.info('Starting graceful shutdown process...')
 
   // Function to handle cleanup and exit
@@ -15,6 +18,11 @@ export async function handleGracefulShutdown(bot: Bot): Promise<void> {
       // Stop accepting new updates
       await bot.stop()
       logger.info('Bot stopped accepting new updates')
+
+      // Stop processing jobs
+      await closeWorker()
+      await closeQueue()
+      logger.info('Notification infrastructure stopped')
 
       // Disconnect from services
       await disconnectRedis()
