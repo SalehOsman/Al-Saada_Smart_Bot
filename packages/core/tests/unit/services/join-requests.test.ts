@@ -63,12 +63,16 @@ describe('joinRequestService', () => {
       mockPrisma.auditLog.create.mockResolvedValue({})
       mockEnvData.INITIAL_SUPER_ADMIN_ID = 12345
 
-      const result = await joinRequestService.createOrBootstrap(baseParams)
+      const result = await joinRequestService.createOrBootstrap({
+        ...baseParams,
+        telegramUsername: 'test_user',
+      })
 
       expect(result).toEqual({ type: 'bootstrap' })
       expect(mockPrisma.user.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           telegramId: 12345n,
+          telegramUsername: 'test_user',
           fullName: 'Test User',
           nickname: 'TestUser-abc1',
           phone: '01012345678',
@@ -82,6 +86,7 @@ describe('joinRequestService', () => {
           userId: 12345n,
           action: 'USER_BOOTSTRAP',
           targetType: 'User',
+          details: { role: 'SUPER_ADMIN' },
         }),
       })
     })
