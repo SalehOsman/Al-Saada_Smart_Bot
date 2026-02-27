@@ -66,7 +66,7 @@
 - [x] T018 Create Prisma client singleton in `packages/core/src/database/`
 - [x] T019 Create grammY session storage adapter using Redis. Depends on T017 (Redis).
 - [x] T020 Create error handling middleware (catches errors, sends message via i18n key `errors-system-internal`). Depends on T014 (Logger).
-- [x] T083 [P] Create input validation and sanitization utilities in `packages/validators/src/` (Zod schemas, XSS sanitization, and explicit `egyptianPhoneNumber`, `egyptianNationalId` extraction functions)
+- [x] T083 [P] Create input validation and sanitization utilities in `packages/validators/src/` (Zod schemas, XSS sanitization, and explicit `egyptianPhoneNumber` in `packages/validators/src/phone.ts` and `egyptianNationalId` in `packages/validators/src/national-id.ts` extraction functions)
 - [x] T110 [P] Create global input sanitization middleware in `packages/core/src/bot/middlewares/sanitize.ts` — strips/escapes HTML entities from all incoming text fields before handlers process them (FR-033). Register in grammY middleware chain.
 - [x] T112 [P] Create unsupported message type handler in `packages/core/src/bot/handlers/fallback.ts` — for stickers, voice messages, photos, documents, locations, and other non-text messages received outside an active conversation flow, reply via i18n key `errors-unsupported-message` guiding user to supported commands (spec Edge Case + FR-033)
 
@@ -75,7 +75,7 @@
 - [x] T021 Create i18n setup with Arabic .ftl files (basic messages: welcome, error, loading, etc.)
 - [x] T082 [P] Create English .ftl locale files for all user-facing messages in `packages/core/src/locales/en/`
 - [x] T076 Create graceful shutdown handler in `packages/core/src/utils/shutdown.ts`
-- [x] T077 Create health check endpoints in `packages/core/src/server/health.ts` via Hono
+- [x] T077 Create health check endpoints in `packages/core/src/server/health.ts` via Hono — MUST include connection status checks for both PostgreSQL (via Prisma client ping) and Redis (via ioredis ping)
 
 ### Notification Infrastructure (Prerequisite for US2)
 
@@ -154,7 +154,7 @@
 
 - [x] T032 [US1] Create user management handlers (List, Change Role, Activate/Deactivate) in `packages/core/src/bot/handlers/users.ts`. On deactivation: invalidate user's Redis session immediately and respond via i18n key `errors-account-deactivated`.
 - [x] T115 [P] [US2] Implement AdminScope assignment/revocation UI in `packages/core/src/bot/handlers/users.ts` — inline buttons under the Users menu allowing Super Admin to assign or revoke section/module scopes for Admin users (FR-017). Uses AdminScope service from T031. ALL button labels and messages MUST use i18n keys from `.ftl` files (Constitution Principle VII — i18n-Only). No hardcoded Arabic or English strings in source.
-- [x] T033 [US2] Create join request approval/rejection handlers in `packages/core/src/bot/handlers/approvals.ts`
+- [x] T033 [US2] Create join request approval/rejection handlers in `packages/core/src/bot/handlers/approvals.ts` — ALL success/confirmation messages MUST use .ftl i18n keys (Constitution Principle VII — i18n-Only). No hardcoded Arabic or English strings for user-facing responses.
 - [x] T102 [US2] Implement concurrent admin protection in approval/rejection handlers: atomic status check before any DB write — if request already handled, show error via i18n key `errors-join-request-already-handled` (see spec.md Edge Cases + Clarifications Session 2026-02-24)
 - [x] T103 [US2] Verify join request history retention: rejected requests are never overwritten — each new submission after rejection creates a new DB row. Add unit test to confirm (FR-012)
 
@@ -183,6 +183,7 @@
 - [ ] T044 [P] Implement module validation (skip invalid configs with warning)
 - [ ] T045 [P] Create `registerModule()` and `getModulesBySection()` APIs
 - [ ] T085 [P] Implement `unregisterModule()` API function
+- [ ] T117 [P] [ISSUE-012] Explicitly implement `getModulesBySection()` API function in `packages/core/src/services/modules.ts` as required by FR-030 — returns active modules for a given section with proper filtering by `isActive` flag and `orderIndex` sorting
 - [ ] T046 [P] Create module list display within sections
 - [ ] T047 [P] Write unit tests for module loader
 

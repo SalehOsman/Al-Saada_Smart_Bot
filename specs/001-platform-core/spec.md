@@ -168,7 +168,7 @@ Super Admin configures bot-wide settings.
 ### Functional Requirements
 
 - **FR-001**: System MUST initialize grammY bot with TypeScript and Hono server for webhook mode
-- **FR-002**: System MUST setup Pino logger with Arabic-friendly formatting
+- **FR-002**: System MUST setup Pino logger with Arabic-friendly formatting. "Arabic-friendly formatting" is defined as: (1) Timestamps displayed in Africa/Cairo timezone, (2) UTF-8 encoding for all log messages to properly support Arabic characters, (3) Structured logging with appropriate locale handling for date/time display.
 - **FR-003**: System MUST validate environment variables using Zod schema (.env validation)
 - **FR-004**: System MUST handle graceful shutdown on SIGTERM/SIGINT
 - **FR-005**: System MUST implement error handling middleware that logs errors and sends user-friendly messages via i18n key `errors-system-internal`
