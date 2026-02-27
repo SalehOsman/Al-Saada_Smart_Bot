@@ -269,10 +269,10 @@
 - [ ] T073 Code cleanup, formatting, and final linting
 - [ ] T074 Update quickstart.md with actual commands and verification steps
 - [ ] T098 [P] Verify Platform-First Gate: confirm `modules/` directory contains ZERO implemented module files. Run: `find modules/ -name '*.ts' | grep -v '.gitkeep'` — must return empty output. Document result in commit message.
-- [ ] T114 [P] Run final `/speckit.analyze` and confirm zero issues before tagging — Constitution Principle X Zero-Defect Gate. Do NOT proceed to T075 if any issues are found.
+- [ ] T114 [P] Execute Zero-Defect Gate verification (all tests pass, no lint errors, specs fully aligned). This is a MANDATORY blocking task before phase advancement.
 - [ ] T075 Final commit and tag v0.1.0. **Note (M1):** The 90/10 rule (90% config, max 10% hook code per module) cannot be verified until Phase 3 (first business module). Add compliance verification to Phase 3 tasks.
-- [ ] T078 Verify SC-002: Load test with ~200 concurrent simulated users
-- [ ] T079 Verify FR-015: Confirm all 4 roles (SUPER_ADMIN, ADMIN, EMPLOYEE, VISITOR) display correct menus and access levels
+- [ ] T078 [P] [NFR-002/005] Write and execute load test script to verify bot handles 200 concurrent users and maintains <500ms p95 response time.
+- [ ] T079 [P] [NFR-003] Write integration test to verify Redis fallback behavior (switching to in-memory map when Redis is down and auto-reconnecting).
 - [ ] T080 Verify SC-003: Confirm audit logs capture 100% of 23 defined actions from FR-026 (no gaps)
 - [ ] T093 Verify SC-001: Manual test — first-time bootstrap user completes full flow (name → phone → national ID → confirm → Super Admin welcome) in ≤ 30 seconds
 - [ ] T094 Verify SC-004: Manual test — session state (current section, navigation) persists correctly across bot interactions within a 24-hour window; new session starts after 24hr inactivity

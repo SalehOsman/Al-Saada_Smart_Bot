@@ -24,6 +24,8 @@ Platform Core (Layer 1) implementation for Al-Saada Smart Bot - the foundational
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
+**Note**: Task T114 (Zero-Defect Gate verification) MUST be completed before closing any phase.
+
 ### Al-Saada Smart Bot Principle Checks
 
 1. **Platform-First Principle**: Platform Core (Layer 1) must be 100% complete and tested before any module is created. Modules are primarily configuration (Config-First). Optional lifecycle hooks (beforeSave, afterSave, etc.) are allowed for complex business logic that cannot be expressed as configuration. The 90/10 rule applies: 90% config, max 10% hook code. All logic lives in the Flow Engine.
