@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const EGYPTIAN_PHONE_REGEX = /^(010|011|012|015)\d{8}$/
+export const EGYPTIAN_PHONE_REGEX = /^(010|011|012|015)\d{8}$/
 
 /**
  * Creates a Zod schema for validating an Egyptian phone number.

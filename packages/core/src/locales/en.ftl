@@ -165,6 +165,31 @@ value-unknown = Unknown
 notification-join-request-title = New Join Request
 notification-join-request-message = You have a new join request from: { $name } - { $phone }
 
+# Notifications
+notifications.join_request_new =
+    📨 New Join Request
+    Name: { $userName }
+    Request Code: #{ $requestCode }
+
+notifications.join_request_approved =
+    ✅ Congratulations! Your join request has been approved.
+    You can now start using the bot.
+
+notifications.join_request_rejected =
+    ❌ Sorry, your join request was not approved.
+    For more details, please contact the administration.
+
+notifications.user_deactivated =
+    🚫 Your account has been deactivated by the administrator.
+    Please contact the administration for inquiries.
+
+notifications.maintenance_on =
+    🛠️ The system will enter maintenance mode now.
+    Some services may be temporarily unavailable.
+
+notifications.maintenance_off =
+    ✅ Maintenance has ended. The system is now fully available.
+
 # --- Keys referenced in spec.md (added by /speckit.analyze remediation) ---
 
 # FR-005: Error middleware fallback

@@ -2,6 +2,7 @@ import { Worker, Job } from 'bullmq'
 import { env } from '../config/env'
 import logger from '../utils/logger'
 import { bot } from '../bot/index'
+import { i18n } from '../bot/i18n'
 import { redis } from '../cache/redis'
 import { NotificationJobData } from '../types/notification'
 
@@ -12,10 +13,11 @@ import { NotificationJobData } from '../types/notification'
 export const notificationWorker = new Worker<NotificationJobData>(
   'notifications',
   async (job: Job<NotificationJobData>) => {
-    const { targetUserId } = job.data
+    const { targetUserId, params = {} } = job.data
 
     try {
-      const message = formatNotificationMessage(job.data)
+      const messageKey = formatNotificationMessage(job.data)
+      const message = i18n.t('ar', messageKey, params)
       
       // Send message via Telegram Bot API
       await bot.api.sendMessage(String(targetUserId), message)
@@ -51,44 +53,36 @@ export const notificationWorker = new Worker<NotificationJobData>(
 )
 
 /**
- * Maps notification types to user-friendly Arabic messages.
- * This is a simplified implementation for workers where BotContext is unavailable.
+ * Maps notification types to i18n keys.
  * 
  * @param data The notification job data
- * @returns Formatted message string
+ * @returns i18n key string
  */
 function formatNotificationMessage(data: NotificationJobData): string {
-  const { type, params = {} } = data
+  const { type } = data
   
-  // Mapping based on i18n key pattern: notifications-{type}
-  // For now using hardcoded Arabic strings to ensure immediate functionality
+  // Mapping based on i18n key pattern: notifications.{type}
   switch (type) {
     case 'JOIN_REQUEST_NEW':
-      return `📨 طلب انضمام جديد
-الاسم: ${params.userName || 'غير معروف'}
-رقم الطلب: #${params.requestCode || '---'}`
+      return 'notifications.join_request_new'
     
     case 'JOIN_REQUEST_APPROVED':
-      return `✅ تهانينا! تمت الموافقة على طلب انضمامك.
-يمكنك الآن البدء باستخدام البوت.`
+      return 'notifications.join_request_approved'
     
     case 'JOIN_REQUEST_REJECTED':
-      return `❌ نأسف، لم تتم الموافقة على طلب انضمامك.
-للمزيد من التفاصيل يرجى التواصل مع الإدارة.`
+      return 'notifications.join_request_rejected'
     
     case 'USER_DEACTIVATED':
-      return `🚫 تم تعطيل حسابك من قِبَل المسؤول.
-يرجى التواصل مع الإدارة للاستفسار.`
+      return 'notifications.user_deactivated'
     
     case 'MAINTENANCE_ON':
-      return `🛠️ سيبدأ النظام في وضع الصيانة الآن.
-قد تتوقف بعض الخدمات مؤقتاً.`
+      return 'notifications.maintenance_on'
     
     case 'MAINTENANCE_OFF':
-      return `✅ انتهت أعمال الصيانة. النظام متاح الآن للاستخدام بشكل كامل.`
+      return 'notifications.maintenance_off'
     
     default:
-      return `🔔 إشعار جديد: ${type}`
+      return 'notification-generic'
   }
 }
 

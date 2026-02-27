@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const EGYPTIAN_NATIONAL_ID_REGEX = /^(2|3)\d{13}$/
+export const EGYPTIAN_NATIONAL_ID_REGEX = /^(2|3)\d{13}$/
 
 // Governorate codes in Egypt as of the last update.
 // Note: Codes 01-35 are for governorates, and 88 is for foreigners.

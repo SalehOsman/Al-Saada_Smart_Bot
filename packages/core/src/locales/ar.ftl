@@ -165,6 +165,31 @@ value-unknown = غير محدد
 notification-join-request-title = طلب انضمام جديد
 notification-join-request-message = لديك طلب انضمام جديد من: { $name } - { $phone }
 
+# Notifications
+notifications.join_request_new =
+    📨 طلب انضمام جديد
+    الاسم: { $userName }
+    رقم الطلب: #{ $requestCode }
+
+notifications.join_request_approved =
+    ✅ تهانينا! تمت الموافقة على طلب انضمامك.
+    يمكنك الآن البدء باستخدام البوت.
+
+notifications.join_request_rejected =
+    ❌ نأسف، لم تتم الموافقة على طلب انضمامك.
+    للمزيد من التفاصيل يرجى التواصل مع الإدارة.
+
+notifications.user_deactivated =
+    🚫 تم تعطيل حسابك من قِبَل المسؤول.
+    يرجى التواصل مع الإدارة للاستفسار.
+
+notifications.maintenance_on =
+    🛠️ سيبدأ النظام في وضع الصيانة الآن.
+    قد تتوقف بعض الخدمات مؤقتاً.
+
+notifications.maintenance_off =
+    ✅ انتهت أعمال الصيانة. النظام متاح الآن للاستخدام بشكل كامل.
+
 # --- Keys referenced in spec.md (added by /speckit.analyze remediation) ---
 
 # FR-005: Error middleware fallback

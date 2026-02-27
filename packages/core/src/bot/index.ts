@@ -7,9 +7,11 @@ import logger from '../utils/logger'
 import type { BotContext } from '../types/context'
 import { i18n } from './i18n'
 import { sessionMiddleware } from './middlewares/session'
+import { sanitizeMiddleware } from './middlewares/sanitize'
 import { errorHandler } from './middlewares/error'
 import { startHandler } from './handlers/start'
 import { menuHandler } from './handlers/menu'
+import { fallbackHandler } from './handlers/fallback'
 import { joinConversation } from './conversations/join'
 import { healthRouter } from '../server/health'
 
@@ -33,6 +35,9 @@ bot.use(i18n)
 // Conversations plugin for multi-step flows
 bot.use(conversations())
 
+// Sanitize all incoming text messages (FR-033)
+bot.use(sanitizeMiddleware)
+
 // Register join conversation (must be registered before any handlers)
 bot.use(createConversation(joinConversation, 'join'))
 
@@ -49,6 +54,9 @@ bot.callbackQuery('start_join', async (ctx) => {
   await ctx.answerCallbackQuery()
   await ctx.conversation.enter('join')
 })
+
+// Fallback for all other unsupported messages (T112)
+bot.on('message', fallbackHandler)
 
 // Create Hono app instance for webhook server
 export const app = new Hono()
