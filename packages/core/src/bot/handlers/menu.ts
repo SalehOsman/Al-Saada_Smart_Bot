@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client'
 import type { BotContext } from '../../types/context'
 import { prisma } from '../../database/prisma'
+import { auditService } from '../../services/audit-logs'
 import logger from '../../utils/logger'
 
 /** User row including adminScopes — matches the findUnique query in menuHandler */
@@ -30,6 +31,15 @@ export async function menuHandler(ctx: BotContext) {
     if (!user || !user.isActive) {
       return ctx.reply(ctx.t('user-inactive'))
     }
+
+    // Log menu access (FR-024)
+    await auditService.log({
+      userId: telegramId,
+      action: 'MENU_ACCESS' as any,
+      targetType: 'User',
+      targetId: user.id,
+      details: { role: user.role }
+    })
 
     // Get role-specific menu text
     switch (user.role) {

@@ -212,8 +212,7 @@ Super Admin configures bot-wide settings.
 - **FR-027**: System MUST NOT log sensitive data (passwords, tokens) in audit logs
 - **FR-028**: System MUST use Redis for user session management (24-hour expiry). Session data includes: `role`, `currentMenu` (navigation breadcrumb stack), `telegramId` (cached for quick lookups without DB query), and `locale` (ar/en preference). Conversation state (multi-step flows) is managed separately by grammY's conversation plugin.
 - **FR-029**: System MUST provide canAccess(userId: bigint, sectionId?: string, moduleId?: string): Promise<boolean> function — Returns true if the user's role and admin scope allow access. Super Admin always returns true. Visitor always returns false except for join-request. Results are cached in Redis for 5 minutes.
-- **FR-030**: System MUST provide API functions: registerModule(), unregisterModule(), getModulesBySection()
-- **FR-030a (Out of Scope)**: Module CRUD via bot UI (create, edit, delete modules interactively) is NOT part of Platform Core. Phase 1 is limited to programmatic module discovery (FR-020) and API functions (FR-030). Bot UI for module management belongs to Layer 2 or a later phase.
+- **FR-030**: System MUST provide API functions: registerModule(), unregisterModule(), getModulesBySection(). NOTE: Module CRUD via bot UI (create, edit, delete modules interactively) is NOT part of Platform Core. Phase 1 is limited to programmatic module discovery (FR-020) and API functions only. Bot UI for module management belongs to Layer 2 or a later phase.
 - **FR-031**: System MUST support bilingual interface — Arabic as primary language, English as secondary. All user-facing messages must exist in both languages via .ftl locale files.
   > **Note**: RTL rendering is handled natively by Telegram's message display. No custom RTL implementation is required in the bot code.
 - **FR-032**: System MUST retain notification history for 90 days. Notifications older than 90 days are automatically purged by a scheduled cron job.
@@ -228,7 +227,7 @@ Super Admin configures bot-wide settings.
   - **Maintenance Toggle**: Enable/disable maintenance mode (alias for FR-022, accessible from Settings as well as standalone command)
   - **Default Language**: Set the bot's default language (AR/EN) for new users
   - **Notification Preferences**: Configure which notification types are active and delivery settings
-  - **System Info Display**: Read-only view of system information (bot version, uptime, connected services status, environment)
+  - **System Info Display**: Read-only view of system information (bot version, uptime, connected services status, environment). Service monitoring includes PostgreSQL and Redis connection status. BullMQ and Ollama are scoped out of the info display for Phase 1 (Phase 1 monitors only core infrastructure).
   - **Backup (Full Control)**: Trigger and manage database backups (export/download), view backup history, and restore from backup
 
 ### Key Entities *(include if feature involves data)*
@@ -307,7 +306,7 @@ Super Admin configures bot-wide settings.
 - Q: What commands/buttons should each role's menu contain? → A: SUPER_ADMIN: Sections, Users, Maintenance, Audit, Settings. ADMIN: Sections (scoped), Users (scoped). EMPLOYEE: My Profile, My Requests. VISITOR: Join Request only.
 - Q: What should happen when a user is deactivated by an admin? → A: Block all access with a deactivation message via i18n key `errors.account.deactivated`; invalidate Redis session immediately.
 - Q: Should the Platform Core include structured metrics collection? → A: Deferred to a later phase. Pino logs + health check endpoints are sufficient for Phase 1 at ~200 user scale.
-- Q: What is the boundary for module management in Platform Core? → A: Discovery + programmatic API only (FR-020, FR-030). No bot UI for module CRUD in Phase 1.
+- Q: What is the boundary for module management in Platform Core? → A: Discovery + programmatic API only (FR-020, FR-030). Module CRUD via bot UI is out of scope for Phase 1 — belongs to Layer 2 or later phase.
 - Q: How long should rejected join request records be retained? → A: Indefinitely. Low-volume identity/audit records valuable for compliance.
 - Q: Can a module belong to multiple sections, or exactly one? → A: Exactly one section (many-to-one via `sectionId` in ModuleConfig).
 - Q: What are the valid user lifecycle state transitions after rejection or deactivation? → A: Rejected users can re-apply via /start (new join request row). Deactivated users can only be reactivated by a Super Admin.

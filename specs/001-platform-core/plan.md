@@ -167,7 +167,7 @@ packages/
 **User** - Telegram bot users
 - `telegramId` BIGINT PRIMARY KEY (Telegram user ID — no separate auto-generated id)
 - `fullName` VARCHAR(100) NOT NULL
-- `nickname` VARCHAR(100)
+- `nickname` VARCHAR(100) NULL (optional field — auto-generated if empty)
 - `phone` VARCHAR(20) UNIQUE (Egyptian format)
 - `nationalId` VARCHAR(14) UNIQUE (Egyptian format — one real-world identity per account)
 - `telegramUsername` VARCHAR(100)
@@ -181,7 +181,7 @@ packages/
 - `id` STRING PRIMARY KEY (cuid)
 - `telegramId` BIGINT NOT NULL (not unique — rejected users can re-apply with new row)
 - `fullName` VARCHAR(100) NOT NULL
-- `nickname` VARCHAR(100)
+- `nickname` VARCHAR(100) NULL (optional field — auto-generated if empty)
 - `phone` VARCHAR(20) NOT NULL (Egyptian format)
 - `nationalId` VARCHAR(14) NOT NULL (Egyptian format)
 - `status` ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING'

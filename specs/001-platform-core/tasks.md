@@ -81,7 +81,7 @@
 
 - [x] T053 [P] Setup BullMQ with Redis connection in `packages/core/src/services/queue.ts`
 - [x] T054 [P] Create notification service (queue-based message sending) in `packages/core/src/services/notifications.ts`
-- [x] T055 [P] Define notification types in `packages/core/src/types/notification.ts`. Use the 6 types from the Prisma `NotificationType` enum: `JOIN_REQUEST_NEW`, `JOIN_REQUEST_APPROVED`, `JOIN_REQUEST_REJECTED`, `USER_DEACTIVATED`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`. Each type maps to i18n params passed via `params` field (JSONB) — no title/body fields. Re-export `NotificationType` from `@prisma/client` for use across the codebase.
+- [x] T055 [P] Define notification types in `packages/core/src/types/notification.ts`. Use the 6 types from the Prisma `NotificationType` enum: `JOIN_REQUEST_NEW`, `JOIN_REQUEST_APPROVED`, `JOIN_REQUEST_REJECTED`, `USER_DEACTIVATED`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`. These 6 notification types are DISTINCT from the 23 `AuditAction` enum values in schema.prisma — do not conflate the two enums. Each notification type maps to i18n params passed via `params` field (JSONB) — no title/body fields. Re-export `NotificationType` from `@prisma/client` for use across the codebase.
 - [x] T057 [P] Create notification delivery worker in `packages/core/src/workers/notification.ts`. Configure BullMQ rate limiter at max 30 messages per 1000ms to comply with Telegram API flood control limits (FR-024).
 
 **Checkpoint**: Bot foundation complete - core infrastructure services ready
@@ -272,7 +272,7 @@
 - [ ] T098 [P] Verify Platform-First Gate: confirm `modules/` directory contains ZERO implemented module files. Run: `find modules/ -name '*.ts' | grep -v '.gitkeep'` — must return empty output. Document result in commit message.
 - [ ] T114 [P] Execute Zero-Defect Gate verification (all tests pass, no lint errors, specs fully aligned). This is a MANDATORY blocking task before phase advancement.
 - [ ] T075 Final commit and tag v0.1.0. **Note (M1):** The 90/10 rule (90% config, max 10% hook code per module) cannot be verified until Phase 3 (first business module). Add compliance verification to Phase 3 tasks.
-- [ ] T078 [P] [NFR-002/005] Write and execute load test script to verify bot handles 200 concurrent users and maintains <500ms p95 response time.
+- [ ] T078 [P] [NFR-002/005] Write and execute load test script using k6 to verify bot handles 200 concurrent users and maintains <500ms p95 response time.
 - [ ] T079 [P] [NFR-003] Write integration test to verify Redis fallback behavior (switching to in-memory map when Redis is down and auto-reconnecting).
 - [ ] T080 Verify SC-003: Confirm audit logs capture 100% of 23 defined actions from FR-026 (no gaps)
 - [ ] T093 Verify SC-001: Manual test — first-time bootstrap user completes full flow (name → phone → national ID → confirm → Super Admin welcome) in ≤ 30 seconds
@@ -284,23 +284,23 @@
 
 ---
 
-## مهام تحضير AI الموازية (Parallel AI Prep)
+## Parallel AI Prep (مهام تحضير AI الموازية)
 
-> تُنفَّذ بالتوازي مع التطوير الرئيسي — لا تتعارض مع أي Phase
-> التفاصيل الكاملة في `specs/002-ai-assistant/tasks.md`
+> Executed in parallel with main development — no conflicts with any Phase
+> Full details in `specs/002-ai-assistant/tasks.md`
 
-### المرحلة A — يوازي Phase 6-7
+### Phase A — Parallel to Phase 6-7
 
-- [ ] T-AI-01 [P] تحديث docker-compose.yml: استبدال `postgres:16` بـ `pgvector/pgvector:pg16` + إضافة Ollama service
-- [ ] T-AI-02 [P] إنشاء هيكل `packages/ai-assistant/` (package.json, tsconfig.json, مجلدات فارغة)
-- [ ] T-AI-03 [P] تحديث .env.example بمتغيرات AI (OLLAMA_BASE_URL, AI_EMBEDDING_MODEL, AI_LLM_MODEL)
-- [ ] T-AI-04 [P] توثيق أوامر تحميل النماذج في quickstart.md
+- [ ] T-AI-01 [P] Update docker-compose.yml: replace `postgres:16` with `pgvector/pgvector:pg16` + add Ollama service
+- [ ] T-AI-02 [P] Create `packages/ai-assistant/` structure (package.json, tsconfig.json, empty directories)
+- [ ] T-AI-03 [P] Update .env.example with AI variables (OLLAMA_BASE_URL, AI_EMBEDDING_MODEL, AI_LLM_MODEL)
+- [ ] T-AI-04 [P] Document model download commands in quickstart.md
 
-### المرحلة B — يوازي Phase 8-9
+### Phase B — Parallel to Phase 8-9
 
-- [ ] T-AI-05 [P] إضافة جدول `Embedding` لـ Prisma Schema + migration
-- [ ] T-AI-06 [P] إنشاء Embedding Service + LLM Client + RAG Service + RBAC Filter
+- [ ] T-AI-05 [P] Add `Embedding` table to Prisma Schema + migration
+- [ ] T-AI-06 [P] Create Embedding Service + LLM Client + RAG Service + RBAC Filter
 
-### المرحلة C — بعد Phase 11
+### Phase C — After Phase 11
 
-- [ ] T-AI-07 تكامل كامل — انظر `specs/002-ai-assistant/tasks.md` للتفاصيل
+- [ ] T-AI-07 Full integration — see `specs/002-ai-assistant/tasks.md` for details
