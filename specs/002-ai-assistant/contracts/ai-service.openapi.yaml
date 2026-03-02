@@ -1,0 +1,197 @@
+openapi: 3.0.0
+info:
+  title: AI Assistant Service
+  description: Core AI service for natural language queries, data entry, and configuration
+  version: 1.0.0
+
+paths:
+  /ai/query:
+    post:
+      summary: Process natural language AI query
+      description: Handles text or voice input, returns response based on user permissions
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [input, mode]
+              properties:
+                input:
+                  type: string
+                  description: User query in Arabic or English
+                mode:
+                  type: string
+                  enum: [fast, smart, training]
+                  default: fast
+                  description: Operating mode for this query
+                inputType:
+                  type: string
+                  enum: [text, voice, command]
+                  default: text
+      responses:
+        '200':
+          description: Successful AI response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                    description: AI-generated answer
+                  confidence:
+                    type: number
+                    format: float
+                    minimum: 0
+                    maximum: 1
+                  sources:
+                    type: array
+                    items:
+                      type: string
+                    description: Data sources used for context
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized (user has no AI access)
+        '429':
+          description: Rate limit exceeded
+
+  /ai/data-entry:
+    post:
+      summary: Parse natural language for data entry
+      description: Extracts structured data from natural language input, maps to module fields
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [input, targetModule]
+              properties:
+                input:
+                  type: string
+                  description: Natural language input in Arabic
+                targetModule:
+                  type: string
+                  description: Module slug for data mapping
+                voiceFileId:
+                  type: string
+                  description: Optional voice file ID for STT processing
+      responses:
+        '200':
+          description: Parsed fields ready for confirmation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fields:
+                    type: object
+                    additionalProperties: true
+                    description: Extracted field names and values
+                  confidence:
+                    type: number
+                    format: float
+                  needsFallback:
+                    type: boolean
+                    description: True if parsing confidence is low
+        '400':
+          description: Invalid input or module not found
+        '403':
+          description: User lacks permission for target module
+
+  /ai/settings:
+    get:
+      summary: Get AI configuration for current user
+      security:
+        - bearerAuth
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  operatingMode:
+                    type: string
+                    enum: [fast, smart, training]
+                  cloudProvider:
+                    type: string
+                    nullable: true
+                    enum: [gemini, openai, claude]
+                  voiceResponse:
+                    type: boolean
+                  privacyRules:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PrivacyRule'
+    put:
+      summary: Update AI configuration
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                operatingMode:
+                  type: string
+                  enum: [fast, smart, training]
+                cloudProvider:
+                  type: string
+                  enum: [gemini, openai, claude]
+                  nullable: true
+                voiceResponse:
+                  type: boolean
+      responses:
+        '200':
+          description: Configuration updated
+        '400':
+          description: Invalid configuration values
+        '403':
+          description: User is not SUPER_ADMIN
+
+  /ai/voice/toggle:
+    post:
+      summary: Toggle voice mode for current session
+      security:
+        - bearerAuth
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  voiceMode:
+                    type: string
+                    enum: [TEXT_ONLY, VOICE_INPUT_ONLY, FULL_VOICE]
+
+components:
+  schemas:
+    PrivacyRule:
+      type: object
+      properties:
+        fieldName:
+          type: string
+        modelType:
+          type: string
+          enum: [cloud, both]
+        redactionMethod:
+          type: string
+          enum: [full, partial, token]
+        isActive:
+          type: boolean
+
+securitySchemes:
+  bearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT
