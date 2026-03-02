@@ -1,6 +1,6 @@
 <!--
 Sync Impact Report:
-- Version change: 2.1.1 → 2.2.0 (MINOR: Added Development Infrastructure section)
+- Version change: 2.2.0 → 2.2.1 (PATCH: Clarified GitNexus workspace rule)
 - Modified principles: None
 - Added sections: Development Infrastructure (Development Toolchain, Executor Tools, Codebase Intelligence: GitNexus, Blast Radius Rule)
 - Removed sections: None
@@ -283,6 +283,7 @@ The project uses multiple AI tools as executors:
 - It builds a Knowledge Graph of the entire monorepo, tracking every dependency, call chain, and relationship.
 - It exposes an MCP Server that gives AI executor tools deep architectural awareness.
 - **CRITICAL**: GitNexus is a development tool ONLY — it MUST NOT be added as a dependency in `package.json` or included in production code.
+- GitNexus MUST NOT be added as a workspace package under `packages/`. It runs exclusively as an external CLI tool via `npx`.
 - GitNexus Knowledge Graph MUST be re-indexed (`npx gitnexus analyze`) after every Phase completion or major architectural change.
 
 #### Blast Radius Rule
@@ -377,5 +378,6 @@ The project uses multiple AI tools as executors:
 | 2.1.0 | 2026-03-02 | 003-module-kit: Replaced Flow Engine with Module Kit architecture. Layer 2 now provides @al-saada/module-kit package with conversation helpers, RBAC, draft middleware, and CLI tools. |
 | 2.1.1 | 2026-03-02 | Removed duplicate Simplicity Over Cleverness and Monorepo Structure sections. |
 | 2.2.0 | 2026-03-03 | Added Development Infrastructure section with GitNexus and executor tools, introducing the Blast Radius Rule. |
+| 2.2.1 | 2026-03-03 | Clarified that GitNexus must not be added as a workspace package under packages/. |
 
-**Version**: 2.2.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-03-03
+**Version**: 2.2.1 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-03-03
