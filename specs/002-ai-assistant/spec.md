@@ -158,18 +158,18 @@ Three AI-powered features help developers and Super Admins work with modules mor
 
 ### Edge Cases
 
-- How does the system handle documents that exceed size or page limits? → (see FR-025A, FR-025B)
+- How does the system handle documents that exceed size or page limits? → (Handled by FR-025A: 25MB limit, FR-025B: 500 pages)
 
-- What happens when the local AI model is unavailable or responds with an error?
-- How does the system handle natural language input that is completely unrelated to any module?
-- What happens when voice transcription produces completely incorrect text?
-- How does the system handle documents with poor quality images or corrupted files?
-- What happens when a user asks a question about data from multiple modules simultaneously? → (see FR-011, FR-054)
-- How does the system handle queries that would return an extremely large amount of data?
-- What happens when the cloud AI model API is down or exceeds rate limits? → (see NFR-009)
-- How does the system handle ambiguous dates in natural language (e.g., "last month" when near month boundary)?
-- What happens when natural language input contains conflicting values (e.g., "record 500 liters and 200 liters")?
-- How does the system handle multilingual input (mixing Arabic and English)?
+- What happens when the local AI model is unavailable or responds with an error? → (Handled by NFR-008: auto failover, NFR-009: graceful degradation to cached responses)
+- How does the system handle natural language input that is completely unrelated to any module? → (Handled by FR-012: ambiguous query handling — system responds with clarification or "I cannot help with that")
+- What happens when voice transcription produces completely incorrect text? → (Handled by FR-034: voice failure feedback — prompt user to retry or switch to text)
+- How does the system handle documents with poor quality images or corrupted files? → (Handled by FR-026, FR-027: extraction returns low confidence score, user informed via i18n error message)
+- What happens when a user asks a question about data from multiple modules simultaneously? → (Handled by FR-011, FR-054: cross-module query support)
+- How does the system handle queries that would return an extremely large amount of data? → (Handled by FR-009: response format adapts — system provides summarized response with option to request details)
+- What happens when the cloud AI model API is down or exceeds rate limits? → (Handled by NFR-009: graceful degradation to Fast Mode, NFR-004: rate limiting)
+- How does the system handle ambiguous dates in natural language (e.g., "last month" when near month boundary)? → (Handled by FR-006: validation against constraints — system uses server date as reference and asks for clarification if ambiguous)
+- What happens when natural language input contains conflicting values (e.g., "record 500 liters and 200 liters")? → (Handled by FR-004: fallback to step-by-step — system detects conflict and asks user to confirm correct value)
+- How does the system handle multilingual input (mixing Arabic and English)? → (Handled by FR-001: natural language parsing supports mixed Arabic/English input as Qwen2.5 is multilingual)
 
 ## Requirements *(mandatory)*
 
