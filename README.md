@@ -2,9 +2,9 @@
 
 # بوت السعادة الذكي | Al-Saada Smart Bot
 
-**منصة معيارية لتسجيل وإدارة الأعمال اليومية للشركات المصرية عبر تيليجرام**
+**منصة ذكية وجاهزة لتسجيل وإدارة الأعمال اليومية للشركات المصرية عبر تيليجرام**
 
-**A modular platform for recording and managing daily business operations for Egyptian companies via Telegram**
+**A smart, ready-made platform for recording and managing daily business operations for Egyptian companies via Telegram**
 
 [![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)]()
@@ -22,7 +22,7 @@
 
 ## ما هو بوت السعادة؟
 
-بوت السعادة هو **محرك فارغ** يتحول إلى نظام تسجيل أعمال يومية متكامل عبر تيليجرام. بدلاً من كتابة كود لكل وظيفة، تقوم بتعريف **موديولات مستقلة** والمحرك يحولها تلقائياً إلى شاشات بوت كاملة مع تحقق من البيانات، تأكيد، حفظ، وتدقيق.
+بوت السعادة هو **منصة جاهزة** تتكيّف مع طبيعة عملك عبر تيليجرام. بدلاً من كتابة كود لكل وظيفة، تقوم بتعريف **موديولات مستقلة** حسب تخصصك ومجال عملك، والمنصة تحولها تلقائياً إلى شاشات بوت كاملة مع تحقق من البيانات، تأكيد، حفظ، وتدقيق — مدعومة بمساعد ذكاء اصطناعي تشغيلي.
 
 ```
 الموظف يفتح البوت ──▶ يختار القسم ──▶ يختار الموديول ──▶ يسجّل بياناته ──▶ تأكيد ──▶ حفظ + إشعار المدير
@@ -248,7 +248,7 @@ al-saada-smart-bot/
 
 </div>
 
-Al-Saada Smart Bot is an **empty engine** that transforms into a complete daily business recording system via Telegram. Instead of writing code for every function, you define **independent modules** and the engine automatically turns them into full bot screens with validation, confirmation, persistence, and auditing.
+Al-Saada Smart Bot is a **ready-made platform** that adapts to your business via Telegram. Instead of writing code for every function, you define **independent modules** tailored to your industry and workflow, and the platform automatically turns them into full bot screens with validation, confirmation, persistence, and auditing — powered by an AI operational assistant.
 
 ```
 Employee opens bot ──▶ selects section ──▶ selects module ──▶ records data ──▶ confirm ──▶ save + notify manager
