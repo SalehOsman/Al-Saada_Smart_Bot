@@ -17,7 +17,7 @@ The Module Kit (Layer 2) provides a streamlined, developer-centric toolkit for b
 **Project Type**: Telegram Bot Framework / Modular Engine  
 **Performance Goals**: CLI scaffolding < 1 minute; ModuleLoader startup < 5 seconds; 100% reliability for automatic audit logs/notifications  
 **Constraints**: Principle VII (i18n-Only User Text); Existing Layer 1 source files remain untouched. New infrastructure files (ModuleLoader, Draft Middleware) MAY be added to packages/core/ per SC-005. Minimal, non-breaking schema additions (e.g., Section.slug) are also permitted. PII masking in audit logs (Principle VI). Root `package.json` workspaces MUST include `modules/*` to allow modules to `import { defineModule } from '@al-saada/module-kit'`.  
-**Scale/Scope**: Support for ~200 concurrent users across multiple organization-specific modules
+**Scale/Scope**: Support for ~1,000 concurrent users across multiple organization-specific modules
 
 ## Constitution Check
 
@@ -89,6 +89,7 @@ modules/                 # Dynamic module container
 prisma/
 ├── schema/              # Prisma Multi-File Schema root (prismaSchemaFolder)
 │   ├── main.prisma      # datasource + generator blocks
+│   ├── platform.prisma    # User, JoinRequest, Section, Module, AuditLog, Notification, AdminScope models
 │   └── modules/         # Destination for module schema snippets
 scripts/
 ├── module-create.ts     # CLI: npm run module:create
