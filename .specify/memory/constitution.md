@@ -1,11 +1,11 @@
 <!--
 Sync Impact Report:
-- Version change: 2.0.0 → 2.1.0 (MINOR: Replaced Flow Engine with Module Kit architecture)
-- Modified principles: I, II, III, IV, IX, Technology Stack, Phases
+- Version change: 2.1.0 → 2.1.1 (PATCH: Removed duplicate sections)
+- Modified principles: None
 - Added sections: None
-- Removed sections: None
-- Modified sections: Layer 2 description, Layer 3 description, Amendment History, Version Metadata
-- Templates requiring updates: ✅ plan-template.md, ✅ specs/003-module-kit/quickstart.md, ✅ .specify/templates/commands/plan.md
+- Removed sections: Duplicate Simplicity and Monorepo principles at end of Core Principles
+- Modified sections: Amendment History, Version Metadata
+- Templates requiring updates: None
 - No deferred placeholders
 -->
 
@@ -222,17 +222,6 @@ No phase or task may proceed until all issues from the current phase are fully r
 
 **Violation:** Advancing to any new step with unresolved issues is an explicit constitutional breach requiring immediate rollback and full remediation before continuing.
 
-### VII. Simplicity Over Cleverness
-Start simple, add complexity only when proven necessary. YAGNI principle strictly enforced. No premature optimization. Clear naming conventions (Arabic-friendly). Every file has a single clear purpose.
-
-### VIII. Monorepo Structure
-The project uses a monorepo with clear package separation:
-- packages/core — Platform Core (Layer 1)
-- packages/module-kit — Module Kit (@al-saada/module-kit) (Layer 2)
-- packages/validators — Egyptian validation library
-- packages/ai-assistant — AI Operational Assistant with RAG (Phase 4)
-- modules/ — All modules (config + conversations)
-
 ## Technology Stack
 
 ### Core
@@ -364,5 +353,6 @@ The project uses a monorepo with clear package separation:
 | 1.8.0 | 2026-02-24 | Updated AI Assistant: Qwen2.5:7b (from Qwen3-8B), added nomic-embed-text for embeddings, defined Parallel Build Strategy (Phase A/B/C) |
 | 2.0.0 | 2026-02-24 | Added Principle VII: i18n-Only User Text — Arabic forbidden in source code, all text via .ftl locale files. Renumbered principles VIII-XI. |
 | 2.1.0 | 2026-03-02 | 003-module-kit: Replaced Flow Engine with Module Kit architecture. Layer 2 now provides @al-saada/module-kit package with conversation helpers, RBAC, draft middleware, and CLI tools. |
+| 2.1.1 | 2026-03-02 | Removed duplicate Simplicity Over Cleverness and Monorepo Structure sections. |
 
-**Version**: 2.1.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-03-02
+**Version**: 2.1.1 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-03-02
