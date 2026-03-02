@@ -441,6 +441,7 @@
 - [ ] T146 Validate cloud API credentials before saving configuration in packages/ai-assistant/src/handlers/settings.handler.ts
 - [ ] T147 Add input validation with Zod for all handlers in packages/ai-assistant/src/handlers/
 - [ ] T148 Ensure no question content stored in AIInteraction per FR-043
+- [ ] T148B Implement retention cleanup cron job in packages/ai-assistant/src/services/retention.service.ts — delete expired AIInteraction logs and DocumentAnalysis records based on configurable retention periods (NFR-013, NFR-014, NFR-015). Run daily via node-cron.
 
 ### Final Tests
 
