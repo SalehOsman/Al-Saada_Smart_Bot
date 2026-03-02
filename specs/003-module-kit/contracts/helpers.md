@@ -69,8 +69,8 @@ export interface SaveOptions<T> {
   /** The module's unique slug */
   moduleSlug: string;
 
-  /** Database write operation (Prisma callback) */
-  action: (prisma: PrismaClient) => Promise<any>;
+  /** Database write callback (Prisma callback) - named dbAction to distinguish from audit.action */
+  dbAction: (prisma: PrismaClient) => Promise<any>;
 
   /** Audit log metadata */
   audit: {
