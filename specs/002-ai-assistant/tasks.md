@@ -414,7 +414,7 @@
 
 ### Rate Limiting
 
-- [ ] T135 Implement role-based rate limiting middleware in packages/ai-assistant/src/middleware/rate-limit.middleware.ts
+- [ ] T135 Implement role-based rate limiting middleware in packages/ai-assistant/src/middleware/rate-limit.middleware.ts — use Redis sliding window approach (INCR + EXPIRE per userId:minute key). Check user role from ctx.session.user.role to determine quota. Return 429 with i18n key ai-rate-limit-exceeded when exceeded.
 - [ ] T136 Add rate limit quotas (200/150/100/50 per minute) in packages/ai-assistant/src/middleware/rate-limit.middleware.ts
 
 ### Observability
