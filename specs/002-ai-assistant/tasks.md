@@ -379,7 +379,7 @@
 
 ### Handlers
 
-- [ ] T124 [US8] Implement /ai create-module handler in packages/ai-assistant/src/handlers/ai-command.handler.ts
+- [ ] T124 [US8] Implement /ai create-module handler in packages/ai-assistant/src/handlers/ai-command.handler.ts — implement subcommand routing in ai-command.handler.ts, parse /ai subcommands (create-module, review-module, query) and route to appropriate handler function, default to query mode for plain /ai input
 - [ ] T125 [US8] Implement /ai review-module <slug> handler in packages/ai-assistant/src/handlers/ai-command.handler.ts
 
 ### CLI Integration
