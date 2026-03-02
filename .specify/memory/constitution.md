@@ -1,8 +1,8 @@
 <!--
 Sync Impact Report:
-- Version change: 2.2.0 → 2.2.1 (PATCH: Clarified GitNexus workspace rule)
+- Version change: 2.2.1 → 2.3.0 (MINOR: Added methodology.md as binding reference)
 - Modified principles: None
-- Added sections: Development Infrastructure (Development Toolchain, Executor Tools, Codebase Intelligence: GitNexus, Blast Radius Rule)
+- Added sections: Governance > Compliance Rules > Methodology Adherence
 - Removed sections: None
 - Modified sections: Amendment History, Version Metadata
 - Templates requiring updates: None
@@ -356,6 +356,7 @@ The project uses multiple AI tools as executors:
 - No module-specific code is allowed in platform packages (packages/core, packages/module-kit)
 - Any deviation from the constitution must be documented and justified
 - Code reviews must verify constitutional compliance
+- **Methodology Adherence (NON-NEGOTIABLE):** All AI executors and the Technical Advisor MUST follow the 12 Golden Rules defined in `docs/methodology.md` (v1.8.0). This document governs: Two-Task Rule, Fix-Now, Full Consistency, Explicit Command, Preemptive Prevention, Command Brief, i18n-Only, Shared-First, AI-Ready Architecture, Zero-Defect Gate, SpecKit-Only Documentation, and GitNexus-Enhanced Development. The methodology document is a binding extension of this constitution — violations are treated as constitutional breaches.
 - **Strict Methodology Adherence (NON-NEGOTIABLE):** The Technical Advisor (AI) and the Executor (AI) MUST strictly follow the operating procedures defined by [github/spec-kit](https://github.com/github/spec-kit) and [sickn33/antigravity-awesome-skills](https://github.com/sickn33/antigravity-awesome-skills).
   - **Advisor Rule:** The Advisor must plan, create clear task cards, and use specific Antigravity skills (like `architect`, `plan-writing`, `conductor`) without jumping into manual raw bash implementation unless explicitly necessary for a break-glass fix.
   - **Executor Rule:** The Executor (`/speckit.implement`) must ONLY implement predefined implementation tasks from `tasks.md`. It must NOT be used to hack documentation files (`spec.md`, `tasks.md`, etc.) via bash commands. The `analyze` gate MUST be respected before implementation.
@@ -379,5 +380,6 @@ The project uses multiple AI tools as executors:
 | 2.1.1 | 2026-03-02 | Removed duplicate Simplicity Over Cleverness and Monorepo Structure sections. |
 | 2.2.0 | 2026-03-03 | Added Development Infrastructure section with GitNexus and executor tools, introducing the Blast Radius Rule. |
 | 2.2.1 | 2026-03-03 | Clarified that GitNexus must not be added as a workspace package under packages/. |
+| 2.3.0 | 2026-03-03 | Added methodology.md as binding reference in Governance > Compliance Rules. |
 
-**Version**: 2.2.1 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-03-03
+**Version**: 2.3.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-03-03
