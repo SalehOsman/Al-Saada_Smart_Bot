@@ -142,6 +142,8 @@
 
 - [x] T031 [US3] Implement draft resume prompt in module entry flow — before starting module conversation: check Redis for `draft:{userId}:{moduleSlug}`. If found: display i18n message `module-kit-draft-found` with two inline buttons: Resume (i18n key `module-kit-draft-resume-btn`) and Start Fresh (i18n key `module-kit-draft-fresh-btn`). On "Resume": restore conversation state. **Edge case: If user clicks Resume but draft has expired in the interim (Redis TTL elapsed between prompt display and button click), show i18n key module-kit-draft-expired and start fresh automatically.** On "Start Fresh": delete Redis draft, start conversation from beginning. Per FR-009, Principle VII
 - [x] T032 [US3] Implement draft conversation state serialization/deserialization — **serialize: capture ONLY the collected data object and current stepKey/stepIndex, excluding volatile UI state (keyboard markup, pending message IDs)**. Deserialize: restore conversation state and jump to the correct step. Handle edge case: if user's permissions were revoked between abandonment and resume, fail with i18n key `module-kit-unauthorized-resume`. Per spec.md edge cases, analyze A1
+|.*. Per spec.md edge cases, analyze A1|&
+**Draft serialization format: JSON object with structure { data: Record<string, any>, stepIndex: number, stepKey: string, moduleSlug: string, savedAt: string (ISO timestamp) }. Excludes volatile UI state: grammY keyboard markup, pending message IDs, conversation context references.**
 
 **Checkpoint**: Draft recovery system complete — auto-save, resume/fresh choice, permission re-validation. US3 independently testable
 
