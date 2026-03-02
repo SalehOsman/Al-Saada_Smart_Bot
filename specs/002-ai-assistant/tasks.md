@@ -96,7 +96,7 @@
 
 ### Services
 
-- [ ] T031 [P] [US1] Implement QueryService in packages/ai-assistant/src/services/query.service.ts (natural language parsing logic)
+- [ ] T031 [P] [US1] Implement QueryService in packages/ai-assistant/src/services/query.service.ts (natural language parsing logic per FR-001 — QueryService is implementation of 'natural language parsing' requirement)
 - [ ] T032 [US1] Implement RAGService in packages/ai-assistant/src/services/rag.service.ts (vector search + context building) — use pgvector cosine distance operator for similarity search: ORDER BY embedding <=> $1 ASC LIMIT k. Reference research.md pgvector patterns for raw SQL integration via Prisma.$queryRaw.
 - [ ] T033 [US1] Integrate QueryService with RAGService for data entry schema mapping in packages/ai-assistant/src/services/query.service.ts
 
