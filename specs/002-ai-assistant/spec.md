@@ -311,6 +311,31 @@ Three AI-powered features help developers and Super Admins work with modules mor
 - **VoiceSession**: Represents an active voice interaction including user, mode (TEXT_ONLY, VOICE_INPUT_ONLY, FULL_VOICE), and transcription history
 - **AIConfig**: Represents user-specific AI configuration including operating mode, cloud provider, voice response enabled, and privacy preferences
 
+### Entity Relationships
+
+```text
+User (from 001-platform-core)
+├── 1:N AIInteraction        ← user makes queries
+├── 1:N AISuggestion         ← user receives suggestions (as target)
+├── 1:1 AIConfig            ← user's AI settings
+├── 1:N DocumentAnalysis     ← user uploads documents (as uploader)
+└── 1:N VoiceSession         ← user's voice interactions
+
+PrivacyRule
+└── N:1 User               ← created by SUPER_ADMIN only
+
+ScheduledReport
+└── N:N User               ← recipients (via JSON array)
+
+AdminScope (from 001-platform-core)
+└── Used by:
+    ├── RAGService          ← RBAC filtering for queries
+    ├── SuggestionService    ← RBAC filtering for suggestions
+    └── ReportService       ← RBAC filtering for reports
+```
+
+Full entity definitions: see data-model.md
+
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
