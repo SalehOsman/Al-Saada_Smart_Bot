@@ -267,7 +267,7 @@
 
 ### File Storage
 
-- [ ] T086 [US5] Implement file upload validation (size 25MB max, 500 pages PDF) in packages/ai-assistant/src/services/document-parser.service.ts
+- [ ] T086 [US5] Implement file upload validation (size 25MB max per FR-025A, 500 pages PDF per FR-025B) in packages/ai-assistant/src/services/document-parser.service.ts — use pdf-parse to count pages before processing. Reject with i18n key ai-doc-page-limit-exceeded if pages > 500.
 - [ ] T087 [US5] Add file storage integration in packages/ai-assistant/src/services/document-parser.service.ts
 
 ### Locale
