@@ -7,7 +7,8 @@
     "node": ">=20"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "modules/*"
   ],
   "scripts": {
     "dev": "tsx --env-file=.env packages/core/src/main.ts",
@@ -23,13 +24,21 @@
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
     "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down"
+    "docker:down": "docker-compose down",
+    "module:create": "tsx scripts/module-create.ts",
+    "module:remove": "tsx scripts/module-remove.ts",
+    "module:list": "tsx scripts/module-list.ts"
+  },
+  "prisma": {
+    "schema": "prisma/schema"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^2.8.1",
+    "@types/inquirer": "^9.0.9",
     "commitlint": "^19.2.1",
     "eslint": "^8.57.0",
     "husky": "^9.0.11",
+    "inquirer": "^9.3.8",
     "lint-staged": "^15.2.2",
     "tsup": "^8.0.2",
     "tsx": "^4.7.2",

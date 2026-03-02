@@ -36,7 +36,7 @@ Extract and document:
 Verify the feature aligns with the Al-Saada Smart Bot constitution:
 - Platform-First principle (platform complete before modules)
 - Config-Driven Architecture (configuration over code)
-- Flow Block Reusability (self-contained components)
+- Helper Reusability (self-contained components)
 - Test-First Development (tests before implementation)
 - Egyptian Business Context (local requirements)
 - Security & Privacy standards
@@ -46,7 +46,7 @@ Verify the feature aligns with the Al-Saada Smart Bot constitution:
 ### Phase 3: Project Structure Planning
 
 Define concrete source code layout based on:
-- Monorepo structure (packages/core, packages/flow-engine, etc.)
+- Monorepo structure (packages/core, packages/module-kit, etc.)
 - Module organization principles
 - Testing directory structure
 - Documentation location

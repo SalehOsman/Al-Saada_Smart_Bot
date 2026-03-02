@@ -72,7 +72,7 @@ export async function addFuelEntryConversation(conversation: Conversation<BotCon
   await save(ctx, {
     moduleSlug: 'fuel-entry',
     action: (prisma) => prisma.fuelEntry.create({ data }),
-    audit: { action: 'MODULE_REGISTER', targetType: 'FuelEntry' },
+    audit: { action: 'MODULE_CREATE', targetType: 'FuelEntry' },
   });
 
   await ctx.reply(ctx.t('fuel_entry.success'));
@@ -86,3 +86,6 @@ Restart the bot. The `ModuleLoader` will:
 2.  Register the conversation.
 3.  Add "Fuel Entry" to the "Operations" menu for authorized users.
 4.  Load the `.ftl` translations.
+
+**Note**: Developers MUST define a contextual help key for every step in their module's locale files using the format `module-kit-help-{step}` (e.g., `module-kit-help-amount` for the amount step). These keys are automatically used by the `/help` command interrupt during a conversation.
+

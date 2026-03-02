@@ -1,12 +1,12 @@
-# Specification Quality Checklist: Module Kit (Layer 2)
+# Specification Quality Checklist: 003-module-kit Refinement
 
-**Purpose**: Validate specification completeness and quality before proceeding to planning
-**Created**: 2026-03-01
-**Feature**: [spec.md](../spec.md)
+**Purpose**: Validate specification completeness and quality after refinements (C1, U1, I1)
+**Created**: 2026-03-02
+**Feature**: [specs/003-module-kit/spec.md](specs/003-module-kit/spec.md)
 
 ## Content Quality
 
-- [x] No implementation details (languages, frameworks, APIs) - Note: This is an internal developer tool/SDK, so technical specifications are acceptable as business requirements.
+- [x] No implementation details (languages, frameworks, APIs)
 - [x] Focused on user value and business needs
 - [x] Written for non-technical stakeholders
 - [x] All mandatory sections completed
@@ -18,9 +18,9 @@
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
 - [x] All acceptance scenarios are defined
-- [x] Edge cases are identified
+- [x] Edge cases are identified (including /cancel, /start, /menu behavior)
 - [x] Scope is clearly bounded
-- [x] Dependencies and assumptions identified
+- [x] Dependencies and assumptions identified (Section.slug Layer 1 exception documented)
 
 ## Feature Readiness
 
@@ -31,4 +31,7 @@
 
 ## Notes
 
-- Validation complete. All criteria met. No missing or ambiguous requirements. Ready for planning.
+- Refinements successfully addressed C1 (Layer 1 schema exception), U1 (/menu command), and I1 (permissions order).
+- `Section.slug` is now explicitly permitted as a non-breaking schema addition to Layer 1.
+- `/menu` behaves identically to `/cancel` and `/start` regarding draft preservation.
+- Permissions standardized to `{ view, create, edit, delete }`.

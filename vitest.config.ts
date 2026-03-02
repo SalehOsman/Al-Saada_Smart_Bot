@@ -1,6 +1,13 @@
 import { defineConfig } from 'vitest/config'
+import path from 'path'
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@core': path.resolve(__dirname, './packages/core/src'),
+      '@module-kit': path.resolve(__dirname, './packages/module-kit/src'),
+    },
+  },
   test: {
     globals: true,
     environment: 'node',

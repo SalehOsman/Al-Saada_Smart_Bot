@@ -6,7 +6,8 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "paths": {
-      "@core/*": ["packages/core/src/*"]
+      "@core/*": ["packages/core/src/*"],
+      "@module-kit/*": ["packages/module-kit/src/*"]
     },
     "strict": true,
     "outDir": "dist",

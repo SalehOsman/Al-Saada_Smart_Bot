@@ -1,11 +1,11 @@
 <!--
 Sync Impact Report:
-- Version change: 1.9.0 → 2.0.0 (MAJOR: Added i18n-Only User Text principle)
-- Modified principles: Core Principles (added Principle VII)
+- Version change: 2.0.0 → 2.1.0 (MINOR: Replaced Flow Engine with Module Kit architecture)
+- Modified principles: I, II, III, IV, IX, Technology Stack, Phases
 - Added sections: None
 - Removed sections: None
-- Modified sections: Amendment History, Version Metadata
-- Templates requiring updates: ✅ tasks.md (update references to hardcoded Arabic text)
+- Modified sections: Layer 2 description, Layer 3 description, Amendment History, Version Metadata
+- Templates requiring updates: ✅ plan-template.md, ✅ specs/003-module-kit/quickstart.md, ✅ .specify/templates/commands/plan.md
 - No deferred placeholders
 -->
 
@@ -44,77 +44,34 @@ Sync Impact Report:
 - Redis session management
 - Docker infrastructure (PostgreSQL + Redis)
 
-### Layer 2: Flow Engine (Fixed — The brain of the platform)
-The Flow Engine converts config files into fully working Telegram bot screens:
-- **Flow Blocks** — Reusable building blocks:
-  - text_input: Free text with validation (min/max length, regex, Arabic-only, etc.)
-  - number_input: Numeric input with range validation
-  - date_input: Interactive calendar picker with date validation
-  - phone_input: Egyptian phone validation (010/011/012/015) with operator detection
-  - national_id: 14-digit Egyptian ID with auto-extraction of birthdate, gender, governorate
-  - email_input: Email format validation
-  - currency_input: Money amount with EGP default
-  - location_input: GPS or text address
-  - select_from_db: Dynamic selection from any database table (filterable)
-  - select_enum: Static options list (e.g., gender, status, type)
-  - file_upload: Document upload with type/size validation
-  - photo_upload: Image upload with compression
-  - confirm: Summary screen + save + optional notifications
-  - approval: Manager/admin approval workflow step
-- **Wizard Runner** — Reads flow steps array and executes them sequentially, handles back/skip/cancel
-- **List Engine** — Paginated, filterable, searchable lists from any table
-- **Report Engine** — Excel/PDF report generation from any data query
-- **Search Engine** — Smart search across any module's data
+### Layer 2: Module Kit (@al-saada/module-kit) (Fixed — Standardized toolkit)
+The Module Kit provides standardized helpers and middleware to power dynamic module conversations:
+- **Conversation Helpers** — Reusable logic blocks:
+  - validate(): Interactive input with multi-retry validation and i18n support
+  - confirm(): Summary screen with targeted inline editing
+  - save(): Automatic persistence with built-in audit logging and admin notifications
+- **Module Loader** — Dynamically discovers and registers modules from `modules/*/config.ts`
+- **Draft Middleware** — Automatically persists user progress to Redis with sliding TTL
+- **CLI Tools** — Scaffolding (`module:create`), removal (`module:remove`), and listing (`module:list`)
 
-**Example: Employee Registration Module (Config + Hooks)**
-```
-// Config handles: UI steps, field types, validation, DB mapping
-steps: [
-  { block: 'text_input', field: 'fullName' },
-  { block: 'national_id', field: 'nationalId' },
-  { block: 'currency_input', field: 'basicSalary' },
-  { block: 'confirm', showSummary: true },
-]
+### Layer 3: Modules (Variable — Conversation-Based with Optional Hooks)
+Each module consists of configuration files and grammY conversation handlers:
+- config.ts — Module definition (name, section, permissions, icon, orderIndex)
+- add.conversation.ts — Stateful data collection flow using validate/confirm/save
+- edit.conversation.ts — Optional stateful editing flow
+- schema.prisma — Module-specific database table definition
+- locales/ — Module-specific Fluent (.ftl) files with slug-prefixed keys
 
-// Hook handles: Complex Egyptian tax calculation (cannot be config)
-hooks: {
-  beforeSave: async (data) => {
-    data.taxAmount = calculateEgyptianTax(data.basicSalary);
-  }
-}
-```
-
-### Layer 3: Modules (Variable — Config-First with Optional Hooks)
-Each module consists of configuration files with optional lifecycle hooks:
-- module.config.ts — Module definition (name, section, permissions, icon, menu order)
-- add.flow.ts — Add record flow (ordered array of Flow Block steps + optional hooks)
-- edit.flow.ts — Edit record flow
-- view.config.ts — Single record view configuration
-- list.config.ts — List display configuration (columns, filters, sort)
-- report.config.ts — Report generation configuration
-- schema.prisma — Database table definition for this module
-
-Lifecycle Hooks (optional — only when config is insufficient):
-- beforeValidate: Modify or enrich data before validation runs
-- beforeSave: Custom business logic before database write (e.g., tax calculations, complex validations)
-- afterSave: Post-save actions (e.g., custom notifications, external API calls)
+Lifecycle Hooks (optional — only when helpers are insufficient):
+- beforeSave: Custom business logic before database write (e.g., tax calculations)
+- afterSave: Post-save actions (e.g., external API calls)
 - beforeDelete: Pre-deletion checks or cascading logic
-- onApproval: Custom logic when a request is approved
-- onRejection: Custom logic when a request is rejected
-
-Hook Rules:
-- Hooks are OPTIONAL — most modules should work with config alone
-- Hooks must be minimal and focused (single responsibility)
-- Hooks must NOT contain UI logic — UI is always handled by Flow Blocks
-- Hooks must NOT replace what config can do — use config first, hooks only for exceptions
-- Hooks receive typed context (data, user, prisma) and return modified data or throw errors
-- All hooks are async and have access to database and services
 
 Key rules:
 - Modules are NEVER hardcoded — discovered dynamically at startup
 - Sections (departments) are dynamic — created/deleted/renamed by Super Admin
 - A module belongs to exactly one section
-- Config handles 90%+ of module behavior — hooks handle the remaining edge cases
+- Helpers handle 90%+ of module behavior — hooks handle the remaining edge cases
 
 ## Roles & Permissions (RBAC)
 
@@ -173,33 +130,33 @@ Key rules:
 ## Core Principles
 
 ### I. Platform-First, Module-Second
-The platform (Layer 1 + Layer 2) must be 100% complete and tested before any module is created. Modules follow Config-First architecture — primarily configuration with optional lifecycle hooks for complex business logic (90/10 rule). All reusable logic lives in the Flow Engine.
+The platform (Layer 1 + Layer 2) must be 100% complete and tested before any module is created. Modules follow Config-First architecture — primarily configuration with standardized conversation helpers (90/10 rule). All reusable logic lives in the Module Kit.
 
 ### II. Config-Driven Architecture (Config-First, Code-When-Needed)
 Everything that can be configuration MUST be configuration, not code. Module creation should primarily require:
-- Defining flow steps (which Flow Blocks in what order)
-- Specifying database fields
-- Setting permissions
+- Defining module identity and permissions in `config.ts`
+- Specifying flow steps using `validate()` and `confirm()`
+- Setting database fields in `schema.prisma`
 
 For complex business logic that cannot be expressed as configuration:
-- Use lifecycle hooks (beforeValidate, beforeSave, afterSave, beforeDelete, onApproval, onRejection)
+- Use lifecycle hooks (beforeSave, afterSave, beforeDelete)
 - Hooks must be minimal, focused, and well-documented
 - A module with ZERO hooks is the ideal — hooks are the exception, not the rule
 
-The 90/10 Rule: A typical module should be 90% configuration and at most 10% custom hook code. If a module needs more than 10% custom code, the Flow Engine likely needs a new Flow Block or feature.
+The 90/10 Rule: A typical module should be 90% configuration and at most 10% custom hook code. If a module needs more than 10% custom code, the Module Kit likely needs a new helper or feature.
 
-### III. Flow Block Reusability (NON-NEGOTIABLE)
-Every Flow Block must be:
+### III. Helper Reusability (NON-NEGOTIABLE)
+Every Module Kit helper must be:
 - Self-contained and independently testable
 - Work with ANY module without modification
 - Handle its own validation, error messages, and UI
-- Support Arabic and English
-- Be configurable via parameters (label, field, validation rules, etc.)
+- Support Arabic and English (via i18n keys)
+- Be configurable via options (promptKey, errorKey, validator, etc.)
 
-When a hook pattern repeats across 3+ modules, it MUST be extracted into a new Flow Block or a shared utility in the Flow Engine. Hooks are for exceptional cases — repeated patterns belong in the engine.
+When a hook pattern repeats across 3+ modules, it MUST be extracted into a new helper or a shared utility in the Module Kit. Hooks are for exceptional cases — repeated patterns belong in the kit.
 
 ### IV. Test-First Development
-All Flow Blocks must have unit tests before implementation. All engine features must have integration tests. Red-Green-Refactor cycle enforced. Minimum 80% code coverage for engine code.
+All Module Kit helpers must have unit tests before implementation. All infrastructure features (ModuleLoader, Draft Middleware) must have integration tests. Red-Green-Refactor cycle enforced. Minimum 80% code coverage for engine code.
 
 ### V. Egyptian Business Context
 All validators must support Egyptian formats (national ID, phone numbers, tax IDs). Arabic name processing with compound name handling. Egyptian governorates as seed data. Currency defaults to EGP. Timezone defaults to Africa/Cairo. Calendar support for both Gregorian and Hijri.
@@ -242,10 +199,10 @@ Start simple, add complexity only when proven necessary. YAGNI principle strictl
 ### IX. Monorepo Structure
 The project uses a monorepo with clear package separation:
 - packages/core — Platform Core (Layer 1)
-- packages/flow-engine — Flow Engine (Layer 2)
+- packages/module-kit — Module Kit (@al-saada/module-kit) (Layer 2)
 - packages/validators — Egyptian validation library
 - packages/ai-assistant — AI Operational Assistant with RAG (Phase 4)
-- modules/ — All modules (config files only)
+- modules/ — All modules (config + conversations)
 
 ### X. Zero-Defect Gate (NON-NEGOTIABLE)
 No phase or task may proceed until all issues from the current phase are fully resolved.
@@ -271,10 +228,10 @@ Start simple, add complexity only when proven necessary. YAGNI principle strictl
 ### VIII. Monorepo Structure
 The project uses a monorepo with clear package separation:
 - packages/core — Platform Core (Layer 1)
-- packages/flow-engine — Flow Engine (Layer 2)
+- packages/module-kit — Module Kit (@al-saada/module-kit) (Layer 2)
 - packages/validators — Egyptian validation library
 - packages/ai-assistant — AI Operational Assistant with RAG (Phase 4)
-- modules/ — All modules (config files only)
+- modules/ — All modules (config + conversations)
 
 ## Technology Stack
 
@@ -334,16 +291,16 @@ The project uses a monorepo with clear package separation:
 - Basic notification system
 - Audit logging
 
-### Phase 2: Flow Engine (Feature 002)
-- All Flow Blocks implementation (14 blocks)
-- Wizard Runner
-- List Engine
-- Report Engine
-- Search Engine
+### Phase 2: Module Kit (Feature 002)
+- CLI scaffolding tools (`module:create`, `module:remove`, `module:list`)
+- Conversation Helpers (`validate`, `confirm`, `save`)
+- Draft recovery middleware with sliding TTL
+- Automatic audit logging and notifications
+- Dynamic module auto-discovery
 
 ### Phase 3: Test Module (Feature 003)
 - One complete HR module (Employee Registration)
-- Built entirely with Flow Blocks config
+- Built entirely with Module Kit conversation helpers
 - Proves the platform works end-to-end
 
 ### Phase 4: AI Operational Assistant (Feature 004)
@@ -379,12 +336,12 @@ The project uses a monorepo with clear package separation:
 - Only Super Admin (project owner) can approve constitutional amendments
 - Each amendment increments the version number (MAJOR.MINOR.PATCH)
   - MAJOR: Fundamental philosophy change
-  - MINOR: New sections or significant additions
-  - PATCH: Formatting, clarification, or minor fixes
+  - MINOR: New principle/section added or materially expanded guidance
+  - PATCH: Clarifications, wording, typo fixes, non-semantic refinements
 
 ### Compliance Rules
 - All code must comply with these principles before merge
-- No module-specific code is allowed in platform packages (packages/core, packages/flow-engine)
+- No module-specific code is allowed in platform packages (packages/core, packages/module-kit)
 - Any deviation from the constitution must be documented and justified
 - Code reviews must verify constitutional compliance
 - **Strict Methodology Adherence (NON-NEGOTIABLE):** The Technical Advisor (AI) and the Executor (AI) MUST strictly follow the operating procedures defined by [github/spec-kit](https://github.com/github/spec-kit) and [sickn33/antigravity-awesome-skills](https://github.com/sickn33/antigravity-awesome-skills).
@@ -406,5 +363,6 @@ The project uses a monorepo with clear package separation:
 | 1.7.0 | 2026-02-20 | Formalized integration and governance of Antigravity Awesome Skills |
 | 1.8.0 | 2026-02-24 | Updated AI Assistant: Qwen2.5:7b (from Qwen3-8B), added nomic-embed-text for embeddings, defined Parallel Build Strategy (Phase A/B/C) |
 | 2.0.0 | 2026-02-24 | Added Principle VII: i18n-Only User Text — Arabic forbidden in source code, all text via .ftl locale files. Renumbered principles VIII-XI. |
+| 2.1.0 | 2026-03-02 | 003-module-kit: Replaced Flow Engine with Module Kit architecture. Layer 2 now provides @al-saada/module-kit package with conversation helpers, RBAC, draft middleware, and CLI tools. |
 
-**Version**: 2.0.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-02-24
+**Version**: 2.1.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-03-02

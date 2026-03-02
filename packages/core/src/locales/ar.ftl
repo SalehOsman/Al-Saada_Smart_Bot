@@ -228,5 +228,21 @@ errors-validation-invalid-national-id =
 # Edge Case: Duplicate National ID
 errors-join-request-duplicate-national-id = هذا الرقم القومي مسجل بالفعل في النظام. لا يمكن تقديم طلب انضمام جديد.
 
+# Module Kit
+module-kit-cancelled = ⛔️ تم إلغاء العملية. يمكنك العودة للقائمة الرئيسية.
+notification-module-load-error-title = ⚠️ خطأ في تحميل الوحدة
+notification-module-load-error-message = فشل تحميل الوحدة: { $slug }. السبب: { $reason }
+module-kit-help-default = يمكنك إدخال البيانات المطلوبة أو استخدام الأوامر التالية: /cancel للإلغاء، /menu للعودة للقائمة.
+module-kit-draft-found = 📝 تم العثور على مسودة سابقة لهذه العملية. هل تريد المتابعة من حيث توقفت؟
+module-kit-draft-resume-btn = 🔄 متابعة
+module-kit-draft-fresh-btn = ✨ بدء من جديد
+module-kit-draft-expired = ⚠️ عذراً، انتهت صلاحية المسودة. سيتم البدء من جديد.
+module-kit-max-retries-exceeded = ⚠️ تم تجاوز الحد الأقصى للمحاولات. تم إلغاء العملية.
+module-kit-unauthorized-action = 🚫 عذراً، ليس لديك صلاحية للقيام بهذا الإجراء.
+module-kit-confirm-btn = ✅ تأكيد
+module-kit-cancel-btn = ❌ إلغاء
+module-kit-review-title = 📝 *مراجعة بياناتك*
+module-kit-edit-field = ✏️ تعديل { $field }
+
 # Clarifications: PENDING user re-attempt
 errors-join-request-already-pending = لديك طلب انضمام قيد المراجعة بالفعل. لا يمكنك تقديم طلب جديد حتى يتم الرد على الطلب الحالي.

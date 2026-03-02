@@ -228,5 +228,21 @@ errors-validation-invalid-national-id =
 # Edge Case: Duplicate National ID
 errors-join-request-duplicate-national-id = This National ID is already registered in the system. A new join request cannot be submitted.
 
+# Module Kit
+module-kit-cancelled = ⛔️ Process cancelled. You can return to the main menu.
+notification-module-load-error-title = ⚠️ Module Load Error
+notification-module-load-error-message = Failed to load module: { $slug }. Reason: { $reason }
+module-kit-help-default = You can enter the required data or use the following commands: /cancel to cancel, /menu to return to the menu.
+module-kit-draft-found = 📝 A previous draft was found for this process. Would you like to continue from where you left off?
+module-kit-draft-resume-btn = 🔄 Resume
+module-kit-draft-fresh-btn = ✨ Start Fresh
+module-kit-draft-expired = ⚠️ Sorry, the draft has expired. Starting fresh.
+module-kit-max-retries-exceeded = ⚠️ Maximum retry attempts exceeded. Process cancelled.
+module-kit-unauthorized-action = 🚫 Sorry, you don't have permission to perform this action.
+module-kit-confirm-btn = ✅ Confirm
+module-kit-cancel-btn = ❌ Cancel
+module-kit-review-title = 📝 *Review Your Data*
+module-kit-edit-field = ✏️ Edit { $field }
+
 # Clarifications: PENDING user re-attempt
 errors-join-request-already-pending = You already have a join request under review. You cannot submit a new request until the current one is resolved.

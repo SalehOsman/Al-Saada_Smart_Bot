@@ -41,8 +41,20 @@ bot.use(rbacMiddleware)
 // i18n middleware for bilingual support
 bot.use(i18n)
 
+// Layer 2: Draft auto-save and command interrupt (T010, T011)
+import { draftMiddleware } from './middleware/draft'
+bot.use(draftMiddleware)
+
 // Conversations plugin for multi-step flows
 bot.use(conversations())
+
+// --- Dynamic Module Loading (Layer 2) ---
+import { moduleLoader } from './module-loader'
+// We perform an async load. In a real production app, we might want to block until this is done.
+// For now, we fire it off.
+moduleLoader.loadModules(bot).catch(err => {
+  logger.error('Failed to initialize ModuleLoader:', err)
+})
 
 // Sanitize all incoming text messages (FR-033)
 bot.use(sanitizeMiddleware)
@@ -72,6 +84,95 @@ bot.callbackQuery(/^user:/, userActionsHandler)
 
 // Join request approval/rejection callback queries
 bot.callbackQuery(/^(approve|reject):/, approvalsHandler)
+
+// --- Layer 2: Module Entry Point (US5) ---
+import { rbacService } from '../services/rbac'
+bot.callbackQuery(/^mod:(.+)$/, async (ctx) => {
+  const moduleSlug = ctx.match[1]
+  const userId = BigInt(ctx.from.id)
+  const role = ctx.session.role as any || 'VISITOR'
+
+  // 1. Check permissions (create flow by default for now)
+  const canCreate = await rbacService.canPerformAction(userId, role, moduleSlug, 'create')
+  if (!canCreate) {
+    await ctx.answerCallbackQuery({
+      text: ctx.t('module-kit-unauthorized-action'),
+      show_alert: true
+    })
+    return
+  }
+
+  await ctx.answerCallbackQuery()
+  
+  // 2. Check for existing draft (US3)
+  import { redis } from '../cache/redis'
+  const redisKey = `draft:${userId}:${moduleSlug}`
+  const draft = await redis.get(redisKey)
+
+  if (draft) {
+    await ctx.reply(ctx.t('module-kit-draft-found'), {
+      reply_markup: {
+        inline_keyboard: [[
+          { text: ctx.t('module-kit-draft-resume-btn'), callback_data: `dr:res:${moduleSlug}` },
+          { text: ctx.t('module-kit-draft-fresh-btn'), callback_data: `dr:frsh:${moduleSlug}` }
+        ]]
+      }
+    })
+    return
+  }
+
+  // 3. Set session context and enter conversation
+  ctx.session.currentModule = moduleSlug
+  await ctx.conversation.enter(`${moduleSlug}-add`)
+})
+
+// --- Layer 2: Draft Recovery Callbacks (US3) ---
+bot.callbackQuery(/^dr:(res|frsh):(.+)$/, async (ctx) => {
+  const action = ctx.match[1]
+  const moduleSlug = ctx.match[2]
+  const userId = BigInt(ctx.from.id)
+  const redisKey = `draft:${userId}:${moduleSlug}`
+
+  await ctx.answerCallbackQuery()
+  await ctx.editMessageReplyMarkup({ reply_markup: { inline_keyboard: [] } }) // Clear buttons
+
+  if (action === 'frsh') {
+    import { redis } from '../cache/redis'
+    await redis.del(redisKey)
+    ctx.session.currentModule = moduleSlug
+    await ctx.conversation.enter(`${moduleSlug}-add`)
+    return
+  }
+
+  if (action === 'res') {
+    import { redis } from '../cache/redis'
+    const draftData = await redis.get(redisKey)
+    
+    if (!draftData) {
+      await ctx.reply(ctx.t('module-kit-draft-expired'))
+      ctx.session.currentModule = moduleSlug
+      await ctx.conversation.enter(`${moduleSlug}-add`)
+      return
+    }
+
+    try {
+      const { data, conversations } = JSON.parse(draftData)
+      
+      // Restore session data and conversation state
+      Object.assign(ctx.session, data)
+      // grammY conversations state is in ctx.session.conversations
+      if (conversations) {
+        (ctx.session as any).conversations = conversations
+      }
+
+      ctx.session.currentModule = moduleSlug
+      await ctx.conversation.enter(`${moduleSlug}-add`)
+    } catch (err) {
+      logger.error('Failed to restore draft:', err)
+      await ctx.reply(ctx.t('error-generic'))
+    }
+  }
+})
 
 // Fallback for all other unsupported messages (T112)
 bot.on('message', fallbackHandler)

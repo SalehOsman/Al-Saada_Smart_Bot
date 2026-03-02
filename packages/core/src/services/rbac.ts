@@ -71,4 +71,41 @@ export const rbacService = {
 
     return false
   },
+
+  /**
+   * Checks if a user can perform a specific action within a module.
+   */
+  async canPerformAction(
+    userId: bigint,
+    role: Role,
+    moduleSlug: string,
+    action: 'view' | 'create' | 'edit' | 'delete'
+  ): Promise<boolean> {
+    const { moduleLoader } = await import('../bot/module-loader')
+    const loadedModule = moduleLoader.getModule(moduleSlug)
+    if (!loadedModule) return false
+
+    const permissions = loadedModule.config.permissions
+    const allowedRoles = permissions[action] || []
+
+    if (!allowedRoles.includes(role)) return false
+
+    // ADMIN must have matching scope
+    if (role === Role.ADMIN) {
+      const { prisma } = await import('../database/prisma')
+      const section = await prisma.section.findUnique({
+        where: { slug: loadedModule.config.sectionSlug },
+        select: { id: true }
+      })
+      if (!section) return false
+
+      const scopes = await adminScopeService.getScopes(userId)
+      return scopes.some(s => 
+        s.sectionId === section.id && 
+        (s.moduleId === null || s.moduleId === moduleSlug)
+      )
+    }
+
+    return true
+  }
 }

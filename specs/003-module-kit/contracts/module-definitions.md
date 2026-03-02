@@ -21,8 +21,8 @@ export interface ModuleDefinition {
 
   /** Granular user roles required for access */
   permissions: {
-    create: Role[];
     view: Role[];
+    create: Role[];
     edit: Role[];
     delete: Role[];
   };
@@ -53,8 +53,8 @@ export default defineModule({
   nameEn: 'fuel-entry-name-en',
   icon: '⛽',
   permissions: {
-    create: ['ADMIN', 'EMPLOYEE'],
     view: ['ADMIN', 'EMPLOYEE', 'SUPER_ADMIN'],
+    create: ['ADMIN', 'EMPLOYEE'],
     edit: ['ADMIN'],
     delete: ['SUPER_ADMIN'],
   },

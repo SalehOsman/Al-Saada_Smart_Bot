@@ -1,18 +1,15 @@
-import type { Prisma } from '@prisma/client'
+import type { Prisma, Role } from '@prisma/client'
 import type { BotContext } from '../../types/context'
 import { prisma } from '../../database/prisma'
 import { auditService } from '../../services/audit-logs'
 import logger from '../../utils/logger'
+import { moduleLoader, LoadedModule } from '../module-loader'
 
 /** User row including adminScopes — matches the findUnique query in menuHandler */
 type MenuUser = Prisma.UserGetPayload<{ include: { adminScopes: true } }>
 
 /**
  * Handles different role-based menu displays
- * SUPER_ADMIN: Full admin access
- * ADMIN: Admin management capabilities
- * EMPLOYEE: Employee-level access
- * VISITOR: Basic visitor access
  */
 export async function menuHandler(ctx: BotContext) {
   const telegramId = BigInt(ctx.from?.id || 0)
@@ -32,7 +29,7 @@ export async function menuHandler(ctx: BotContext) {
       return ctx.reply(ctx.t('user-inactive'))
     }
 
-    // Log menu access (FR-024)
+    // Log menu access
     await auditService.log({
       userId: telegramId,
       action: 'MENU_ACCESS' as any,
@@ -41,23 +38,12 @@ export async function menuHandler(ctx: BotContext) {
       details: { role: user.role }
     })
 
-    // Get role-specific menu text
-    switch (user.role) {
-      case 'SUPER_ADMIN':
-        await showSuperAdminMenu(ctx, user)
-        break
-      case 'ADMIN':
-        await showAdminMenu(ctx, user)
-        break
-      case 'EMPLOYEE':
-        await showEmployeeMenu(ctx, user)
-        break
-      case 'VISITOR':
-        await showVisitorMenu(ctx, user)
-        break
-      default:
-        await showVisitorMenu(ctx, user)
-    }
+    // Get authorized modules
+    const modules = await getAuthorizedModules(user)
+
+    // Build menu based on role and modules
+    await showDynamicMenu(ctx, user, modules)
+
   } catch (error) {
     logger.error('Error in menu handler:', error)
     return ctx.reply(ctx.t('error-generic'))
@@ -65,92 +51,100 @@ export async function menuHandler(ctx: BotContext) {
 }
 
 /**
- * Shows menu for Super Admin users with full system access
+ * Filters loaded modules based on user role and scopes.
  */
-async function showSuperAdminMenu(ctx: BotContext, user: MenuUser) {
-  const menuText = ctx.t('menu-super-admin', { name: user.fullName })
+async function getAuthorizedModules(user: MenuUser): Promise<LoadedModule[]> {
+  const allModules = moduleLoader.getLoadedModules()
+  
+  if (user.role === 'SUPER_ADMIN') {
+    return allModules
+  }
 
-  // Create keyboard buttons
-  const keyboard = [
-    [
+  // Get all section slugs for which the user has scope
+  const sectionIds = (user.adminScopes || []).map(s => s.sectionId)
+  let scopedSectionSlugs: string[] = []
+  
+  if (sectionIds.length > 0) {
+    const sections = await prisma.section.findMany({
+      where: { id: { in: sectionIds } },
+      select: { id: true, slug: true }
+    })
+    scopedSectionSlugs = sections.map(s => s.slug)
+  }
+
+  return allModules.filter(m => {
+    const permissions = m.config.permissions
+    const isRoleAllowed = permissions.view.includes(user.role as Role)
+    
+    if (!isRoleAllowed) return false
+
+    // ADMIN must have scope for the module's section
+    if (user.role === 'ADMIN') {
+      return scopedSectionSlugs.includes(m.config.sectionSlug)
+    }
+
+    return true
+  })
+}
+
+/**
+ * Renders a menu with system buttons and authorized modules.
+ */
+async function showDynamicMenu(ctx: BotContext, user: MenuUser, modules: LoadedModule[]) {
+  const menuText = ctx.t(`menu-${user.role.toLowerCase()}` as any, { name: user.fullName })
+  
+  const keyboard: any[][] = []
+
+  // 1. Add Role-Specific System Buttons
+  if (user.role === 'SUPER_ADMIN') {
+    keyboard.push([
       { text: ctx.t('button-sections'), callback_data: 'menu-sections' },
       { text: ctx.t('button-users'), callback_data: 'menu-users' },
-    ],
-    [
+    ])
+    keyboard.push([
       { text: ctx.t('button-maintenance'), callback_data: 'menu-maintenance' },
       { text: ctx.t('button-audit'), callback_data: 'menu-audit' },
-    ],
-    [
+    ])
+    keyboard.push([
       { text: ctx.t('button-modules'), callback_data: 'menu-modules' },
       { text: ctx.t('button-notifications'), callback_data: 'menu-notifications' },
-    ],
-  ]
-
-  await ctx.reply(menuText, {
-    reply_markup: {
-      inline_keyboard: keyboard,
-    },
-  })
-}
-
-/**
- * Shows menu for Admin users with management capabilities
- */
-async function showAdminMenu(ctx: BotContext, user: MenuUser) {
-  const menuText = ctx.t('menu-admin', { name: user.fullName })
-
-  // Create keyboard buttons
-  const keyboard = [
-    [
+    ])
+  } else if (user.role === 'ADMIN') {
+    keyboard.push([
       { text: ctx.t('button-sections'), callback_data: 'menu-sections' },
       { text: ctx.t('button-users'), callback_data: 'menu-users' },
-    ],
-    [
+    ])
+    keyboard.push([
       { text: ctx.t('button-maintenance'), callback_data: 'menu-maintenance' },
       { text: ctx.t('button-audit'), callback_data: 'menu-audit' },
-    ],
-  ]
-
-  await ctx.reply(menuText, {
-    reply_markup: {
-      inline_keyboard: keyboard,
-    },
-  })
-}
-
-/**
- * Shows menu for Employee users with limited access
- */
-async function showEmployeeMenu(ctx: BotContext, user: MenuUser) {
-  const menuText = ctx.t('menu-employee', { name: user.fullName })
-
-  // Create keyboard buttons for employee-level access
-  const keyboard = [
-    [
+    ])
+  } else {
+    // EMPLOYEE / VISITOR
+    keyboard.push([
       { text: ctx.t('button-sections'), callback_data: 'menu-sections' },
-    ],
-  ]
+    ])
+  }
+
+  // 2. Add Module Buttons (Grouped by Section could be added later, for now just append)
+  if (modules.length > 0) {
+    // Add a separator or header? Inline keyboards don't support headers well.
+    // We'll just add them in rows of 2.
+    for (let i = 0; i < modules.length; i += 2) {
+      const row = []
+      const m1 = modules[i]
+      row.push({ text: `${m1.config.icon} ${ctx.t(m1.config.name as any)}`, callback_data: `mod:${m1.slug}` })
+      
+      if (i + 1 < modules.length) {
+        const m2 = modules[i + 1]
+        row.push({ text: `${m2.config.icon} ${ctx.t(m2.config.name as any)}`, callback_data: `mod:${m2.slug}` })
+      }
+      keyboard.push(row)
+    }
+  }
 
   await ctx.reply(menuText, {
     reply_markup: {
       inline_keyboard: keyboard,
-    },
-  })
-}
-
-/**
- * Shows menu for Visitor users with basic access
- */
-async function showVisitorMenu(ctx: BotContext, user: MenuUser) {
-  const menuText = ctx.t('menu-visitor', { name: user.fullName })
-
-  await ctx.reply(menuText, {
-    reply_markup: {
-      inline_keyboard: [
-        [
-          { text: ctx.t('button-sections'), callback_data: 'menu-sections' },
-        ],
-      ],
     },
   })
 }

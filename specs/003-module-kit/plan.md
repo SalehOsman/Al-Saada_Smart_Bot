@@ -5,29 +5,34 @@
 
 ## Summary
 
-The Module Kit (Layer 2) replaces the previously planned Flow Engine with a more streamlined, developer-centric approach for building and managing bot modules. It provides CLI scaffolding, a dynamic module loader, standardized data collection helpers (`validate`, `confirm`, `save`), and robust draft recovery via Redis. The technical approach leverages Prisma's Multi-File Schema for database isolation and grammY's conversation system for stateful user interactions.
+The Module Kit (Layer 2) provides a streamlined, developer-centric toolkit for building and managing bot modules. It delivers CLI scaffolding (`module:create`, `module:remove`, `module:list`), a dynamic Module Loader with auto-discovery, standardized data collection helpers (`validate`, `confirm`, `save`) with automatic PII-masked audit logs (NOT masked in notifications) and robust draft recovery via Redis with sliding TTL. The technical approach leverages Prisma 6.7.0's Multi-File Schema (`prismaSchemaFolder`) for database isolation and grammY's conversation system for stateful user interactions. All module text is strictly i18n-compliant using slug-prefixed hyphen-separated keys in Fluent `.ftl` files. Root `package.json` workspaces MUST include `modules/*` for internal dependency resolution.
 
 ## Technical Context
 
 **Language/Version**: TypeScript 5.x (strict mode), Node.js >= 20  
 **Primary Dependencies**: grammY 1.x, @grammyjs/conversations, @grammyjs/hydrate, ioredis, Pino, Vitest  
-**Storage**: Prisma ORM (PostgreSQL) with `prismaSchemaFolder`, Redis (ioredis) for draft storage  
+**Storage**: Prisma ORM 6.7.0 (PostgreSQL) with `prismaSchemaFolder`, Redis (ioredis) for draft storage  
 **Testing**: Vitest (Unit, Integration, E2E)  
 **Target Platform**: Docker-based Node.js environment  
 **Project Type**: Telegram Bot Framework / Modular Engine  
-**Performance Goals**: CLI scaffolding < 1 minute; 100% reliability for automatic audit logs/notifications  
-**Constraints**: Principle VII (i18n-Only User Text); Layer 1 core remains untouched (0 changes)  
+**Performance Goals**: CLI scaffolding < 1 minute; ModuleLoader startup < 5 seconds; 100% reliability for automatic audit logs/notifications  
+**Constraints**: Principle VII (i18n-Only User Text); Existing Layer 1 source files remain untouched. New infrastructure files (ModuleLoader, Draft Middleware) MAY be added to packages/core/ per SC-005. Minimal, non-breaking schema additions (e.g., Section.slug) are also permitted. PII masking in audit logs (Principle VI). Root `package.json` workspaces MUST include `modules/*` to allow modules to `import { defineModule } from '@al-saada/module-kit'`.  
 **Scale/Scope**: Support for ~200 concurrent users across multiple organization-specific modules
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-1. **Principle I (Platform-First)**: Layer 1 core is verified as 100% complete. This feature builds upon it. ✅
-2. **Principle II (Config-Driven)**: `defineModule()` and CLI scaffolding enforce config-first patterns. ✅
-3. **Principle VII (i18n-Only)**: All user-facing text for modules will reside in `.ftl` files. No Arabic in TS. ✅
-4. **Principle VIII (Simplicity)**: Last-Write-Wins (LWW) chosen over complex locking. Auto-discovery at startup avoids central registries. ✅
-5. **Principle X (Zero-Defect)**: `/speckit.analyze` will be run before any implementation. ✅
+1. **Principle I (Platform-First)**: Module Kit is Layer 2 — built as standalone package `@al-saada/module-kit` in `packages/module-kit/`. New infrastructure files MAY be added to `packages/core/` per SC-005. ✅
+2. **Principle II (Config-Driven)**: `defineModule()` and CLI scaffolding enforce config-first patterns. 90/10 rule maintained. ✅
+3. **Principle III (Flow Block Reusability)**: `validate()`, `confirm()`, `save()` helpers are self-contained and work with ANY module. ✅
+4. **Principle IV (Test-First)**: Vitest configured for unit + integration tests. 80% minimum coverage enforced. ✅
+5. **Principle V (Egyptian Context)**: Module Kit integrates with `@al-saada/validators` for Egyptian-specific validations. ✅
+6. **Principle VI (Security & Privacy)**: `save()` masks PII (phone, nationalId) in audit logs. RBAC enforced via `permissions.view` for visibility. ✅
+7. **Principle VII (i18n-Only)**: All module text uses slug-prefixed hyphen-separated keys (`fuel-entry-prompt-amount`). Module names are i18n keys, not raw Arabic. ✅
+8. **Principle VIII (Simplicity)**: Last-Write-Wins (LWW) for concurrency. Auto-discovery at startup avoids central registries. ✅
+9. **Principle IX (Monorepo)**: Standalone `packages/module-kit/` package. Modules in `modules/` directory. ✅
+10. **Principle X (Zero-Defect)**: `/speckit.analyze` will be run before any implementation. ✅
 
 ## Project Structure
 
@@ -50,32 +55,51 @@ packages/
 ├── core/                # Layer 1 (Read-only for this feature)
 │   ├── src/
 │   │   ├── bot/
-│   │   │   ├── module-loader.ts    # To be implemented/enhanced
-│   │   └── middleware/
-│   │       └── draft.ts             # Draft middleware with sliding TTL
-├── module-kit/          # @al-saada/module-kit (Layer 2)
+│   │   │   ├── module-loader.ts    # Dynamic module discovery & registration
+│   │   │   └── middleware/
+│   │   │       └── draft.ts         # Draft middleware with sliding TTL
+├── module-kit/          # @al-saada/module-kit (Layer 2 — NEW)
 │   ├── src/
-│   │   ├── index.ts                 # Exports validate, confirm, save, etc.
-│   │   ├── validation.ts
-│   │   ├── confirmation.ts
-│   │   └── persistence.ts
+│   │   ├── index.ts                 # Public API: defineModule, validate, confirm, save
+│   │   ├── define-module.ts         # defineModule() utility
+│   │   ├── validation.ts            # validate() helper
+│   │   ├── confirmation.ts          # confirm() helper with targeted editing
+│   │   ├── persistence.ts           # save() with auto audit + auto notifications + PII masking
+│   │   ├── pii-masker.ts            # PII masking utility for audit logs
+│   │   └── types.ts                 # ModuleDefinition, SaveOptions, ValidateOptions interfaces
+│   ├── tests/
+│   │   ├── validation.test.ts
+│   │   ├── confirmation.test.ts
+│   │   └── persistence.test.ts
+│   ├── package.json                 # name: "@al-saada/module-kit"
+│   └── tsconfig.json
 ├── validators/          # Egyptian validation library (Existing)
 modules/                 # Dynamic module container
 ├── {slug}/              # Individual module folder (e.g., fuel-entry)
 │   ├── config.ts        # Module definition (defineModule)
 │   ├── add.conversation.ts  # grammY conversation handler (Create)
-│   ├── edit.conversation.ts # grammY conversation handler (Edit)
+│   ├── edit.conversation.ts # grammY conversation handler (Edit — optional)
+│   ├── hooks.ts         # Lifecycle hooks (optional)
 │   ├── schema.prisma    # Module-specific database schema
-│   └── locales/         # Module-specific .ftl files
+│   ├── locales/
+│   │   ├── ar.ftl       # Arabic translations (slug-prefixed keys)
+│   │   └── en.ftl       # English translations (slug-prefixed keys)
+│   └── tests/
+│       └── flow.test.ts # Module flow tests (mandatory)
 prisma/
-├── schema/              # Prisma Multi-File Schema root
+├── schema/              # Prisma Multi-File Schema root (prismaSchemaFolder)
+│   ├── main.prisma      # datasource + generator blocks
 │   └── modules/         # Destination for module schema snippets
+scripts/
+├── module-create.ts     # CLI: npm run module:create
+├── module-remove.ts     # CLI: npm run module:remove
+└── module-list.ts       # CLI: npm run module:list
 ```
 
-**Structure Decision**: Monorepo with a dedicated `modules/` directory for dynamic discovery and a standalone `packages/module-kit/` package for shared Layer 2 logic. This ensures zero changes to the underlying platform core.
+**Structure Decision**: Monorepo with a standalone `packages/module-kit/` package for shared Layer 2 logic, a dedicated `modules/` directory for dynamic discovery, and `scripts/` for CLI tools. This ensures zero changes to the underlying platform core (SC-005).
 
 ## Complexity Tracking
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
+|-----------|------------|--------------------------------------|
 | None | N/A | N/A |
