@@ -1,8 +1,8 @@
-# Specification Quality Checklist: 003-module-kit Refinement
+# Specification Quality Checklist: Module Kit (Layer 2)
 
-**Purpose**: Validate specification completeness and quality after refinements (C1, U1, I1)
+**Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-02
-**Feature**: [specs/003-module-kit/spec.md](specs/003-module-kit/spec.md)
+**Feature**: [specs/003-module-kit/spec.md](../spec.md)
 
 ## Content Quality
 
@@ -18,9 +18,9 @@
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
 - [x] All acceptance scenarios are defined
-- [x] Edge cases are identified (including /cancel, /start, /menu behavior)
+- [x] Edge cases are identified
 - [x] Scope is clearly bounded
-- [x] Dependencies and assumptions identified (Section.slug Layer 1 exception documented)
+- [x] Dependencies and assumptions identified
 
 ## Feature Readiness
 
@@ -31,7 +31,5 @@
 
 ## Notes
 
-- Refinements successfully addressed C1 (Layer 1 schema exception), U1 (/menu command), and I1 (permissions order).
-- `Section.slug` is now explicitly permitted as a non-breaking schema addition to Layer 1.
-- `/menu` behaves identically to `/cancel` and `/start` regarding draft preservation.
-- Permissions standardized to `{ view, create, edit, delete }`.
+- Procedural update: Clarified "authorized personnel" in FR-007 to specify SUPER_ADMIN and scoped ADMIN roles per analyze report finding A1.
+- All items pass validation.
