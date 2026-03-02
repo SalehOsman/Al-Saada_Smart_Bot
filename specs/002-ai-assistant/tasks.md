@@ -174,11 +174,12 @@
 ### Services
 
 - [ ] T055 [P] [US3] Implement ReportService in packages/ai-assistant/src/services/report.service.ts
+- [ ] T055B [US3] Add topic-specific report filtering to ReportService in packages/ai-assistant/src/services/report.service.ts — implement topic parameter (e.g., 'sales', 'fuel', 'expenses') that filters data by module/section before generating report. Per FR-014. Used by /report [period] [topic] command.
 - [ ] T056 [US3] Add AI insight generation to ReportService in packages/ai-assistant/src/services/report.service.ts
 
 ### Handlers
 
-- [ ] T057 [US3] Implement ReportHandler in packages/ai-assistant/src/handlers/report.handler.ts (/report command)
+- [ ] T057 [US3] Implement ReportHandler in packages/ai-assistant/src/handlers/report.handler.ts (/report [period] [topic] command — parses period (daily/weekly/monthly) and optional topic parameter for FR-013 and FR-014)
 - [ ] T058 [US3] Add report formatting (text, image, PDF) in packages/ai-assistant/src/handlers/report.handler.ts
 
 ### Scheduled Reports
