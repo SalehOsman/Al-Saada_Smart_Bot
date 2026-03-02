@@ -232,6 +232,8 @@ model AIConfig {
 }
 ```
 
+**Scope**: AIConfig is per-user (one config per userId, enforced by @unique constraint). System-wide defaults are applied when a user has no AIConfig record. Only SUPER_ADMIN can modify their own or other users' AI configuration.
+
 ---
 
 ## Relationships Diagram
