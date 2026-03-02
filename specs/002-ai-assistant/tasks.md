@@ -421,6 +421,7 @@
 
 - [ ] T137 [P] Add structured logging with Pino in packages/ai-assistant/src/services/
 - [ ] T138 [P] Add query latency tracking (P50, P95, P99) in packages/ai-assistant/src/services/llm-client.service.ts
+- [ ] T138B [P] Implement model performance metrics tracking (accuracy rates, timeout rates, fallback frequency) in packages/ai-assistant/src/services/llm-client.service.ts — per NFR-012. Log metrics via Pino and expose via health check endpoint.
 - [ ] T139 [P] Add error logging with correlation IDs in packages/ai-assistant/src/middleware/
 
 ### Training Mode
