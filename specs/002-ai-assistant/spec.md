@@ -264,6 +264,8 @@ Three AI-powered features help developers and Super Admins work with modules mor
 - **FR-053**: System MUST provide CLI command `module:validate <slug>` that checks Module Contract compliance before deployment (task T126 adds CLI command, validation logic in ModuleWizardService)
 - **FR-054**: System MUST support cross-module queries when question context implies data from multiple modules
 
+**Distinction**: FR-011 = cross-module queries on business database records (e.g., fuel + attendance data). FR-054 = cross-document Q&A on uploaded documents (e.g., asking about content across multiple PDF uploads). Both use RAGService but with different data sources.
+
 ## Non-Functional Quality Attributes
 
 ### Scalability
