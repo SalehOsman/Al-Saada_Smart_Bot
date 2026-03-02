@@ -284,6 +284,29 @@ Super Admin configures bot-wide settings.
 - **NFR-005 (Availability)**: Core services must maintain 99.9% uptime with automated recovery from failures.
 - **NFR-006 (Observability)**: Phase 1 relies on Pino structured logging and health check endpoints (FR-009) for observability. Structured metrics collection (Prometheus, dashboards) is explicitly deferred to a later phase.
 
+## Infrastructure & Tooling
+
+### Development Toolchain
+
+#### Executor Tools
+| Tool | Role | GitNexus MCP |
+|------|------|-------------|
+| Claude Code (CLI) | Primary executor | Full integration |
+| Google Gemini | Review & analysis | Manual context |
+| Integromat/n8n | Workflow automation | Not needed |
+
+#### Codebase Intelligence
+- **Tool**: GitNexus (development-only, not a production dependency, not a workspace package)
+- **Purpose**: Knowledge Graph of monorepo — tracks dependencies, call chains, relationships
+- **Setup**: `npx gitnexus analyze` from monorepo root, `npx gitnexus setup` for MCP config (one-time)
+- **Re-indexing**: After every Phase or major architectural change
+- **Blast Radius**: Required before modifying shared functions (`bot/utils/`, shared types, Prisma schema)
+
+### Non-Functional Requirements
+- NF-GITNEXUS-01: GitNexus MUST NOT appear in package.json or production Docker images
+- NF-GITNEXUS-02: Knowledge Graph MUST be re-indexed after each Phase completion
+- NF-GITNEXUS-03: GitNexus MUST NOT exist as a workspace package under packages/ — it is invoked exclusively via `npx gitnexus` as an external CLI tool
+
 ## Clarifications
 
 ### Session 2026-02-21
