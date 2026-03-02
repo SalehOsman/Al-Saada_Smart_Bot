@@ -427,7 +427,7 @@
 
 - [ ] T140 Implement Training Mode (background RAG improvement) in packages/ai-assistant/src/services/llm-client.service.ts
 - [ ] T141 Add batch evaluation of local model answers in packages/ai-assistant/src/services/llm-client.service.ts
-- [ ] T142 [US8] Implement startup RAG embedding generation from Module Kit documentation in packages/ai-assistant/src/services/embedding.service.ts — at service startup, generate embeddings from docs/module-development-guide.md and packages/module-kit/src/**/*.ts source files. Store in pgvector for AI Wizard queries. Per FR-052.
+- [ ] T142 [US8] Implement startup RAG embedding generation from Module Kit documentation (FR-052 coverage) in packages/ai-assistant/src/services/embedding.service.ts — at service startup, generate embeddings from docs/module-development-guide.md and packages/module-kit/src/**/*.ts source files. Store in pgvector for AI Wizard queries.
 
 ### Documentation
 
