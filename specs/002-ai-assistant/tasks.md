@@ -215,13 +215,13 @@
 ### Services
 
 - [ ] T067 [P] [US4] Implement SuggestionService in packages/ai-assistant/src/services/suggestion.service.ts
-- [ ] T068 [US4] Add pattern analysis logic to SuggestionService in packages/ai-assistant/src/services/suggestion.service.ts
+- [ ] T068 [US4] Add pattern analysis logic to SuggestionService in packages/ai-assistant/src/services/suggestion.service.ts (covers FR-019 pattern analysis, FR-020 threshold-based triggers, FR-022 configurable frequency/sensitivity, FR-023 actionable content)
 - [ ] T069 [US4] Add suggestion routing based on AdminScope in packages/ai-assistant/src/services/suggestion.service.ts
 
 ### Background Processing
 
 - [ ] T070 [US4] Implement cron job for pattern analysis in packages/ai-assistant/src/services/suggestion.service.ts
-- [ ] T071 [US4] Add duplicate suggestion prevention in packages/ai-assistant/src/services/suggestion.service.ts
+- [ ] T071 [US4] Add duplicate suggestion prevention in packages/ai-assistant/src/services/suggestion.service.ts (covers FR-024 acknowledgment tracking and duplicate prevention)
 
 ### Handlers
 
