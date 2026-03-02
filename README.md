@@ -2,7 +2,7 @@
 
 > منصة ذكية ومعيارية لإدارة الأعمال المصرية عبر تيليجرام
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)]()
 [![Node.js](https://img.shields.io/badge/Node.js-≥20-green.svg)]()
 [![License](https://img.shields.io/badge/license-Private-red.svg)]()
@@ -11,13 +11,13 @@
 
 ## ما هو بوت السعادة؟
 
-بوت السعادة هو **محرك فارغ** يتحول إلى نظام إدارة أعمال متكامل عبر تيليجرام، مع **مساعد ذكاء اصطناعي تشغيلي** مدرّب على بيانات الشركة. بدلاً من كتابة كود لكل وظيفة، تقوم بتعريف **ملفات تكوين** (Configuration) والمحرك يحولها تلقائياً إلى شاشات بوت كاملة.
+بوت السعادة هو **محرك فارغ** يتحول إلى نظام إدارة أعمال متكامل عبر تيليجرام، مع **مساعد ذكاء اصطناعي تشغيلي** مدرّب على بيانات الشركة. بدلاً من كتابة كود لكل وظيفة، تقوم بتعريف **موديولات مستقلة** باستخدام **Module Kit** والمحرك يحولها تلقائياً إلى شاشات بوت كاملة.
 
 ### الفكرة الأساسية
 
 ```
-ملفات تكوين (Config) ──▶ محرك التدفق (Flow Engine) ──▶ شاشات بوت تيليجرام
-                                                         + مساعد ذكي (AI Assistant)
+موديولات (Modules) ──▶ مجموعة أدوات الموديول (Module Kit) ──▶ شاشات بوت تيليجرام
+                                                           + مساعد ذكي (AI Assistant)
 ```
 
 ### لمن هذا المشروع؟
@@ -33,11 +33,11 @@
 ```
 ┌─────────────────────────────────────────────┐
 │           Layer 3: الموديولات               │
-│     (ملفات تكوين + Hooks اختيارية)          │
+│     (ملفات تكوين + حوارات مخصصة)            │
 │   HR │ Finance │ Fleet │ Inventory │ ...    │
 ├─────────────────────────────────────────────┤
-│           Layer 2: محرك التدفق              │
-│  Flow Blocks │ Wizard │ Lists │ Reports     │
+│           Layer 2: Module Kit               │
+│  Validations │ Confirmations │ Persistence  │
 ├─────────────────────────────────────────────┤
 │           Layer 1: نواة المنصة              │
 │  Bot │ RBAC │ Sections │ Auth │ Audit       │
@@ -53,8 +53,8 @@
 | الطبقة | الوصف | حالة الكود |
 |--------|-------|------------|
 | **Layer 1** — نواة المنصة | بوت، مصادقة، صلاحيات، أقسام، تدقيق | ثابت — لا يتغير حسب العمل |
-| **Layer 2** — محرك التدفق | Flow Blocks، المعالج، القوائم، التقارير | ثابت — دماغ المنصة |
-| **Layer 3** — الموديولات | تكوين فقط + hooks اختيارية | متغير — قاعدة 90/10 |
+| **Layer 2** — Module Kit | أدوات التحقق، التأكيد، الحفظ التلقائي، المسودات | ثابت — منصة التطوير |
+| **Layer 3** — الموديولات | تعريف الموديول + مسارات الحوار (Conversations) | متغير — مخصص لكل عمل |
 | **AI Assistant** — المساعد الذكي | Qwen3-8B + RAG + صوت | مساعد تشغيلي على بيانات الشركة |
 
 ---
@@ -65,21 +65,17 @@
 |--------|---------|
 | Runtime | Node.js ≥20, TypeScript 5.x (strict) |
 | Bot | grammY + conversations + hydrate |
-| Server | Hono (webhook) |
-| Database | PostgreSQL 16 + Prisma ORM |
-| Cache | Redis 7 + ioredis |
-| Queue | BullMQ |
+| Module Kit | @al-saada/module-kit (Internal Package) |
+| Database | PostgreSQL 16 + Prisma ORM (Multi-File Schema) |
+| Cache | Redis 7 + ioredis (Draft Management) |
 | Validation | Zod |
-| i18n | @grammyjs/i18n (Arabic + English) |
+| i18n | @grammyjs/i18n (Fluent .ftl support) |
 | Logging | Pino |
 | Testing | Vitest (80% coverage) |
 | Infrastructure | Docker Compose |
-| AI Framework | Vercel AI SDK (@ai-sdk/*) |
 | AI Local Model | Qwen3-8B via Ollama (Apache 2.0) |
 | AI Cloud Models | Gemini (free) / Claude / GPT |
 | RAG | pgvector (PostgreSQL extension) |
-| STT | OpenAI Whisper / Google STT |
-| TTS | Google TTS / OpenAI TTS |
 
 ---
 
@@ -116,11 +112,20 @@ npm run db:generate
 npm run dev
 ```
 
-### التحقق من التشغيل
+### إدارة الموديولات (CLI)
 
-1. افتح تيليجرام وابحث عن البوت
-2. أرسل `/start`
-3. أول مستخدم يصبح **Super Admin** تلقائياً
+يوفر النظام أدوات CLI لتسريع تطوير الموديولات:
+
+```bash
+# إنشاء موديول جديد (تفاعلي)
+npm run module:create my-module
+
+# حذف موديول
+npm run module:remove my-module
+
+# عرض كافة الموديولات وحالتها
+npm run module:list
+```
 
 ---
 
@@ -131,16 +136,12 @@ npm run dev
 | الأمر | الوصف |
 |-------|-------|
 | `npm run dev` | تشغيل البوت (development) |
-| `npm run dev:watch` | تشغيل مع مراقبة التغييرات |
-| `npm run build` | بناء للإنتاج |
 | `npm test` | تشغيل الاختبارات |
-| `npm run test:coverage` | اختبارات مع تقرير التغطية |
 | `npm run lint` | فحص جودة الكود |
-| `npm run typecheck` | فحص الأنواع |
+| `npm run module:create` | إنشاء موديول جديد |
+| `npm run module:list` | عرض الموديولات المحملة |
 | `npm run db:migrate` | تشغيل migrations |
-| `npm run db:studio` | فتح Prisma Studio |
 | `npm run docker:up` | تشغيل Docker services |
-| `npm run docker:down` | إيقاف Docker services |
 
 ### أوامر البوت (في تيليجرام)
 
@@ -187,26 +188,6 @@ npm run dev
    إجابة بالعربي (نص + صوت اختياري)
 ```
 
-### الخصائص
-
-- **نموذج محلي أساسي:** Qwen3-8B عبر Ollama — خصوصية كاملة، بدون تكلفة
-- **نماذج سحابية احتياطية:** Gemini (مجاني) / Claude / GPT
-- **RAG:** مدرّب على قاعدة بيانات الشركة (موظفين، معدات، مالية، إلخ)
-- **صوت:** إرسال سؤال صوتي والحصول على رد صوتي بالعربي
-- **RBAC-aware:** كل مستخدم يرى فقط البيانات المصرح له بها
-- **قراءة فقط:** لا يعدّل بيانات — استعلامات وتقارير فقط
-- **إدارة من البوت:** Super Admin يتحكم في كل الإعدادات بدون لمس الكود
-
-### أمثلة على الاستعلامات
-
-| السؤال | من يسأل |
-|--------|---------|
-| "كم موظف في إجازة اليوم؟" | Admin / Super Admin |
-| "ما حالة المعدة رقم 105؟" | Admin / Super Admin |
-| "كم رصيد إجازاتي؟" | Employee |
-| "أعطني تقرير المصروفات الشهر الماضي" | Admin / Super Admin |
-| "هل سالم سجّل حضوره اليوم؟" | Admin (في نطاقه) |
-
 ---
 
 ## هيكل المشروع
@@ -215,30 +196,16 @@ npm run dev
 al-saada-smart-bot/
 ├── packages/
 │   ├── core/                 # Layer 1 — نواة المنصة
-│   │   ├── src/
-│   │   │   ├── main.ts       # نقطة الدخول
-│   │   │   ├── bot/          # إعداد البوت والـ middleware
-│   │   │   ├── services/     # خدمات الأعمال
-│   │   │   ├── database/     # Prisma client
-│   │   │   ├── cache/        # Redis client
-│   │   │   ├── config/       # إعدادات البيئة
-│   │   │   ├── types/        # TypeScript types
-│   │   │   └── utils/        # أدوات مساعدة
-│   │   └── tests/            # اختبارات
-│   └── ai-assistant/         # Phase 4 — المساعد الذكي
-│       └── src/
-│           ├── rag/          # pgvector + embeddings
-│           ├── chat/         # معالجة المحادثات
-│           ├── voice/        # STT + TTS
-│           └── providers/    # Qwen3/Gemini/Claude/GPT
+│   ├── module-kit/           # Layer 2 — أدوات تطوير الموديولات
+│   └── validators/           # محققات البيانات المشتركة
+├── modules/                  # Layer 3 — الموديولات المخصصة
+│   └── fuel-entry/           # مثال: موديول تسجيل الوقود
 ├── prisma/
-│   └── schema.prisma         # تعريف قاعدة البيانات
-├── modules/                  # موديولات (فارغ حالياً)
+│   └── schema/               # تعريف قاعدة البيانات (Multi-File)
+├── scripts/                  # أدوات CLI للمطورين
 ├── specs/                    # مواصفات Spec Kit
 ├── .specify/                 # إعدادات Spec Kit + الدستور
-├── docker-compose.yml
-├── package.json
-└── tsconfig.json
+└── ...
 ```
 
 ---
@@ -247,10 +214,10 @@ al-saada-smart-bot/
 
 | المرحلة | الوصف | الإصدار | الحالة |
 |---------|-------|---------|--------|
-| **Phase 1** | نواة المنصة (Bot, RBAC, Sections, Audit) | v0.1.0 | 🔄 قيد التنفيذ |
-| **Phase 2** | محرك التدفق (Flow Blocks, Wizard, Lists) | v0.2.0 | ⏳ قادم |
-| **Phase 3** | موديول تجريبي (HR Employee Registration) | v0.3.0 | ⏳ قادم |
-| **Phase 4** | مساعد ذكاء اصطناعي تشغيلي (Qwen3-8B + RAG + صوت) | v1.0.0 | ⏳ قادم |
+| **Phase 1** | نواة المنصة (Bot, RBAC, Sections, Audit) | v0.1.0 | ✅ مكتمل |
+| **Phase 2** | Module Kit (Scaffolding, Helpers, Drafts) | v0.2.0 | ✅ مكتمل |
+| **Phase 3** | موديولات تجريبية (HR, Operations) | v0.3.0 | ⏳ قادم |
+| **Phase 4** | مساعد ذكاء اصطناعي تشغيلي (Qwen3-8B + RAG) | v1.0.0 | ⏳ قادم |
 
 ---
 
@@ -286,10 +253,10 @@ al-saada-smart-bot/
 المشروع يحكمه [دستور v1.4.1](.specify/memory/constitution.md) يحتوي على 8 مبادئ أساسية:
 
 1. **المنصة أولاً** — اكتمال المحرك قبل أي موديول
-2. **التكوين أولاً** — 90% تكوين + 10% hooks اختيارية
-3. **إعادة استخدام Flow Blocks** — غير قابل للتفاوض
-4. **الاختبار أولاً** — 80% تغطية للكود الأساسي
-5. **السياق المصري** — كل المحققات تدعم الصيغ المصرية
-6. **الأمان والخصوصية** — لا بيانات حساسة في السجلات
-7. **البساطة فوق الذكاء** — YAGNI
-8. **Monorepo** — فصل واضح بين الحزم
+2. **التكوين أولاً** — موديولات مستقلة باستخدام Module Kit
+3. **الاختبار أولاً** — 80% تغطية للكود الأساسي
+4. **السياق المصري** — كل المحققات تدعم الصيغ المصرية
+5. **الأمان والخصوصية** — لا بيانات حساسة في السجلات (PII Masking)
+6. **البساطة فوق الذكاء** — YAGNI
+7. **Monorepo** — فصل واضح بين الحزم
+8. **المسودات التلقائية** — حفظ حالة الحوار لضمان عدم ضياع البيانات

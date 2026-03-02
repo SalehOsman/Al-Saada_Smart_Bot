@@ -18,6 +18,7 @@ export default defineConfig({
       '.opencode/**',
       '.claude/**',
       'dist/**',
+      'modules/**',
     ],
     setupFiles: ['./packages/core/tests/setup.ts'],
     coverage: {

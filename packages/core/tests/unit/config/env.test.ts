@@ -42,6 +42,7 @@ describe('environment Variable Validation', () => {
     vi.resetModules()
     vi.stubEnv('BOT_TOKEN', baseEnv.BOT_TOKEN)
     vi.stubEnv('DATABASE_URL', baseEnv.DATABASE_URL)
+    delete process.env.INITIAL_SUPER_ADMIN_ID
     const { env } = await import('../../../src/config/env')
     expect(env.INITIAL_SUPER_ADMIN_ID).toBeUndefined()
   })

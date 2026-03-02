@@ -8,18 +8,28 @@ import 'dotenv/config';
 async function main() {
   const slugArg = process.argv[2];
   
-  const { slug } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'slug',
-      message: 'Enter module slug (lowercase, hyphen-separated):',
-      default: slugArg,
-      validate: (input) => {
-        if (/^[a-z0-9]+(-[a-z0-9]+)*$/.test(input)) return true;
-        return 'Invalid slug format. Must be lowercase, hyphen-separated (e.g., "fuel-entry").';
+  // Support for non-interactive mode via arguments (Issue D1 / Testing)
+  const isNonInteractive = process.argv.includes('--non-interactive');
+  
+  let slug = slugArg;
+  if (!isNonInteractive) {
+    const response = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'slug',
+        message: 'Enter module slug (lowercase, hyphen-separated):',
+        default: slugArg,
+        validate: (input) => {
+          if (/^[a-z0-9]+(-[a-z0-9]+)*$/.test(input)) return true;
+          return 'Invalid slug format. Must be lowercase, hyphen-separated (e.g., "fuel-entry").';
+        }
       }
-    }
-  ]);
+    ]);
+    slug = response.slug;
+  } else if (!slug || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) {
+    console.error('Error: Slug must be provided and valid in non-interactive mode.');
+    process.exit(1);
+  }
 
   const moduleDir = path.join(process.cwd(), 'modules', slug);
   if (fs.existsSync(moduleDir)) {
@@ -30,48 +40,70 @@ async function main() {
   const prisma = new PrismaClient();
   
   try {
-    const { name, nameEn, sectionSlug, icon, includeEdit, includeHooks } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'name',
-        message: 'Enter Arabic display name (i18n key):',
-        default: `${slug}-name`
-      },
-      {
-        type: 'input',
-        name: 'nameEn',
-        message: 'Enter English display name (i18n key):',
-        default: `${slug}-name-en`
-      },
-      {
-        type: 'input',
-        name: 'sectionSlug',
-        message: 'Enter section slug (e.g., "operations"):',
-        validate: async (input) => {
-          const section = await prisma.section.findUnique({ where: { slug: input } });
-          if (section) return true;
-          return `Section "${input}" not found in database. Please ensure the section exists first.`;
+    let name, nameEn, sectionSlug, icon, includeEdit, includeHooks;
+
+    if (isNonInteractive) {
+      name = process.argv.find(a => a.startsWith('--name='))?.split('=')[1] || `${slug}-name`;
+      nameEn = process.argv.find(a => a.startsWith('--nameEn='))?.split('=')[1] || `${slug}-name-en`;
+      sectionSlug = process.argv.find(a => a.startsWith('--sectionSlug='))?.split('=')[1] || 'operations';
+      icon = process.argv.find(a => a.startsWith('--icon='))?.split('=')[1] || '📦';
+      includeEdit = process.argv.includes('--includeEdit');
+      includeHooks = process.argv.includes('--includeHooks');
+    } else {
+      const response = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'name',
+          message: 'Enter Arabic display name (i18n key):',
+          default: `${slug}-name`
+        },
+        {
+          type: 'input',
+          name: 'nameEn',
+          message: 'Enter English display name (i18n key):',
+          default: `${slug}-name-en`
+        },
+        {
+          type: 'input',
+          name: 'sectionSlug',
+          message: 'Enter section slug (e.g., "operations"):',
+          validate: async (input) => {
+            try {
+              const section = await prisma.section.findUnique({ where: { slug: input } });
+              if (section) return true;
+              return `Section "${input}" not found in database. Please ensure the section exists first.`;
+            } catch (err) {
+              console.warn(`\n⚠️ Warning: Database connection failed. Skipping validation for sectionSlug: "${input}".`);
+              return true; // Allow continuation even if DB is unreachable (Issue F1)
+            }
+          }
+        },
+        {
+          type: 'input',
+          name: 'icon',
+          message: 'Enter emoji icon:',
+          default: '📦'
+        },
+        {
+          type: 'confirm',
+          name: 'includeEdit',
+          message: 'Include edit flow?',
+          default: false
+        },
+        {
+          type: 'confirm',
+          name: 'includeHooks',
+          message: 'Include lifecycle hooks?',
+          default: false
         }
-      },
-      {
-        type: 'input',
-        name: 'icon',
-        message: 'Enter emoji icon:',
-        default: '📦'
-      },
-      {
-        type: 'confirm',
-        name: 'includeEdit',
-        message: 'Include edit flow?',
-        default: false
-      },
-      {
-        type: 'confirm',
-        name: 'includeHooks',
-        message: 'Include lifecycle hooks?',
-        default: false
-      }
-    ]);
+      ]);
+      name = response.name;
+      nameEn = response.nameEn;
+      sectionSlug = response.sectionSlug;
+      icon = response.icon;
+      includeEdit = response.includeEdit;
+      includeHooks = response.includeHooks;
+    }
 
     console.log(`Scaffolding module "${slug}"...`);
 
@@ -169,6 +201,18 @@ describe('${slug} flow', () => {
 });
 `;
     fs.writeFileSync(path.join(moduleDir, 'tests', 'flow.test.ts'), testTemplate);
+
+    // 8. package.json (required for monorepo workspaces)
+    const packageJsonTemplate = JSON.stringify({
+      name: `@al-saada/module-${slug}`,
+      version: '0.0.1',
+      private: true,
+      type: 'module',
+      dependencies: {
+        '@al-saada/module-kit': 'workspace:*'
+      }
+    }, null, 2);
+    fs.writeFileSync(path.join(moduleDir, 'package.json'), packageJsonTemplate);
 
     // Copy schema to prisma/schema/modules/
     const targetSchemaPath = path.join(process.cwd(), 'prisma', 'schema', 'modules', `${slug}.prisma`);

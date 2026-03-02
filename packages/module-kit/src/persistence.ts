@@ -51,7 +51,7 @@ export async function save<T>(
 
   } catch (error: any) {
     logger.error(`Failed to save data for module ${moduleSlug}:`, error);
-    await ctx.reply(ctx.t('error-generic'));
+    await ctx.reply(ctx.t('module-kit-save-failed')); // Issue B1
     // Preserve draft by not deleting it from Redis
     throw error; // Let the conversation handler handle it if needed
   }
@@ -68,7 +68,7 @@ async function notifyScopedAdmins(moduleSlug: string, payload: { type: any, para
       return;
     }
 
-    const sectionSlug = loadedModule.config.sectionSlug;
+    const sectionSlug = loadedModule.config.sectionSlug; // Issue E1: Direct usage
 
     // Resolve sectionSlug -> Section.id
     const section = await prisma.section.findUnique({

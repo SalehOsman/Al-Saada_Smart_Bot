@@ -101,6 +101,6 @@ describe('save() helper', () => {
     })).rejects.toThrow('DB Error');
 
     expect(mockRedis.del).not.toHaveBeenCalled();
-    expect(mockCtx.reply).toHaveBeenCalledWith(expect.stringContaining('error'));
+    expect(mockCtx.reply).toHaveBeenCalledWith('module-kit-save-failed');
   });
 });

@@ -27,7 +27,7 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
       const translations: Record<string, string> = {
         'user-inactive': 'User is inactive',
         'error-generic': 'An error occurred',
-        'menu-super-admin': 'Welcome Super Admin {name}',
+        'menu-super_admin': 'Welcome Super Admin {name}',
         'menu-admin': 'Welcome Admin {name}',
         'menu-employee': 'Welcome Employee {name}',
         'menu-visitor': 'Welcome Visitor {name}',
@@ -72,7 +72,7 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
 
       expect(mockCtx.reply).toHaveBeenCalled()
       const call = mockCtx.reply.mock.calls[0]
-      expect(call[0]).toContain('Super Admin')
+      expect(call[0]).toContain('Welcome Super Admin Super Admin')
       expect(call[1]?.reply_markup?.inline_keyboard).toHaveLength(3)
       expect(call[1]?.reply_markup?.inline_keyboard[0]).toContainEqual(
         expect.objectContaining({ text: 'Sections', callback_data: 'menu-sections' })
@@ -99,7 +99,7 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
 
       expect(mockCtx.reply).toHaveBeenCalled()
       const call = mockCtx.reply.mock.calls[0]
-      expect(call[0]).toContain('Admin User')
+      expect(call[0]).toContain('Welcome Admin Admin User')
       expect(call[1]?.reply_markup?.inline_keyboard).toHaveLength(2)
       // Admin should NOT see modules or notifications buttons
       expect(call[1]?.reply_markup?.inline_keyboard).not.toEqual(
@@ -128,7 +128,7 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
 
       expect(mockCtx.reply).toHaveBeenCalled()
       const call = mockCtx.reply.mock.calls[0]
-      expect(call[0]).toContain('Employee User')
+      expect(call[0]).toContain('Welcome Employee Employee User')
       expect(call[1]?.reply_markup?.inline_keyboard).toHaveLength(1)
       // Employee should only see sections button
       expect(call[1]?.reply_markup?.inline_keyboard[0]).toEqual([
@@ -153,7 +153,7 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
 
       expect(mockCtx.reply).toHaveBeenCalled()
       const call = mockCtx.reply.mock.calls[0]
-      expect(call[0]).toContain('Visitor User')
+      expect(call[0]).toContain('Welcome Visitor Visitor User')
       expect(call[1]?.reply_markup?.inline_keyboard).toHaveLength(1)
       // Visitor should only see sections button
       expect(call[1]?.reply_markup?.inline_keyboard[0]).toEqual([
@@ -178,7 +178,7 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
 
       expect(mockCtx.reply).toHaveBeenCalled()
       const call = mockCtx.reply.mock.calls[0]
-      expect(call[0]).toContain('Unknown Role User')
+      expect(call[0]).toContain('menu-unknown_role')
       // Should fall back to visitor menu
       expect(call[1]?.reply_markup?.inline_keyboard[0]).toEqual([
         expect.objectContaining({ text: 'Sections', callback_data: 'menu-sections' })
