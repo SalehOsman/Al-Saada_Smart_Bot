@@ -410,7 +410,7 @@
 - [ ] T131 [P] Add Gemini integration to LLMClientService in packages/ai-assistant/src/services/llm-client.service.ts
 - [ ] T132 [P] Add GPT integration to LLMClientService in packages/ai-assistant/src/services/llm-client.service.ts
 - [ ] T133 [P] Add Claude integration to LLMClientService in packages/ai-assistant/src/services/llm-client.service.ts
-- [ ] T134 Implement Smart Mode (local + cloud review) in packages/ai-assistant/src/services/llm-client.service.ts
+- [ ] T134 Implement Smart Mode (local + cloud review) in packages/ai-assistant/src/services/llm-client.service.ts — local model processes query first. If confidence score >= threshold (configurable, default 0.8), return local answer directly without cloud review. If confidence < threshold, send to cloud model for review and refinement. On cloud failure, fall back to local answer (graceful degradation per NFR-009).
 
 ### Rate Limiting
 
