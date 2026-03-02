@@ -1,9 +1,9 @@
 <!--
 Sync Impact Report:
-- Version change: 2.1.0 → 2.1.1 (PATCH: Removed duplicate sections)
+- Version change: 2.1.1 → 2.2.0 (MINOR: Added Development Infrastructure section)
 - Modified principles: None
-- Added sections: None
-- Removed sections: Duplicate Simplicity and Monorepo principles at end of Core Principles
+- Added sections: Development Infrastructure (Development Toolchain, Executor Tools, Codebase Intelligence: GitNexus, Blast Radius Rule)
+- Removed sections: None
 - Modified sections: Amendment History, Version Metadata
 - Templates requiring updates: None
 - No deferred placeholders
@@ -17,8 +17,9 @@ Sync Impact Report:
 3. Roles & Permissions (RBAC)
 4. Core Principles
 5. Technology Stack
-6. Development Phases
-7. Governance
+6. Development Infrastructure
+7. Development Phases
+8. Governance
 
 ## Project Identity
 
@@ -262,10 +263,31 @@ No phase or task may proceed until all issues from the current phase are fully r
 - **Speech-to-Text (STT):** OpenAI Whisper API or Google STT — converts voice messages to text
 - **Text-to-Speech (TTS):** Google TTS or OpenAI TTS — Arabic voice responses
 - **Model Switching:** All AI settings configurable from bot by Super Admin (no code changes)
-- **Parallel Build Strategy:** AI infrastructure built in parallel with Layer 1 — not after it
-  - Phase A (parallel with Phase 6-7): pgvector + Ollama in docker-compose, empty packages/ai-assistant/ scaffold
-  - Phase B (parallel with Phase 8-9): Embeddings table in Prisma, Embedding Service, RAG Service, LLM Client
-  - Phase C (after Phase 11): Full bot integration, RBAC on RAG, conversation UI
+- **Parallel Build Strategy (decided 2026-02-24):** AI infrastructure is built in parallel with Layer 1 phases, not after full completion:
+  - Phase A (parallel Phase 6-7): docker-compose adds pgvector + Ollama services, packages/ai-assistant/ scaffold created
+  - Phase B (parallel Phase 8-9): Embedding table in Prisma, Embedding Service, RAG Service, LLM Client built
+  - Phase C (after Phase 11): Full integration — RBAC-aware RAG, bot conversation handler, production-ready
+
+## Development Infrastructure
+
+### Development Toolchain
+
+#### Executor Tools
+The project uses multiple AI tools as executors:
+- **Claude Code (CLI)**: Primary executor — code writing, terminal commands, SpecKit operations. Full GitNexus MCP integration.
+- **Google Gemini**: Secondary — review, analysis, research tasks. Manual GitNexus context via Technical Advisor.
+- **Integromat/n8n**: Workflow automation and service integration. No direct GitNexus integration needed.
+
+#### Codebase Intelligence: GitNexus
+- GitNexus (`abhigyanpatwari/GitNexus`) is adopted as a **development-only** codebase intelligence tool.
+- It builds a Knowledge Graph of the entire monorepo, tracking every dependency, call chain, and relationship.
+- It exposes an MCP Server that gives AI executor tools deep architectural awareness.
+- **CRITICAL**: GitNexus is a development tool ONLY — it MUST NOT be added as a dependency in `package.json` or included in production code.
+- GitNexus Knowledge Graph MUST be re-indexed (`npx gitnexus analyze`) after every Phase completion or major architectural change.
+
+#### Blast Radius Rule
+- Any modification to a shared function (e.g., files in `bot/utils/`, shared types, Prisma schema) MUST be preceded by a GitNexus blast radius check.
+- The Technical Advisor MUST NOT approve changes to shared code without verifying all dependents are handled.
 
 ## Development Phases
 
@@ -354,5 +376,6 @@ No phase or task may proceed until all issues from the current phase are fully r
 | 2.0.0 | 2026-02-24 | Added Principle VII: i18n-Only User Text — Arabic forbidden in source code, all text via .ftl locale files. Renumbered principles VIII-XI. |
 | 2.1.0 | 2026-03-02 | 003-module-kit: Replaced Flow Engine with Module Kit architecture. Layer 2 now provides @al-saada/module-kit package with conversation helpers, RBAC, draft middleware, and CLI tools. |
 | 2.1.1 | 2026-03-02 | Removed duplicate Simplicity Over Cleverness and Monorepo Structure sections. |
+| 2.2.0 | 2026-03-03 | Added Development Infrastructure section with GitNexus and executor tools, introducing the Blast Radius Rule. |
 
-**Version**: 2.1.1 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-03-02
+**Version**: 2.2.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-03-03
