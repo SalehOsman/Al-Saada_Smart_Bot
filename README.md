@@ -30,7 +30,7 @@
 
 ### لمن هذا المشروع؟
 
-- 🏗️ **الشركات المصرية** — مقاولات، صيانة، نقل، أعمال عامة
+- 🏢 **كل الشركات والأعمال المصرية** — تجارية، صناعية، خدمية، مهنية (مقاولات، صيانة، نقل، محاسبة، عقارات، طب، محاماة، وغيرها)
 - 👥 **~200 مستخدم** لكل مؤسسة
 - 🇪🇬 **اللغة العربية** كلغة أساسية مع دعم الإنجليزية
 
@@ -256,7 +256,7 @@ Employee opens bot ──▶ selects section ──▶ selects module ──▶ 
 
 ### Who is this for?
 
-- 🏗️ **Egyptian companies** — construction, maintenance, transport, general business
+- 🏢 **All Egyptian businesses** — commercial, industrial, services, professional (construction, maintenance, transport, accounting, real estate, medical, legal, and more)
 - 👥 **~200 users** per organization
 - 🇪🇬 **Arabic-first** with English support
 
