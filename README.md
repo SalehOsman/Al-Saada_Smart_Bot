@@ -1,81 +1,75 @@
+<div align="center">
+
 # بوت السعادة الذكي | Al-Saada Smart Bot
 
-> منصة ذكية ومعيارية لإدارة الأعمال المصرية عبر تيليجرام
+**منصة معيارية لتسجيل وإدارة الأعمال اليومية للشركات المصرية عبر تيليجرام**
+
+**A modular platform for recording and managing daily business operations for Egyptian companies via Telegram**
 
 [![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)]()
 [![Node.js](https://img.shields.io/badge/Node.js-≥20-green.svg)]()
-[![License](https://img.shields.io/badge/license-Private-red.svg)]()
+[![Tests](https://img.shields.io/badge/tests-112%20passing-brightgreen.svg)]()
+[![License](https://img.shields.io/badge/license-MIT-green.svg)]()
+
+[عربي](#ما-هو-بوت-السعادة) · [English](#what-is-al-saada-bot)
+
+</div>
 
 ---
 
+<!-- ==================== القسم العربي ==================== -->
+
 ## ما هو بوت السعادة؟
 
-بوت السعادة هو **محرك فارغ** يتحول إلى نظام إدارة أعمال متكامل عبر تيليجرام، مع **مساعد ذكاء اصطناعي تشغيلي** مدرّب على بيانات الشركة. بدلاً من كتابة كود لكل وظيفة، تقوم بتعريف **موديولات مستقلة** باستخدام **Module Kit** والمحرك يحولها تلقائياً إلى شاشات بوت كاملة.
-
-### الفكرة الأساسية
+بوت السعادة هو **محرك فارغ** يتحول إلى نظام تسجيل أعمال يومية متكامل عبر تيليجرام. بدلاً من كتابة كود لكل وظيفة، تقوم بتعريف **موديولات مستقلة** والمحرك يحولها تلقائياً إلى شاشات بوت كاملة مع تحقق من البيانات، تأكيد، حفظ، وتدقيق.
 
 ```
-موديولات (Modules) ──▶ مجموعة أدوات الموديول (Module Kit) ──▶ شاشات بوت تيليجرام
-                                                           + مساعد ذكي (AI Assistant)
+الموظف يفتح البوت ──▶ يختار القسم ──▶ يختار الموديول ──▶ يسجّل بياناته ──▶ تأكيد ──▶ حفظ + إشعار المدير
 ```
 
 ### لمن هذا المشروع؟
 
-- **المنظمات المصرية** (مقاولات، صيانة، نقل، أعمال عامة)
-- **~200 مستخدم** لكل مؤسسة
-- **اللغة العربية** كلغة أساسية مع دعم الإنجليزية
+- 🏗️ **الشركات المصرية** — مقاولات، صيانة، نقل، أعمال عامة
+- 👥 **~200 مستخدم** لكل مؤسسة
+- 🇪🇬 **اللغة العربية** كلغة أساسية مع دعم الإنجليزية
+
+### أمثلة على الاستخدام
+
+| الموديول | ماذا يفعل الموظف؟ |
+|----------|-------------------|
+| تسجيل الوقود | يسجّل كمية السولار + رقم اللوحة + القراءة |
+| حضور وانصراف | يسجّل وقت الحضور مع الموقع GPS |
+| طلبات الإجازة | يقدّم طلب إجازة → يصل إشعار للمدير → موافقة/رفض |
+| مصروفات يومية | يسجّل مصروف + يرفق الفاتورة → يُراجع من المحاسب |
+
+> **ملاحظة:** هذه أمثلة على موديولات يمكن بناؤها. المنصة حالياً تحتوي على المحرك وأدوات التطوير، والموديولات تُبنى حسب احتياج كل شركة.
 
 ---
 
-## المعمارية (Three-Layer Architecture)
+## المعمارية
 
 ```
 ┌─────────────────────────────────────────────┐
-│           Layer 3: الموديولات               │
-│     (ملفات تكوين + حوارات مخصصة)            │
-│   HR │ Finance │ Fleet │ Inventory │ ...    │
+│         Layer 3: الموديولات (مخصصة)          │
+│   وقود │ حضور │ إجازات │ مصروفات │ ...      │
 ├─────────────────────────────────────────────┤
-│           Layer 2: Module Kit               │
-│  Validations │ Confirmations │ Persistence  │
+│         Layer 2: Module Kit (ثابت)          │
+│  validate │ confirm │ save │ drafts │ PII   │
 ├─────────────────────────────────────────────┤
-│           Layer 1: نواة المنصة              │
+│         Layer 1: نواة المنصة (ثابت)          │
 │  Bot │ RBAC │ Sections │ Auth │ Audit       │
 ├─────────────────────────────────────────────┤
-│         المساعد الذكي (AI Assistant)         │
-│  Qwen3-8B │ RAG │ Voice │ Cloud Fallback    │
-├─────────────────────────────────────────────┤
 │              البنية التحتية                  │
-│  PostgreSQL │ Redis │ Ollama │ Docker        │
+│  PostgreSQL │ Redis │ Docker                 │
 └─────────────────────────────────────────────┘
 ```
 
-| الطبقة | الوصف | حالة الكود |
-|--------|-------|------------|
-| **Layer 1** — نواة المنصة | بوت، مصادقة، صلاحيات، أقسام، تدقيق | ثابت — لا يتغير حسب العمل |
-| **Layer 2** — Module Kit | أدوات التحقق، التأكيد، الحفظ التلقائي، المسودات | ثابت — منصة التطوير |
-| **Layer 3** — الموديولات | تعريف الموديول + مسارات الحوار (Conversations) | متغير — مخصص لكل عمل |
-| **AI Assistant** — المساعد الذكي | Qwen3-8B + RAG + صوت | مساعد تشغيلي على بيانات الشركة |
-
----
-
-## التقنيات
-
-| المجال | التقنية |
-|--------|---------|
-| Runtime | Node.js ≥20, TypeScript 5.x (strict) |
-| Bot | grammY + conversations + hydrate |
-| Module Kit | @al-saada/module-kit (Internal Package) |
-| Database | PostgreSQL 16 + Prisma ORM (Multi-File Schema) |
-| Cache | Redis 7 + ioredis (Draft Management) |
-| Validation | Zod |
-| i18n | @grammyjs/i18n (Fluent .ftl support) |
-| Logging | Pino |
-| Testing | Vitest (80% coverage) |
-| Infrastructure | Docker Compose |
-| AI Local Model | Qwen3-8B via Ollama (Apache 2.0) |
-| AI Cloud Models | Gemini (free) / Claude / GPT |
-| RAG | pgvector (PostgreSQL extension) |
+| الطبقة | الوصف | الحالة |
+|--------|-------|--------|
+| **Layer 1** — نواة المنصة | بوت، مصادقة، صلاحيات، أقسام، تدقيق | ✅ مكتمل |
+| **Layer 2** — Module Kit | أدوات التحقق، التأكيد، الحفظ، المسودات | ✅ مكتمل |
+| **Layer 3** — الموديولات | تعريف الموديول + مسارات الحوار | 🔧 جاهز للبناء |
 
 ---
 
@@ -91,8 +85,8 @@
 
 ```bash
 # 1. استنساخ المشروع
-git clone <repository-url>
-cd _Al-Saada_Smart_Bot
+git clone https://github.com/SalehOsman/Al-Saada_Smart_Bot.git
+cd Al-Saada_Smart_Bot
 
 # 2. نسخ ملف الإعدادات
 cp .env.example .env
@@ -104,7 +98,7 @@ npm install
 # 4. تشغيل البنية التحتية
 npm run docker:up
 
-# 5. تشغيل قاعدة البيانات
+# 5. إعداد قاعدة البيانات
 npm run db:migrate
 npm run db:generate
 
@@ -112,46 +106,34 @@ npm run db:generate
 npm run dev
 ```
 
-### إدارة الموديولات (CLI)
-
-يوفر النظام أدوات CLI لتسريع تطوير الموديولات:
+### إنشاء أول موديول
 
 ```bash
 # إنشاء موديول جديد (تفاعلي)
-npm run module:create my-module
+npm run module:create
+
+# عرض كافة الموديولات
+npm run module:list
 
 # حذف موديول
-npm run module:remove my-module
-
-# عرض كافة الموديولات وحالتها
-npm run module:list
+npm run module:remove
 ```
 
 ---
 
-## الأوامر المتاحة
+## التقنيات
 
-### أوامر npm
-
-| الأمر | الوصف |
-|-------|-------|
-| `npm run dev` | تشغيل البوت (development) |
-| `npm test` | تشغيل الاختبارات |
-| `npm run lint` | فحص جودة الكود |
-| `npm run module:create` | إنشاء موديول جديد |
-| `npm run module:list` | عرض الموديولات المحملة |
-| `npm run db:migrate` | تشغيل migrations |
-| `npm run docker:up` | تشغيل Docker services |
-
-### أوامر البوت (في تيليجرام)
-
-| الأمر | الدور | الوصف |
-|-------|-------|-------|
-| `/start` | الكل | بدء التسجيل أو عرض القائمة |
-| `/sections` | Super Admin | إدارة الأقسام |
-| `/maintenance on\|off` | Super Admin | وضع الصيانة |
-| `/audit` | Super Admin | عرض سجل التدقيق |
-| `/ai` | Super Admin | إعدادات المساعد الذكي (النموذج، الصوت، RAG) |
+| المجال | التقنية |
+|--------|---------|
+| Runtime | Node.js ≥20, TypeScript 5.x (strict) |
+| Bot | grammY + @grammyjs/conversations + hydrate |
+| Module Kit | @al-saada/module-kit (حزمة داخلية) |
+| Database | PostgreSQL 16 + Prisma ORM (Multi-File Schema) |
+| Cache | Redis 7 + ioredis |
+| i18n | @grammyjs/i18n (Fluent .ftl) |
+| Logging | Pino |
+| Testing | Vitest (112 اختبار) |
+| Infrastructure | Docker Compose |
 
 ---
 
@@ -159,34 +141,21 @@ npm run module:list
 
 | الدور | الصلاحيات |
 |-------|----------|
-| **Super Admin** | تحكم كامل — أقسام، موديولات، مستخدمين، إعدادات + إعدادات AI من البوت |
-| **Admin** | صلاحيات محددة على أقسام/موديولات معينة + AI للاستعلام ضمن نطاقه |
-| **Employee** | بياناته الشخصية + تقديم طلبات + AI للاستعلام عن بياناته |
+| **Super Admin** | تحكم كامل — أقسام، موديولات، مستخدمين، إعدادات |
+| **Admin** | صلاحيات محددة على أقسام/موديولات معينة |
+| **Employee** | بياناته الشخصية + تقديم طلبات |
 | **Visitor** | طلب انضمام فقط |
 
 ---
 
-## المساعد الذكي (AI Assistant)
+## السياق المصري 🇪🇬
 
-مساعد تشغيلي مدرّب على بيانات الشركة — وليس ذكاء اصطناعي عام.
-
-### كيف يعمل؟
-
-```
-المستخدم يسأل (نص أو صوت)
-        │
-        ▼
-   STT (إذا صوت) ──▶ نص
-        │
-        ▼
-   RAG (بحث في بيانات الشركة via pgvector)
-        │
-        ▼
-   Qwen3-8B (محلي) أو Cloud Model (احتياطي)
-        │
-        ▼
-   إجابة بالعربي (نص + صوت اختياري)
-```
+- ✅ أرقام الهاتف المصرية (010/011/012/015)
+- ✅ الرقم القومي (14 رقم) — استخراج تاريخ الميلاد والجنس والمحافظة
+- ✅ أسماء عربية مركبة
+- ✅ العملة: جنيه مصري (EGP)
+- ✅ المنطقة الزمنية: Africa/Cairo
+- ✅ التقويم: ميلادي + هجري
 
 ---
 
@@ -199,64 +168,262 @@ al-saada-smart-bot/
 │   ├── module-kit/           # Layer 2 — أدوات تطوير الموديولات
 │   └── validators/           # محققات البيانات المشتركة
 ├── modules/                  # Layer 3 — الموديولات المخصصة
-│   └── fuel-entry/           # مثال: موديول تسجيل الوقود
 ├── prisma/
-│   └── schema/               # تعريف قاعدة البيانات (Multi-File)
-├── scripts/                  # أدوات CLI للمطورين
-├── specs/                    # مواصفات Spec Kit
-├── .specify/                 # إعدادات Spec Kit + الدستور
-└── ...
+│   └── schema/               # Multi-File Prisma Schema
+├── scripts/                  # أدوات CLI (module:create/remove/list)
+└── specs/                    # مواصفات SpecKit
 ```
 
 ---
 
-## مراحل التطوير
+## الأوامر
+
+### أوامر npm
+
+| الأمر | الوصف |
+|-------|-------|
+| `npm run dev` | تشغيل البوت |
+| `npm test` | تشغيل الاختبارات |
+| `npm run lint` | فحص جودة الكود |
+| `npm run module:create` | إنشاء موديول جديد |
+| `npm run module:list` | عرض الموديولات |
+| `npm run db:migrate` | تشغيل migrations |
+| `npm run docker:up` | تشغيل Docker |
+
+### أوامر البوت
+
+| الأمر | الدور | الوصف |
+|-------|-------|-------|
+| `/start` | الكل | بدء التسجيل أو عرض القائمة |
+| `/cancel` | الكل | إلغاء العملية الحالية (تُحفظ كمسودة) |
+| `/help` | الكل | مساعدة سياقية حسب الخطوة الحالية |
+| `/sections` | Super Admin | إدارة الأقسام |
+| `/maintenance on\|off` | Super Admin | وضع الصيانة |
+| `/audit` | Super Admin | عرض سجل التدقيق |
+
+---
+
+## خارطة الطريق 🗺️
 
 | المرحلة | الوصف | الإصدار | الحالة |
 |---------|-------|---------|--------|
 | **Phase 1** | نواة المنصة (Bot, RBAC, Sections, Audit) | v0.1.0 | ✅ مكتمل |
-| **Phase 2** | Module Kit (Scaffolding, Helpers, Drafts) | v0.2.0 | ✅ مكتمل |
+| **Phase 2** | Module Kit (Helpers, Drafts, CLI) | v0.2.0 | ✅ مكتمل |
 | **Phase 3** | موديولات تجريبية (HR, Operations) | v0.3.0 | ⏳ قادم |
-| **Phase 4** | مساعد ذكاء اصطناعي تشغيلي (Qwen3-8B + RAG) | v1.0.0 | ⏳ قادم |
+| **Phase 4** | مساعد ذكاء اصطناعي تشغيلي | v1.0.0 | ⏳ قادم |
+
+### Phase 4 — المساعد الذكي (قادم)
+
+مساعد تشغيلي متعدد الوسائط مدرّب على بيانات الشركة:
+
+| الميزة | الوصف | التقنية |
+|---------|-------|---------|
+| 💬 أسئلة بالعربية | اكتب سؤال عن بيانات شركتك واحصل على إجابة | RAG + pgvector |
+| 📄 تحليل ملفات | ارفع PDF/Excel/صورة وحلّلها | Tesseract/PaddleOCR |
+| 🎤 ملاحظات صوتية | أرسل ملاحظة صوتية بدلاً من الكتابة | Whisper |
+| 🤖 نماذج مرنة | محلي (Qwen2.5:7b) أو سحابي (Gemini/Claude/OpenAI) | Ollama + REST APIs |
+| 🔒 خصوصية | تصفية البيانات الحساسة قبل إرسالها للنماذج الخارجية | Context Redaction |
+
+> راجع المواصفات الكاملة: [`specs/002-ai-assistant/spec.md`](specs/002-ai-assistant/spec.md)
 
 ---
 
 ## المنهجية
 
-يتبع المشروع منهجية **Spec Kit** للتطوير المدفوع بالمواصفات:
+يتبع المشروع منهجية **[SpecKit](https://github.com/github/spec-kit)** للتطوير المدفوع بالمواصفات:
 
-1. **الدستور** — المرجع الأعلى لكل القرارات
-2. **المواصفات** — تعريف دقيق لكل ميزة
-3. **الخطة** — قرارات تقنية وهيكلية
-4. **المهام** — تفصيل خطوة بخطوة
-5. **التنفيذ** — كتابة الكود
-6. **التحليل** — مراجعة التناسق
-
-للمزيد: [`.specify/methodology.md`](.specify/methodology.md)
+1. 📜 **الدستور** — المرجع الأعلى لكل القرارات ([v2.1.0](.specify/memory/constitution.md))
+2. 📋 **المواصفات** — تعريف دقيق لكل ميزة
+3. 📐 **الخطة** — قرارات تقنية وهيكلية
+4. ✅ **المهام** — تفصيل خطوة بخطوة
+5. 🔍 **التحليل** — مراجعة التناسق
 
 ---
 
-## السياق المصري
+<!-- ==================== ENGLISH SECTION ==================== -->
 
-- ✅ التحقق من أرقام الهاتف المصرية (010/011/012/015)
-- ✅ الرقم القومي المصري (14 رقم) مع استخراج تاريخ الميلاد والجنس والمحافظة
-- ✅ أسماء عربية مركبة
-- ✅ المحافظات المصرية كبيانات أساسية
-- ✅ العملة: جنيه مصري (EGP)
-- ✅ المنطقة الزمنية: Africa/Cairo
-- ✅ التقويم: ميلادي + هجري
+<div align="center">
+
+## What is Al-Saada Bot?
+
+</div>
+
+Al-Saada Smart Bot is an **empty engine** that transforms into a complete daily business recording system via Telegram. Instead of writing code for every function, you define **independent modules** and the engine automatically turns them into full bot screens with validation, confirmation, persistence, and auditing.
+
+```
+Employee opens bot ──▶ selects section ──▶ selects module ──▶ records data ──▶ confirm ──▶ save + notify manager
+```
+
+### Who is this for?
+
+- 🏗️ **Egyptian companies** — construction, maintenance, transport, general business
+- 👥 **~200 users** per organization
+- 🇪🇬 **Arabic-first** with English support
+
+### Usage Examples
+
+| Module | What does the employee do? |
+|--------|--------------------------|
+| Fuel Entry | Records fuel quantity + plate number + meter reading |
+| Attendance | Records check-in time with GPS location |
+| Leave Requests | Submits leave request → manager gets notified → approve/reject |
+| Daily Expenses | Records expense + attaches receipt → reviewed by accountant |
+
+> **Note:** These are examples of modules that can be built. The platform currently contains the engine and development tools. Modules are built per company's needs.
 
 ---
 
-## الدستور
+## Architecture
 
-المشروع يحكمه [دستور v1.4.1](.specify/memory/constitution.md) يحتوي على 8 مبادئ أساسية:
+```
+┌─────────────────────────────────────────────┐
+│        Layer 3: Modules (Custom)             │
+│   Fuel │ Attendance │ Leave │ Expenses │ ... │
+├─────────────────────────────────────────────┤
+│        Layer 2: Module Kit (Fixed)           │
+│  validate │ confirm │ save │ drafts │ PII   │
+├─────────────────────────────────────────────┤
+│        Layer 1: Platform Core (Fixed)        │
+│  Bot │ RBAC │ Sections │ Auth │ Audit        │
+├─────────────────────────────────────────────┤
+│              Infrastructure                  │
+│  PostgreSQL │ Redis │ Docker                 │
+└─────────────────────────────────────────────┘
+```
 
-1. **المنصة أولاً** — اكتمال المحرك قبل أي موديول
-2. **التكوين أولاً** — موديولات مستقلة باستخدام Module Kit
-3. **الاختبار أولاً** — 80% تغطية للكود الأساسي
-4. **السياق المصري** — كل المحققات تدعم الصيغ المصرية
-5. **الأمان والخصوصية** — لا بيانات حساسة في السجلات (PII Masking)
-6. **البساطة فوق الذكاء** — YAGNI
-7. **Monorepo** — فصل واضح بين الحزم
-8. **المسودات التلقائية** — حفظ حالة الحوار لضمان عدم ضياع البيانات
+| Layer | Description | Status |
+|-------|-------------|--------|
+| **Layer 1** — Platform Core | Bot, Auth, RBAC, Sections, Audit | ✅ Complete |
+| **Layer 2** — Module Kit | Validation, Confirmation, Persistence, Drafts | ✅ Complete |
+| **Layer 3** — Modules | Module definitions + Conversation flows | 🔧 Ready to build |
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js ≥20
+- Docker & Docker Compose
+- Telegram Bot Token (from [@BotFather](https://t.me/BotFather))
+
+### Installation
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/SalehOsman/Al-Saada_Smart_Bot.git
+cd Al-Saada_Smart_Bot
+
+# 2. Copy environment file
+cp .env.example .env
+# Edit .env and add your BOT_TOKEN
+
+# 3. Install dependencies
+npm install
+
+# 4. Start infrastructure
+npm run docker:up
+
+# 5. Setup database
+npm run db:migrate
+npm run db:generate
+
+# 6. Start the bot
+npm run dev
+```
+
+### Create your first module
+
+```bash
+# Create a new module (interactive)
+npm run module:create
+
+# List all modules
+npm run module:list
+
+# Remove a module
+npm run module:remove
+```
+
+---
+
+## Tech Stack
+
+| Area | Technology |
+|------|-----------|
+| Runtime | Node.js ≥20, TypeScript 5.x (strict) |
+| Bot | grammY + @grammyjs/conversations + hydrate |
+| Module Kit | @al-saada/module-kit (internal package) |
+| Database | PostgreSQL 16 + Prisma ORM (Multi-File Schema) |
+| Cache | Redis 7 + ioredis |
+| i18n | @grammyjs/i18n (Fluent .ftl) |
+| Logging | Pino |
+| Testing | Vitest (112 tests) |
+| Infrastructure | Docker Compose |
+
+---
+
+## RBAC (Role-Based Access Control)
+
+| Role | Permissions |
+|------|-----------|
+| **Super Admin** | Full control — sections, modules, users, settings |
+| **Admin** | Scoped access to assigned sections/modules |
+| **Employee** | Personal data + submit requests |
+| **Visitor** | Join request only |
+
+---
+
+## Egyptian Context 🇪🇬
+
+- ✅ Egyptian phone numbers (010/011/012/015)
+- ✅ National ID (14 digits) — extracts birth date, gender, governorate
+- ✅ Compound Arabic names
+- ✅ Currency: Egyptian Pound (EGP)
+- ✅ Timezone: Africa/Cairo
+- ✅ Calendar: Gregorian + Hijri
+
+---
+
+## Roadmap 🗺️
+
+| Phase | Description | Version | Status |
+|-------|-------------|---------|--------|
+| **Phase 1** | Platform Core (Bot, RBAC, Sections, Audit) | v0.1.0 | ✅ Complete |
+| **Phase 2** | Module Kit (Helpers, Drafts, CLI) | v0.2.0 | ✅ Complete |
+| **Phase 3** | Trial Modules (HR, Operations) | v0.3.0 | ⏳ Coming |
+| **Phase 4** | AI Operational Assistant | v1.0.0 | ⏳ Coming |
+
+### Phase 4 — AI Assistant (Coming)
+
+A multi-modal operational assistant trained on company data:
+
+| Feature | Description | Technology |
+|---------|-------------|-----------|
+| 💬 Arabic Q&A | Ask questions about your company data | RAG + pgvector |
+| 📄 File Analysis | Upload PDF/Excel/Image for analysis | Tesseract/PaddleOCR |
+| 🎤 Voice Notes | Send voice notes instead of typing | Whisper |
+| 🤖 Flexible Models | Local (Qwen2.5:7b) or Cloud (Gemini/Claude/OpenAI) | Ollama + REST APIs |
+| 🔒 Privacy | Filter sensitive data before sending to external models | Context Redaction |
+
+> See full specs: [`specs/002-ai-assistant/spec.md`](specs/002-ai-assistant/spec.md)
+
+---
+
+## Methodology
+
+This project follows **[SpecKit](https://github.com/github/spec-kit)** for specification-driven development:
+
+1. 📜 **Constitution** — Supreme reference for all decisions ([v2.1.0](.specify/memory/constitution.md))
+2. 📋 **Specification** — Precise feature definition
+3. 📐 **Plan** — Technical and structural decisions
+4. ✅ **Tasks** — Step-by-step breakdown
+5. 🔍 **Analysis** — Consistency review
+
+---
+
+<div align="center">
+
+**Built with ❤️ for Egyptian businesses**
+
+</div>
