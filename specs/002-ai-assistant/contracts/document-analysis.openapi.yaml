@@ -1,0 +1,248 @@
+openapi: 3.0.0
+info:
+  title: Document Analysis Service
+  description: Document parsing, OCR, and data extraction service
+  version: 1.0.0
+
+paths:
+  /documents/upload:
+    post:
+      summary: Upload document for analysis
+      description: Uploads PDF, image, or Excel file for OCR and data extraction
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Document file (max 10MB)
+                targetModule:
+                  type: string
+                  description: Optional target module for data mapping
+      responses:
+        '201':
+          description: Document uploaded and analysis started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  analysisId:
+                    type: string
+                  status:
+                    type: string
+                    enum: [processing, completed, failed]
+                  estimatedTime:
+                    type: integer
+                    description: Estimated processing time in seconds
+        '400':
+          description: Invalid file type or size
+        '413':
+          description: File too large (max 10MB)
+
+  /documents/{id}:
+    get:
+      summary: Get document analysis result
+      security:
+        - bearerAuth
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Document analysis result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  fileName:
+                    type: string
+                  fileType:
+                    type: string
+                  extractedData:
+                    type: object
+                    additionalProperties: true
+                  ocrText:
+                    type: string
+                    nullable: true
+                  confidence:
+                    type: number
+                    format: float
+                  moduleSuggestion:
+                    type: string
+                    nullable: true
+                  status:
+                    type: string
+                    enum: [processing, completed, failed]
+        '404':
+          description: Document not found
+        '403':
+          description: User lacks permission
+
+  /documents/{id}/extracted-data:
+    get:
+      summary: Get extracted structured data
+      description: Returns only the structured fields for direct data entry
+      security:
+        - bearerAuth
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fields:
+                    type: object
+                    description: Extracted field names and values
+                  confidence:
+                    type: number
+                    format: float
+
+  /documents/{id}/save-to-module:
+    post:
+      summary: Save extracted data to module
+      description: Saves the extracted data to the specified module
+      security:
+        - bearerAuth
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                targetModule:
+                  type: string
+                  description: Module slug to save data to
+                fields:
+                  type: object
+                  description: Field values (allows editing of extracted data)
+      responses:
+        '201':
+          description: Data saved to module
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recordId:
+                    type: string
+                  module:
+                    type: string
+        '400':
+          description: Invalid module or field validation failed
+        '403':
+          description: User lacks permission for target module
+
+  /documents/types:
+    get:
+      summary: Get supported document types
+      description: Returns list of supported file formats and their limits
+      security:
+        - bearerAuth
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  supported:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          enum: [pdf, image, excel]
+                        extensions:
+                          type: array
+                          items:
+                            type: string
+                        maxSize:
+                          type: integer
+                          description: Maximum size in bytes
+                        ocrSupported:
+                          type: boolean
+
+  /documents/analyze/{id}:
+    post:
+      summary: Ask AI question about document
+      description: Allows Q&A on uploaded document contents
+      security:
+        - bearerAuth
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question]
+              properties:
+                question:
+                  type: string
+                  maxLength: 500
+      responses:
+        '200':
+          description: AI answer based on document
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  answer:
+                    type: string
+                  sources:
+                    type: array
+                    items:
+                      type: string
+                      description: Relevant sections from document
+
+components:
+  schemas:
+    ExtractedField:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Field name (e.g., vendor, amount, date)
+        value:
+          type: string
+          description: Extracted value
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1

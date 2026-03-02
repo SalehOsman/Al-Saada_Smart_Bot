@@ -1,0 +1,204 @@
+openapi: 3.0.0
+info:
+  title: RAG Service
+  description: Retrieval-Augmented Generation service for vector search and embeddings
+  version: 1.0.0
+
+paths:
+  /rag/embed:
+    post:
+      summary: Generate embedding for text
+      description: Creates vector embedding for RAG indexing
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  maxLength: 10000
+                entityType:
+                  type: string
+                  description: Type of entity being embedded (User, Employee, etc.)
+                entityId:
+                  type: string
+                  description: Entity ID for tracking
+      responses:
+        '200':
+          description: Embedding generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  embedding:
+                    type: array
+                    items:
+                      type: number
+                    description: Vector embedding (768 dimensions)
+                  id:
+                    type: string
+                    description: Embedding record ID
+
+  /rag/search:
+    post:
+      summary: Search similar documents by vector
+      description: Finds similar vectors using pgvector similarity search
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query, topK]
+              properties:
+                query:
+                  type: string
+                  maxLength: 500
+                topK:
+                  type: integer
+                  minimum: 1
+                  maximum: 50
+                  default: 10
+                rbacScope:
+                  type: string
+                  description: User's RBAC scope for filtering
+                filters:
+                  type: object
+                  description: Additional filters (entityType, date range, etc.)
+      responses:
+        '200':
+          description: Similar documents found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        content:
+                          type: string
+                        similarity:
+                          type: number
+                          format: float
+                          minimum: 0
+                          maximum: 1
+                        entityType:
+                          type: string
+                        entityId:
+                          type: string
+                  total:
+                    type: integer
+
+  /rag/context:
+    post:
+      summary: Build context for AI prompt
+      description: Combines search results into formatted context string
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                maxTokens:
+                  type: integer
+                  default: 4000
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  context:
+                    type: string
+                    description: Formatted context for LLM prompt
+                  sources:
+                    type: array
+                    items:
+                      type: string
+                  tokenCount:
+                    type: integer
+
+  /rag/index:
+    post:
+      summary: Index entity in vector store
+      description: Creates and stores embedding for an entity
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [entityType, entityId, content]
+              properties:
+                entityType:
+                  type: string
+                entityId:
+                  type: string
+                content:
+                  type: string
+                metadata:
+                  type: object
+                  description: Additional metadata (rbacScope, etc.)
+      responses:
+        '201':
+          description: Entity indexed
+        '400':
+          description: Invalid entity or insufficient data
+
+  /rag/batch-index:
+    post:
+      summary: Batch index multiple entities
+      description: Efficiently index multiple entities in one operation
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [entities]
+              properties:
+                entities:
+                  type: array
+                  items:
+                    type: object
+                    required: [entityType, entityId, content]
+      responses:
+        '200':
+          description: Batch indexing complete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  indexed:
+                    type: integer
+                  failed:
+                    type: integer
+                  errors:
+                    type: array
+                    items:
+                      type: string
