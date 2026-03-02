@@ -191,7 +191,7 @@ model DocumentAnalysis {
 model VoiceSession {
   id              String    @id @default(cuid())
   userId           BigInt     @map("user_id")
-  mode             String     // 'text-only' | 'voice-input-only' | 'full-voice'
+  mode             String     // 'TEXT_ONLY' | 'VOICE_INPUT_ONLY' | 'FULL_VOICE'
   transcription    Json?      // Transcription history with timestamps
   audioFilePath    String?    @map("audio_file_path") // Optional saved audio
   startedAt        DateTime   @default(now()) @map("started_at")
@@ -205,7 +205,7 @@ model VoiceSession {
 ```
 
 **Validation Rules**:
-- `mode` must be one of: `text-only`, `voice-input-only`, `full-voice`
+- `mode` must be one of: `TEXT_ONLY`, `VOICE_INPUT_ONLY`, `FULL_VOICE`
 - `endedAt` must be >= `startedAt` when present
 - `durationMs` = `endedAt - startedAt` when both present
 
