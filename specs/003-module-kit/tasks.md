@@ -152,9 +152,8 @@
 **Purpose**: Documentation, data-model sync, integration verification, and quality assurance
 
 - [x] T033 [P] Update `specs/003-module-kit/data-model.md` to reflect corrected interfaces
-- [x] T034 [P] Create i18n locale entries for module-kit system messages
-- [x] T035 [P] Update `specs/003-module-kit/data-model.md`
-- [x] T036 Run end-to-end verification
+- [x] T034 [P] Create i18n locale entries for module-kit system messages: module-kit-max-retries-exceeded, module-kit-confirm-btn, module-kit-cancel-btn, module-kit-save-failed, module-kit-unauthorized-action, module-kit-draft-found, module-kit-draft-resume-btn, module-kit-draft-fresh-btn, module-kit-draft-expired, module-kit-unauthorized-resume, module-kit-help-{step} pattern
+- [x] T036 Run end-to-end verification: (1) scaffold test module via module:create, (2) verify folder structure + prisma generate, (3) simulate validate→confirm→save flow, (4) verify AuditLog with PII masking, (5) verify admin notifications, (6) verify draft save/restore cycle, (7) remove test module via module:remove, (8) run full test suite — all 100% passing
 - [x] T037 Run `/speckit.analyze`
 
 **Checkpoint**: Feature complete — all user stories working, data-model synced, i18n keys created, end-to-end verified
