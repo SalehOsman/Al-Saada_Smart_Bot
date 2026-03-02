@@ -148,7 +148,9 @@ See [quickstart.md](./quickstart.md) for development setup and local testing.
 
 ### Agent Context Update
 
-Agent context updated via `.specify/scripts/powershell/update-agent-context.ps1` with new AI-specific technologies:
+Agent context updated via `.specify/scripts/powershell/update-agent-context.ps1` (verified: script exists in repository). Run after Phase 1 completion: `pwsh .specify/scripts/powershell/update-agent-context.ps1`
+
+New AI-specific technologies added:
 - Vercel AI SDK
 - Ollama integration
 - pgvector
