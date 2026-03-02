@@ -10,7 +10,7 @@
 ### Session 2026-03-01
 - Q: How should the module-specific Prisma schema be integrated during scaffolding? → A: Use Prisma Multi-File Schema (`prismaSchemaFolder`). CLI copies the module's schema to `prisma/schema/modules/{slug}.prisma` and runs `prisma generate` automatically.
 - Q: How should the system handle draft expiration? → A: Sliding expiration (reset 24h TTL on every interaction) + configurable `draftTtlHours` in `defineModule()`.
-- Q: How should the `save()` helper handle potential data race conditions? → A: Last-Write-Wins (LWW). Simple overwrite is sufficient for the current scale (~200 users) per YAGNI.
+- Q: How should the `save()` helper handle potential data race conditions? → A: Last-Write-Wins (LWW). Simple overwrite is sufficient for the current scale (~1,000 users) per YAGNI.
 - Q: How should the system discover and load modules? → A: Auto-Discovery. Scan `modules/*/config.ts` at startup for dynamic registration, aligning with Layer 1 design.
 - Q: How should the Module Loader handle a module that fails to load? → A: Log & Skip. Log a detailed error and notify all SUPER_ADMINs via Telegram. The bot remains operational; broken modules are excluded until the next restart.
 - Q: How is sectionSlug in ModuleDefinition mapped to the AdminScope table? → A: Direct mapping via Section.slug field. The Section model requires a `slug String @unique` field. ModuleDefinition.sectionSlug MUST match Section.slug. At runtime, ModuleLoader resolves the mapping through this chain: `sectionSlug` → `Section.slug` → `Section.id` → `AdminScope.sectionId`. The `save()` helper then queries `AdminScope` WHERE `sectionId` matches the resolved ID.
@@ -161,7 +161,7 @@ Users must only see and access modules they have explicit permission to use, ens
 ### Measurable Outcomes
 
 - **SC-001**: Developers can scaffold a fully working (empty) module via the CLI in under 1 minute.
-- **SC-002**: 100% of data operations (create/update/delete) performed via the Module Kit automatically generate audit logs and notifications without developer intervention.
+- **SC-002**: All data operations (create/update/delete) via the Module Kit trigger automatic audit + notification per QA-002, with zero developer-written logging or notification code required.
 - **SC-003**: Users are completely unable to view or access modules outside their assigned permission scope (0% unauthorized access rate).
 - **SC-004**: Conversation drafts are reliably restored, resulting in a measurable decrease in abandoned data entry flows.
 - **SC-005**: The Module Kit implementation requires zero modifications to existing Layer 1 source files. New infrastructure files (ModuleLoader, Draft Middleware) MAY be added to packages/core/ when they serve as Layer 2 integration points that must operate at the bot framework level. Minimal, non-breaking schema additions (e.g., Section.slug) are also permitted.
