@@ -158,15 +158,15 @@ Three AI-powered features help developers and Super Admins work with modules mor
 
 ### Edge Cases
 
-- How does the system handle documents that exceed size or page limits?
+- How does the system handle documents that exceed size or page limits? → (see FR-025A, FR-025B)
 
 - What happens when the local AI model is unavailable or responds with an error?
 - How does the system handle natural language input that is completely unrelated to any module?
 - What happens when voice transcription produces completely incorrect text?
 - How does the system handle documents with poor quality images or corrupted files?
-- What happens when a user asks a question about data from multiple modules simultaneously?
+- What happens when a user asks a question about data from multiple modules simultaneously? → (see FR-011, FR-054)
 - How does the system handle queries that would return an extremely large amount of data?
-- What happens when the cloud AI model API is down or exceeds rate limits?
+- What happens when the cloud AI model API is down or exceeds rate limits? → (see NFR-009)
 - How does the system handle ambiguous dates in natural language (e.g., "last month" when near month boundary)?
 - What happens when natural language input contains conflicting values (e.g., "record 500 liters and 200 liters")?
 - How does the system handle multilingual input (mixing Arabic and English)?
