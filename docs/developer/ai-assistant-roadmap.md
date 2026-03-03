@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-03-03
 
-The AI Assistant transforms the Al-Saada Smart Bot from a reactive tool to a proactive operational partner. It acts as "Layer 4" within the platform architecture, standing atop the Platform Core and Module Kit. 
+The AI Assistant transforms the Al-Saada Smart Bot from a reactive tool to a proactive operational partner. It acts as "Layer 4" within the platform architecture, standing atop the Platform Core and Module Kit.
 
 ---
 
@@ -60,7 +60,7 @@ Execution of the actual AI processing logic, including integrating the Vercel AI
 
 Unlike standard stateless operations, the AI is heavily intertwined with system security. The interaction loop is fundamentally gated by `AdminScope` policies mapped in Layer 1.
 
-Every single query against PostgreSQL utilizing pgvector must dynamically apply scope variables. 
+Every single query against PostgreSQL utilizing pgvector must dynamically apply scope variables.
 - **Employee Search**: Is strictly filtered exclusively against their exact operating context.
 - **Managers / Admins**: Cannot ask the AI questions correlating to Sections or Modules they do not explicitly oversee. 
 - **Redaction Logic**: Handled centrally by `PrivacyRule` mapping arrays, ensuring phone numbers, National IDs, and configured financial keys are stripped down to structural tokens before engaging generalized models via REST.

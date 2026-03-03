@@ -25,7 +25,7 @@ Validators like Egyptian National IDs, Phones, and string stripping are natively
 
 **Example: Zod Schema Tests (`schemas.test.ts`)**
 ```typescript
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { phoneSchema } from '../src/schemas'
 
 describe('phoneSchema', () => {
@@ -52,22 +52,22 @@ When testing conversational logic inside `@grammyjs/conversations`, we do not in
 In this example we mock `ctx.reply` to spy on rendering, and force `conversation.waitForCallbackQuery` to simulate user button clicks.
 
 ```typescript
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { confirm } from '../src/confirmation.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { confirm } from '../src/confirmation.js'
 
 describe('confirm() helper', () => {
   const mockCtx = {
     t: vi.fn((key: string) => key),
     reply: vi.fn(),
-  } as any;
+  } as any
 
   const mockConversation = {
     waitForCallbackQuery: vi.fn(),
-  } as any;
+  } as any
 
   beforeEach(() => {
-    vi.clearAllMocks(); // Clear tracking before each test
-  });
+    vi.clearAllMocks() // Clear tracking before each test
+  })
 
   it('returns false on cancel', async () => {
     // 1. Simulate the user clicking the "cancel" inline keyboard button
@@ -75,7 +75,7 @@ describe('confirm() helper', () => {
       data: 'cancel',
       match: 'cancel',
       answerCallbackQuery: vi.fn(),
-    });
+    })
 
     // 2. Fire the execution
     const result = await confirm(mockConversation, mockCtx, {
@@ -83,12 +83,12 @@ describe('confirm() helper', () => {
       labels: { amount: 'label' },
       editableFields: ['amount'],
       reAsk: vi.fn(),
-    });
+    })
 
     // 3. Verify the state returned exactly false
-    expect(result).toBe(false);
-  });
-});
+    expect(result).toBe(false)
+  })
+})
 ```
 
 ---
@@ -101,9 +101,9 @@ When testing persistence logic (`packages/module-kit/src/persistence.ts`), we of
 
 **Example: Testing Database/Logging Side-Effects (`persistence.test.ts`)**
 ```typescript
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { save } from '../src/persistence.js';
-import { AuditAction } from '@prisma/client';
+import { AuditAction } from '@prisma/client'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { save } from '../src/persistence.js'
 
 // 1. Hoist Mock Definitions structurally
 const { mockPrisma, mockAuditService, mockQueueNotification, mockRedis } = vi.hoisted(() => ({
@@ -112,45 +112,45 @@ const { mockPrisma, mockAuditService, mockQueueNotification, mockRedis } = vi.ho
     module: { findUnique: vi.fn() },
     adminScope: { findMany: vi.fn() },
     user: { findMany: vi.fn() },
-    $transaction: vi.fn((cb) => cb(mockPrisma)),
+    $transaction: vi.fn(cb => cb(mockPrisma)),
   },
   mockAuditService: { log: vi.fn() },
   mockQueueNotification: vi.fn(),
   mockRedis: { del: vi.fn() },
-}));
+}))
 
 // 2. Override alias imports structurally
-vi.mock('@core/database/prisma', () => ({ prisma: mockPrisma }));
-vi.mock('@core/services/audit-logs', () => ({ auditService: mockAuditService }));
-vi.mock('@core/services/notifications', () => ({ queueNotification: mockQueueNotification }));
-vi.mock('@core/cache/redis', () => ({ redis: mockRedis }));
+vi.mock('@core/database/prisma', () => ({ prisma: mockPrisma }))
+vi.mock('@core/services/audit-logs', () => ({ auditService: mockAuditService }))
+vi.mock('@core/services/notifications', () => ({ queueNotification: mockQueueNotification }))
+vi.mock('@core/cache/redis', () => ({ redis: mockRedis }))
 
 describe('save() helper', () => {
   it('saves data, logs masked audit, and clears draft', async () => {
-    const action = vi.fn().mockResolvedValue({ id: 'new-id' });
+    const action = vi.fn().mockResolvedValue({ id: 'new-id' })
     
     // Arrange: Resolve internal data lookups
-    mockPrisma.section.findUnique.mockResolvedValue({ id: 'sec-1' });
-    mockPrisma.adminScope.findMany.mockResolvedValue([{ userId: 111n }]);
-    mockPrisma.user.findMany.mockResolvedValue([{ telegramId: 333n }]);
+    mockPrisma.section.findUnique.mockResolvedValue({ id: 'sec-1' })
+    mockPrisma.adminScope.findMany.mockResolvedValue([{ userId: 111n }])
+    mockPrisma.user.findMany.mockResolvedValue([{ telegramId: 333n }])
 
     // Act
     await save({ from: { id: 12345678 }, reply: vi.fn(), t: vi.fn() } as any, {
       moduleSlug: 'fuel-entry',
       action,
       audit: { action: AuditAction.MODULE_CREATE, targetType: 'FuelEntry', details: { phone: '01012345678' } }
-    });
+    })
 
     // Assert: Execution triggered successfully
-    expect(action).toHaveBeenCalled();
+    expect(action).toHaveBeenCalled()
     // Assert: Sensitives were masked prior to DB Audit logging
     expect(mockAuditService.log).toHaveBeenCalledWith(expect.objectContaining({
       details: expect.objectContaining({ phone: expect.stringContaining('*******') })
-    }));
+    }))
     // Assert: The user's temporary state was pruned
-    expect(mockRedis.del).toHaveBeenCalledWith(`draft:12345678:fuel-entry`);
-  });
-});
+    expect(mockRedis.del).toHaveBeenCalledWith(`draft:12345678:fuel-entry`)
+  })
+})
 ```
 
 ---
