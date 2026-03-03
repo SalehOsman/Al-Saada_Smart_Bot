@@ -6,6 +6,51 @@ This document details the exact structure of the Al-Saada Smart Bot PostgreSQL d
 
 ---
 
+## Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    User ||--o{ JoinRequest : "submits/reviews"
+    User ||--o{ AuditLog : "performs"
+    User ||--o{ Notification : "receives"
+    User ||--o{ Section : "creates"
+    User ||--o{ AdminScope : "has/grants"
+    Section ||--o{ Module : "contains"
+    Section ||--o{ AdminScope : "scoped to"
+    Module ||--o{ AdminScope : "scoped to"
+
+    User {
+        BigInt telegramId PK
+        String id UK
+        String role
+        String phone UK
+        String nationalId UK
+    }
+    JoinRequest {
+        String id PK
+        BigInt telegramId
+        String status
+    }
+    Section {
+        String id PK
+        String slug UK
+        Boolean isActive
+    }
+    Module {
+        String id PK
+        String slug UK
+        String sectionId FK
+    }
+    AdminScope {
+        String id PK
+        BigInt userId FK
+        String sectionId FK
+        String moduleId FK
+    }
+```
+
+---
+
 ## 1. Global Enums (`main.prisma`)
 
 ### `Role`

@@ -28,8 +28,7 @@
 | [Role Review](project/role-review.md) | AI role reviews and methodology alignment | Project Manager |
 
 ## Project Status
-- **Implemented**: Layer 1 (Platform Core), Layer 2 (Module Kit).
-- **In Progress**: Documentation restructure.
+- **Implemented**: Layer 1 (Platform Core), Layer 2 (Module Kit), Documentation restructure.
 - **Planned**: Layer 3 (Modules), Layer 4 (AI Assistant), BullMQ notifications, Section Management.
 
 ## Available Specifications

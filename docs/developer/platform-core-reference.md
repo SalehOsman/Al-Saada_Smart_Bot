@@ -299,8 +299,32 @@ Global generic error boundary spanning all bot activity.
 
 ### /start Flow
 `packages/core/src/bot/handlers/start.ts`
-The universal entry point. If `ctx.user` is populated (by Auth middleware), it shows the role-based main menu. If not, it enters the `join-request` / bootstrap logic.
+
+The universal entry point for all users interacting with the bot.
+
+- **New Users (Unregistered):**
+  If `ctx.user` is not populated (or role is `VISITOR`), the bot checks if they have a pending `join-request`.
+  - If pending: Sends a "Please wait for approval" message.
+  - If no request: Starts the onboarding `joinConversation` to collect Name, Phone, and National ID.
+  - **Auto-Bootstrap:** If the database has 0 users, the first person to hit `/start` with the designated `INITIAL_SUPER_ADMIN_ID` bypasses the join request and is instantly granted `SUPER_ADMIN`.
+
+- **Registered Users:**
+  If the user is authenticated (e.g., `EMPLOYEE`, `ADMIN`, `SUPER_ADMIN`), they are greeted and immediately presented with the role-based main menu.
 
 ### Menu System
 `packages/core/src/bot/handlers/menu.ts`
-Renders the role-specific commands that the user is authorized for, checking if they are a `SUPER_ADMIN`, `ADMIN`, or standard user.
+
+Dynamically renders the `ReplyKeyboardMarkup` based on the user's explicit role and permissions. It evaluates `ctx.user.role`.
+
+- **SUPER_ADMIN Menu:**
+  Sees all operational buttons, including system-wide "Join Requests" approval queues and "Platform Settings".
+- **ADMIN Menu:**
+  Sees buttons scoped to their allowed sections (via `AdminScope`). Can view "Join Requests" if they have permission to approve members for their scopes.
+- **EMPLOYEE Menu:**
+  Sees standard operational modules they have `view` permission for, plus "My Profile" and "Common Settings".
+- **VISITOR Menu:**
+  Visitors do not get a menu; they are restricted to the `/start` gate.
+
+---
+
+**See Also:** [Module Kit Reference](module-kit-reference.md) | [Architecture Overview](architecture.md)

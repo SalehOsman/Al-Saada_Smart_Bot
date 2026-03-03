@@ -646,12 +646,12 @@ describe('Module Contract', () => {
 
 ## Additional Resources
 
-- **Module Kit Documentation**: `/docs/module-kit/README.md`
-- **Platform Architecture**: `/docs/architecture/`
-- **AI Module Wizard**: Use `/ai create-module` in the bot
-- **Code Review**: Use `/ai review-module <slug>` for AI assistance
+- **Module Kit Reference**: [module-kit-reference.md](module-kit-reference.md)
+- **Platform Core Reference**: [platform-core-reference.md](platform-core-reference.md)
+- **Architecture**: [architecture.md](architecture.md)
+- **Database Schema**: [database-schema.md](database-schema.md)
 
 ---
 
 **Document Owner**: Platform Core Team
-**Contact**: For questions, contact the development team or use the `/ai` command for assistance.
+**Contact**: For questions, contact the development team or core maintainers.

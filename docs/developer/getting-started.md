@@ -80,35 +80,14 @@ Below are all variables found in `.env.example` with descriptions.
 
 ## 4. NPM Scripts Reference
 
-All standard `npm run <script>` commands defined in `package.json`.
+For a comprehensive list of all available commands, scripts, Docker operations, and troubleshooting workflows, please refer to the [CLI Cheatsheet](cli-cheatsheet.md).
 
-### General Scripts
-- `npm run dev` — Starts the bot directly via `tsx`.
-- `npm run dev:watch` — Starts the bot with `tsx watch` for auto-restarts on save.
-- `npm run build` — Compiles the typescript bot into ESM formats via `tsup`.
-- `npm run typecheck` — Runs `tsc --noEmit` across workspaces.
-
-### Database Scripts
-- `npm run db:migrate` — Executes `prisma migrate dev` to update the active dev schema.
-- `npm run db:generate` — Executes `prisma generate` to update the TS Prisma Client after schema changes.
-- `npm run db:studio` — Opens `prisma studio` on `localhost:5555` to view/edit database records graphically.
-
-### Container Scripts
-- `npm run docker:up` — Runs `docker-compose up -d` (spins up postgres/redis layers).
-- `npm run docker:down` — Shuts down the local containers network.
-
-### Quality and Testing
-- `npm test` — Executes `vitest`.
-- `npm run test:coverage` — Executes vitest coverage reports.
-- `npm run test:watch` — Runs vitest watcher logic.
-- `npm run lint` — Runs `eslint .` across all workspaces.
-- `npm run lint:fix` — Formats and repairs basic ESLint violations automatically.
-- `npm run docs:api` — Uses TypeDoc to generate technical codebase documents.
-
-### Module Kit Scripts
-- `npm run module:create` — Interactively scaffolds a new business feature layer.
-- `npm run module:remove` — Reversibly removes an active module layer.
-- `npm run module:list` — Utility logging of all registered Layer 3 modules.
+It contains detailed instructions for:
+- Database Migrations & Prisma
+- Unit Testing & Coverage
+- ESLint & Quality Gates
+- Module Generation CLI
+- Environment Configuration
 
 ---
 

@@ -198,3 +198,7 @@ Purges a specified slug directory iteratively alongside ripping corresponding pr
 | BL-003 | Conversation inactivity timeout | No timeout — conversation handler stays active indefinitely | 15-minute inactivity timeout, release handler, keep draft in Redis | LOW |
 | BL-004 | confirm() empty data guard | No validation on data parameter | Throw developer-facing error if data object is empty | LOW |
 | BL-005 | FR-007 doc alignment | FR-007 says "no standalone notifyScopedAdmins" | Update spec to reflect actual private helper in persistence.ts | LOW |
+
+---
+
+**See Also:** [Platform Core Reference](platform-core-reference.md) | [Architecture Overview](architecture.md)

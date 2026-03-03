@@ -9,7 +9,8 @@ Al-Saada Smart Bot is built on a **Four-Layer Architecture** designed for scalab
 ## 1. Four-Layer Architecture
 
 ### Layer 1: Platform Core (`packages/core/`)
-The foundation of the bot. It handles everything that is *not* a specific business feature.
+The foundation of the bot. It handles everything that is *not* a specific business feature. (See: [Platform Core Reference](platform-core-reference.md))
+
 - **Entry Point:** `src/main.ts` sets up the Hono web server for health checks and initializes the bot setup.
 - **Bot Setup:** `src/bot/index.ts` configures grammY, the middleware chain, and the baseline error handling.
 - **Services:** Singleton services for platform-wide features:
@@ -20,7 +21,7 @@ The foundation of the bot. It handles everything that is *not* a specific busine
   - `AdminScopeService`: Managing scoped admin permissions.
 
 ### Layer 2: Module Kit (`packages/module-kit/`)
-The framework for building business features. It provides a standardized API (`validate`, `confirm`, `save`) to ensure all features behave consistently.
+The framework for building business features. It provides a standardized API (`validate`, `confirm`, `save`) to ensure all features behave consistently. (See: [Module Kit Reference](module-kit-reference.md))
 - **ModuleLoader:** Resides in `core` (`src/bot/module-loader.ts`) but acts as the bridge. It discovers, registers, and loads modules defined using the Module Kit.
 - **Draft System:** Middleware (`draft.ts`) that automatically persists user input state to Redis, allowing users to resume interrupted flows.
 
