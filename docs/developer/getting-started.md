@@ -115,7 +115,7 @@ All standard `npm run <script>` commands defined in `package.json`.
 ## 5. Common Troubleshooting
 
 ### "Database Connection Refused"
-- **Cause:** `POSTGRES_PASSWORD` in `.env` doesn't match the one you started Docker with, or Docker container is explicitly shut down. 
+- **Cause:** `POSTGRES_PASSWORD` in `.env` doesn't match the one you started Docker with, or Docker container is explicitly shut down.
 - **Solution:** Verify the `.env` settings against `docker-compose.yml`, run `npm run docker:down`, then restart `npm run docker:up` to re-initialize containers correctly. Wait 10 seconds.
 
 ### "PrismaClient setup error" / Unknown Database fields

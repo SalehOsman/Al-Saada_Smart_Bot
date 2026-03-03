@@ -20,7 +20,7 @@ The fundamental builder function for registering a module.
 
 ```typescript
 export function defineModule(config: ModuleDefinition): ModuleDefinition {
-  return config;
+  return config
 }
 ```
 
@@ -75,9 +75,9 @@ const amount = await validate(conversation, ctx, {
   field: 'amount',
   promptKey: 'fuel.prompt.amount',
   errorKey: 'fuel.error.amount',
-  validator: (val) => !isNaN(Number(val)) && Number(val) > 0,
-  formatter: (val) => Number(val),
-});
+  validator: val => !Number.isNaN(Number(val)) && Number(val) > 0,
+  formatter: val => Number(val),
+})
 ```
 
 ---
@@ -141,9 +141,9 @@ export async function save<T>(
 ```typescript
 await save(ctx, {
   moduleSlug: 'leave-requests',
-  action: async (prisma) => prisma.leaveRequest.create({ data }),
+  action: async prisma => prisma.leaveRequest.create({ data }),
   audit: { action: 'MODULE_CREATE', targetType: 'LeaveRequest', details: data }
-});
+})
 ```
 
 ---
@@ -152,7 +152,7 @@ await save(ctx, {
 
 Draft storage prevents data loss from interrupts using `packages/core/src/bot/middleware/draft.ts` natively integrated on all conversational state endpoints.
 
-- **Auto-Save Middleware:** `session.conversations` is persistently snapped to stringified JSON in Redis after the Bot handler fully returns via `await next()`. 
+- **Auto-Save Middleware:** `session.conversations` is persistently snapped to stringified JSON in Redis after the Bot handler fully returns via `await next()`.
 - **Redis Key:** Formatted specifically as `draft:{userId}:{moduleSlug}`.
 - **TTL Constraint:** Drafts inherently conform to the module definition `draftTtlHours` config or the 24H system default.
 - **Command Interruption Recovery:** The draft middleware wipes conversational state forcefully when detecting `/menu` or `/start`, enabling clean breaks while preserving Redis.
@@ -162,15 +162,15 @@ Draft storage prevents data loss from interrupts using `packages/core/src/bot/mi
 
 ## 8. ModuleLoader Deep Dive
 
-Located in `packages/core/src/bot/module-loader.ts`, handles discovery logic for independent Layer 3 Module packages via `loadModules()`. 
+Located in `packages/core/src/bot/module-loader.ts`, handles discovery logic for independent Layer 3 Module packages via `loadModules()`.
 
 - **Discovery Scan:** Reads `modules/` shallow directory targeting `config.ts` entries dynamically matching directory slugs against config implementations.
-- **Registration Pipeline:** 
+- **Registration Pipeline:**
   1. Mounts locale definitions directly into the `i18n` Fluent runtime natively.
   2. Mounts `addEntryPoint` (and optional `editEntryPoint`) as new global conversations scoped specifically by `bot.use(createConversation(...))`.
   3. Uses `prisma.module.upsert` to sync Section IDs and configuration state automatically on bootstrap.
-- **Performance Threshold:** Implements a strict < 5000ms SLA for complete iteration loading (Target QA-001). 
-- **Error Propagation:** Fails gracefully per-module while booting. Dispatches error details context via Telegram directly to system `SUPER_ADMIN`s. 
+- **Performance Threshold:** Implements a strict < 5000ms SLA for complete iteration loading (Target QA-001).
+- **Error Propagation:** Fails gracefully per-module while booting. Dispatches error details context via Telegram directly to system `SUPER_ADMIN`s.
 
 ---
 
@@ -179,10 +179,10 @@ Located in `packages/core/src/bot/module-loader.ts`, handles discovery logic for
 Developer workflow scripts located inside `scripts/`.
 
 ### `npm run module:create`
-Starts `tsx scripts/module-create.ts`. Interactively scaffolds a module framework requiring a matching slug identifier. Non-interactive via `--non-interactive`. Generates boilerplate for `config.ts`, conversations, testing, package.json, and `ar/en.ftl` locales. Copies `schema.prisma` automatically up to `prisma/schema/modules/` and invokes `npx prisma generate`. 
+Starts `tsx scripts/module-create.ts`. Interactively scaffolds a module framework requiring a matching slug identifier. Non-interactive via `--non-interactive`. Generates boilerplate for `config.ts`, conversations, testing, package.json, and `ar/en.ftl` locales. Copies `schema.prisma` automatically up to `prisma/schema/modules/` and invokes `npx prisma generate`.
 
 ### `npm run module:list`
-Displays a quick debug table (`console.table`) of all recognized plugins in `modules/` including their configuration parameters and load stability. 
+Displays a quick debug table (`console.table`) of all recognized plugins in `modules/` including their configuration parameters and load stability.
 
 ### `npm run module:remove`
 Purges a specified slug directory iteratively alongside ripping corresponding prisma sub-schemas gracefully. *Note: Databases are not dropped automatically, migrations are mandatory subsequently.*
