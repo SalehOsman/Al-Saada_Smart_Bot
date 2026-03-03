@@ -14,12 +14,7 @@
 
 [عربي](#ما-هو-بوت-السعادة) · [English](#what-is-al-saada-bot)
 
-<br/>
-
-> 📚 **التوثيق الشامل | Full Documentation:**
-> تم نقل جميع أدلة الاستخدام، الأدلة التقنية للـ Developers، ومراجع النظام إلى مجلد التوثيقات الجديد. الرجاء مراجعة [فهرس التوثيقات الشامل (docs/README.md)](docs/README.md) للوصول المباشر.
->
-> All user guides, developer references, and architecture docs have been centralized. Please see the [Documentation Hub (docs/README.md)](docs/README.md).
+📚 [التوثيق الكامل | Documentation](docs/README.md)
 
 </div>
 
