@@ -427,4 +427,3 @@ With multiple developers:
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
-- Phase 8 (RBAC Scope Inheritance) is NEW and must be completed before Phase 6 section hierarchy tasks can fully support FR-037
