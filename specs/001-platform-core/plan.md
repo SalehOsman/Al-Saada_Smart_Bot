@@ -30,11 +30,11 @@ Platform Core (Layer 1) implementation for Al-Saada Smart Bot - the foundational
 
 ### Al-Saada Smart Bot Principle Checks
 
-1. **Platform-First Principle**: Platform Core (Layer 1) must be 100% complete and tested before any module is created. Modules are primarily configuration (Config-First). Optional lifecycle hooks (beforeSave, afterSave, etc.) are allowed for complex business logic that cannot be expressed as configuration. The 90/10 rule applies: 90% config, max 10% hook code. All logic lives in the Flow Engine.
+1. **Platform-First Principle**: Platform Core (Layer 1) must be 100% complete and tested before any module is created. Modules are primarily configuration (Config-First). Optional lifecycle hooks (beforeSave, afterSave, etc.) are allowed for complex business logic that cannot be expressed as configuration. The 90/10 rule applies: 90% config, max 10% hook code. All logic lives in the Module Kit.
 
-2. **Config-Driven Architecture (Config-First, Code-When-Needed)**: Everything that can be configuration MUST be configuration, not code. Module creation should primarily require: Defining flow steps (which Flow Blocks in what order), Specifying database fields, Setting permissions. For complex business logic that cannot be expressed as configuration, use optional lifecycle hooks following the 90/10 rule (90% configuration, max 10% custom hook code).
+2. **Config-Driven Architecture (Config-First, Code-When-Needed)**: Everything that can be configuration MUST be configuration, not code. Module creation should primarily require: Defining flow steps (which Module Kit components in what order), Specifying database fields, Setting permissions. For complex business logic that cannot be expressed as configuration, use optional lifecycle hooks following the 90/10 rule (90% configuration, max 10% custom hook code).
 
-3. **Flow Block Reusability**: Every Flow Block must be: Self-contained and independently testable, Work with ANY module without modification, Handle its own validation, error messages, and UI, Support Arabic and English, Be configurable via parameters (label, field, validation rules, etc.).
+3. **Module Kit Reusability**: Every Module Kit component must be: Self-contained and independently testable, Work with ANY module without modification, Handle its own validation, error messages, and UI, Support Arabic and English, Be configurable via parameters (label, field, validation rules, etc.).
 
 4. **Test-First Development**: All Flow Blocks must have unit tests before implementation. All engine features must have integration tests. Red-Green-Refactor cycle enforced. Minimum 80% code coverage for engine code.
 
@@ -44,7 +44,7 @@ Platform Core (Layer 1) implementation for Al-Saada Smart Bot - the foundational
 
 7. **Simplicity Over Cleverness**: Start simple, add complexity only when proven necessary. YAGNI principle strictly enforced. No premature optimization. Clear naming conventions (Arabic-friendly). Every file has a single clear purpose.
 
-8. **Monorepo Structure**: The project uses a monorepo with clear package separation: packages/core — Platform Core (Layer 1), packages/flow-engine — Flow Engine (Layer 2), packages/validators — Egyptian validation library, packages/ai-assistant — AI Operational Assistant with RAG (Phase 4), modules/ — All modules (config files only).
+8. **Monorepo Structure**: The project uses a monorepo with clear package separation: packages/core — Platform Core (Layer 1), packages/module-kit — Module Kit (Layer 2), packages/validators — Egyptian validation library, packages/ai-assistant — AI Operational Assistant with RAG (Phase 4), modules/ — All modules (config files only).
 
 ## Project Structure
 
@@ -191,16 +191,21 @@ packages/
 - `reviewedAt` TIMESTAMP
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
-**Section** - Dynamic departments/containers
+**Section** - Dynamic departments/containers with two-level hierarchy support
 - `id` STRING PRIMARY KEY (cuid)
 - `name` VARCHAR(100) NOT NULL (Arabic)
 - `nameEn` VARCHAR(100) NOT NULL (English)
 - `icon` VARCHAR(10) NOT NULL (emoji)
+- `parentId` STRING REFERENCES Section(id) NULL (self-referential FK — nullable for main sections; when set, defines sub-section)
 - `isActive` BOOLEAN DEFAULT true
 - `orderIndex` INTEGER DEFAULT 0
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 - `updatedAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 - `createdBy` BIGINT REFERENCES User(telegramId)
+- **Relations**:
+  - `parent`: Optional reference to parent Section (main section only, where parentId is NULL)
+  - `children`: List of sub-sections (sections where parentId references this section's id)
+- **Constraint**: Maximum 2 levels enforced — if parentId is set, the referenced section MUST have parentId = NULL (main section cannot have children)
 
 **Module** - Discovered module configurations
 - `id` STRING PRIMARY KEY (cuid)
@@ -233,7 +238,7 @@ packages/
 **AdminScope** - Admin permissions (section-level or module-level scoping)
 - `id` STRING PRIMARY KEY (cuid)
 - `userId` BIGINT REFERENCES User(telegramId)
-- `sectionId` STRING REFERENCES Section(id) NOT NULL
+- `sectionId` STRING REFERENCES Section(id) ON DELETE CASCADE (FR-037: when section is deleted, its AdminScope records are automatically removed, and user loses access to all descendant sub-sections and modules)
 - `moduleId` STRING REFERENCES Module(id) (nullable — when null, grants access to entire section; when set, grants access to specific module only)
 - `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 - `createdBy` BIGINT REFERENCES User(telegramId) (the Super Admin who assigned the scope)
