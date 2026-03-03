@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-03-03
 
-The Platform Core (`packages/core/`) provides the foundational services, utilities, middleware, and database connections that support the entire bot. 
+The Platform Core (`packages/core/`) provides the foundational services, utilities, middleware, and database connections that support the entire bot.
 
 ---
 
@@ -17,11 +17,11 @@ Centralized service for system-wide audit logging, automatically handling data r
 
 ```typescript
 interface AuditLogData {
-  userId: bigint;
-  action: AuditAction;
-  targetType?: string;
-  targetId?: string;
-  details?: Record<string, any>;
+  userId: bigint
+  action: AuditAction
+  targetType?: string
+  targetId?: string
+  details?: Record<string, any>
 }
 
 async function log(data: AuditLogData): Promise<void>
@@ -65,7 +65,7 @@ async function createOrBootstrap(params: CreateJoinRequestParams): Promise<Creat
 
 ## Bot Utilities
 
-Helper functions that standardize interactions inside grammY handlers/conversations. 
+Helper functions that standardize interactions inside grammY handlers/conversations.
 
 *Located in `packages/core/src/bot/utils/`*
 
