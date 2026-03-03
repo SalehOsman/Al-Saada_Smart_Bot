@@ -34,6 +34,9 @@
   "prisma": {
     "schema": "prisma/schema"
   },
+  "dependencies": {
+    "dotenv": "^17.3.1"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "^2.8.1",
     "@types/inquirer": "^9.0.9",
@@ -47,8 +50,5 @@
     "typedoc": "^0.25.12",
     "typescript": "^5.4.3",
     "vitest": "^1.4.0"
-  },
-  "dependencies": {
-    "dotenv": "^17.3.1"
   }
 }
