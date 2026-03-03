@@ -10,6 +10,7 @@
 |----------|-------------|----------|
 | [Architecture](developer/architecture.md) | The 4-Layer Architecture and Infrastructure | Developer |
 | [Getting Started](developer/getting-started.md) | Developer onboarding (Local setup, Docker, Scripts) | Developer |
+| [CLI Cheatsheet](developer/cli-cheatsheet.md) | Complete command reference for development & operations | Developer |
 | [Platform Core Reference](developer/platform-core-reference.md) | Layer 1 API reference (Services, Utilities, Middleware) | Developer |
 | [Module Kit Reference](developer/module-kit-reference.md) | Layer 2 API reference (validate, confirm, save, draft) | Developer |
 | [Module Development Guide](developer/module-development-guide.md) | Guide for building new modules | Developer |
