@@ -25,6 +25,7 @@
 | [Project Backlog](project/backlog.md) | Pending features and improvement backlog | PM | EN |
 | [Changelog](project/changelog.md) | Semantic versioning changelog | PM | EN |
 | [SpecKit Reference](project/speckit-reference.md) | Custom tool commands for requirement specs | PM | EN |
+| [User Scenarios](scenarios/README.md) | سيناريوهات التفاعل مع البوت وشجرة التدفقات | All | AR |
 
 ## Project Status
 - **Implemented**: Layer 1 (Platform Core), Layer 2 (Module Kit).
