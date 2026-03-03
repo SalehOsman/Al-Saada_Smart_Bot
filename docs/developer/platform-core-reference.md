@@ -4,6 +4,8 @@
 
 The Platform Core (`packages/core/`) provides the foundational services, utilities, middleware, and database connections that support the entire bot.
 
+> **Note:** This document provides FULL details of the exported API surface, including parameters and working examples from the codebase.
+
 ---
 
 ## Services
@@ -70,34 +72,226 @@ Helper functions that standardize interactions inside grammY handlers/conversati
 *Located in `packages/core/src/bot/utils/`*
 
 ### Conversation Utilities (`conversation.ts`)
-Standardizes how conversations ask questions, parse text, and handle cancellations natively.
+
+Standardizes how conversations ask questions, parse text, clean up prompt messages, and handle native cancellations.
+
+#### `createMessageTracker()`
+Creates a fresh message tracker to hold IDs of prompt messages for later deletion.
+```typescript
+interface MessageTracker {
+  ids: number[]
+}
+
+export function createMessageTracker(): MessageTracker
+```
+
+#### `trackMessage()`
+Records a message ID into the tracker.
+```typescript
+export function trackMessage(tracker: MessageTracker, messageId: number): void
+```
+
+#### `deleteTrackedMessages()`
+Deletes all messages tracked by the given tracker. Called before sending the final result to clean up the conversation flow visually. Silently ignores failures (e.g., if message is already deleted or too old).
+```typescript
+export async function deleteTrackedMessages(
+  ctx: BotContext,
+  tracker: MessageTracker,
+): Promise<void>
+```
+
+#### `waitForTextOrCancel()`
+Sends a prompt with a cancel button and waits for text reply. Returns `null` if the user cancelled, or a `string` otherwise. Optional `tracker` allows tracking the prompt messages.
+```typescript
+export interface WaitForTextOptions {
+  tracker?: MessageTracker
+}
+
+export async function waitForTextOrCancel(
+  conversation: Conversation<ConversationFlavor & BotContext>,
+  ctx: BotContext,
+  prompt: string,
+  options: WaitForTextOptions = {},
+): Promise<string | null>
+```
+**Usage Example:**
+```typescript
+const tracker = createMessageTracker()
+const wait = (prompt: string) => waitForTextOrCancel(conversation, ctx, prompt, { tracker })
+
+const name = await wait('What is your name?')
+if (name === null) {
+  await deleteTrackedMessages(ctx, tracker)
+  await sendCancelled(ctx, 'Flow cancelled')
+}
+```
+
+#### `waitForSkippable()`
+Sends a prompt with "Skip" and "Cancel" buttons for optional fields.
+Returns: `null` (cancelled), `'__skip__'` (skipped), or `string` (user input).
+```typescript
+export interface WaitForSkippableOptions {
+  tracker?: MessageTracker
+  skipData?: string
+}
+
+export async function waitForSkippable(
+  conversation: Conversation<ConversationFlavor & BotContext>,
+  ctx: BotContext,
+  prompt: string,
+  skipLabel: string,
+  options: WaitForSkippableOptions = {},
+): Promise<string | null>
+```
+
+#### `waitForConfirm()`
+Shows a confirmation message with customizable confirm/cancel buttons. Returns `true` if confirmed, `false` if cancelled.
+```typescript
+export interface WaitForConfirmOptions {
+  tracker?: MessageTracker
+  confirmData?: string
+  cancelData?: string
+}
+
+export async function waitForConfirm(
+  conversation: Conversation<ConversationFlavor & BotContext>,
+  ctx: BotContext,
+  text: string,
+  options: WaitForConfirmOptions = {},
+): Promise<boolean>
+```
+
+#### `sendCancelled()`
+Sends a unified cancellation message with an optional retry/restart button.
+```typescript
+export interface SendCancelledOptions {
+  retryLabel?: string
+  retryData?: string
+}
+
+export async function sendCancelled(
+  ctx: BotContext,
+  message: string,
+  options: SendCancelledOptions = {},
+): Promise<void>
+```
 
 ### User Input Utilities (`user-inputs.ts`)
-Functions for validating standard input formats before hitting business logic. (e.g., standardizing Arabic strings, phone numbers).
+
+These functions run a complete validation loop (prompting, validating, re-asking on failure) for standard Egyptian user data. They automatically normalize Arabic-Indic digits to ASCII.
+
+#### `normalizeDigits()`
+Normalizes Arabic-Indic digits (\u0660-\u0669) and Extended Persian digits (\u06F0-\u06F9) to standard ASCII 0-9.
+```typescript
+export function normalizeDigits(input: string): string
+```
+
+#### `askForArabicName()`
+Prompts for a full Arabic name. Validates that it contains only Arabic letters, spaces, or valid name punctuation, and has a minimum of 2 characters. Returns `''` on cancel.
+```typescript
+export async function askForArabicName(ctx: BotContext, wait: WaitFn): Promise<string>
+```
+
+#### `generateNickname()`
+Derives a display nickname from a full Arabic name by taking the first two "name units" while respecting predefined compound prefixes like `عبد`, `أبو`, `ابن`, `بنت`, `آل`.
+```typescript
+export function generateNickname(fullName: string): string
+```
+**Examples Table:**
+| Raw Input | Generated Nickname |
+| :--- | :--- |
+| صالح رجب محمد | صالح رجب |
+| عبد الله أحمد | عبد الله |
+| أبو بكر حسين | أبو بكر |
+
+#### `askForPhone()`
+Prompts for an 11-digit Egyptian phone number starting with 010/011/012/015. Also ensures the number is not already registered in the DB.
+```typescript
+export async function askForPhone(ctx: BotContext, wait: WaitFn): Promise<string>
+```
+
+#### `askForNationalId()`
+Prompts for a 14-digit Egyptian National ID. Validates format mathematically and automatically extracts the birth date and gender from the sequence.
+```typescript
+export interface NationalIdInfo {
+  nationalId: string
+  birthDate?: Date
+  gender?: 'MALE' | 'FEMALE'
+}
+
+export async function askForNationalId(ctx: BotContext, wait: WaitFn): Promise<NationalIdInfo | null>
+```
 
 ### Formatters (`formatters.ts`)
-Formatting logic for rendering data uniformly to the user (e.g., transforming a Prisma object into a localized HTML summary string).
+
+Helper functions to transform application models into localized textual display formats.
+
+#### `formatArabicDate()`
+Formats a `Date` object to a standard `DD/MM/YYYY` string. Returns `'value-unknown'` if undefined.
+```typescript
+export function formatArabicDate(date: Date | undefined | null): string
+```
+
+#### `formatGender()`
+Converts a Prisma gender enum format to the matching i18n locale key (`gender-male`, `gender-female`, `gender-unknown`).
+```typescript
+export function formatGender(gender: 'MALE' | 'FEMALE' | undefined | null): string
+```
+
+#### `notifyAdmins()`
+A helper that queues a Notification object for *all* active `ADMIN` and `SUPER_ADMIN` users system-wide using BullMQ queue.
+```typescript
+export interface AdminNotificationPayload {
+  type: NotificationType
+  params?: Record<string, string>
+}
+
+export async function notifyAdmins(payload: AdminNotificationPayload): Promise<void>
+```
 
 ---
 
 ## Middleware
 
-The middleware chain structures the incoming Update object.
+The middleware chain layers core functionality before business logic handlers run.
 
 ### Draft Middleware
 `packages/core/src/bot/middleware/draft.ts`
 
-Layer 2 logic placed in Layer 1 bot initialization. This middleware catches all Updates and manages Redis-based Draft states for the conversational modules.
-- **Auto-Save:** Saves `ctx.session.conversations` state automatically after the handler finishes execution.
-- **Interrupt Handling:** Automatically resets drafts and terminates active conversations when global commands (`/start`, `/menu`, `/cancel`) are detected.
+Central state management middleware that powers the conversational modules. It ensures users never lose their place if they are interrupted, and handles global module cancellations.
+
+- **Auto-Save:** Runs `await next()` first. If the request was part of a conversation flow, it automatically saves the `ctx.session.conversations` object and an `updatedAt` timestamp to the session storage *after* the handler finishes.
+- **State Storage:** Uses `ctx.session.conversations` as defined by `@grammyjs/conversations`.
+- **Command Interrupts:** If a user sends a global command (`/start`, `/menu`, `/cancel`, `/help`) while inside a conversational flow, the middleware catches it. It wipes the active conversation state from `ctx.session`, notifies the user the flow was cancelled (`module-kit-cancelled`), and allows the command handler to execute safely.
 
 ### Session Middleware
-`packages/core/src/bot/middleware/session.ts`
-Initializes GramMY sessions backed by the `RedisAdapter`.
+`packages/core/src/bot/middlewares/session.ts`
+
+Configures grammY's session logic backed by an ioredis instance.
+
+#### `SessionData` Structure
+```typescript
+interface SessionData {
+  userId?: number // Telegram ID if authenticated
+  role: 'VISITOR' | 'ADMIN' | 'SUPER_ADMIN'
+  language: 'ar' | 'en' // Display language preference
+  __language_code: string // Internal grammY i18n
+  currentSection: string | null // Active module slug (e.g. 'leave-requests')
+  currentModule: string | null // Specific conversational flow
+  lastActivity: number // Timestamp for expiry logic
+  conversations?: Record<string, any> // grammY conversation state
+}
+```
+
+- **Lazy Session Tracking:** Includes a `lazySessionMiddleware` (FR-026 + T066-B) that detects when an existing user interacts with the bot after their session expired. It transparently logs `USER_LOGOUT` (reason: `session_expired_lazy`) followed by `USER_LOGIN` returning them to the authenticated state without forcing them to re-join.
 
 ### Error Middleware
-`packages/core/src/bot/middleware/error.ts`
-Global error boundary. Catches all synchronous and asynchronous errors, logs them using Pino, and sends a safe fallback message `error-generic` to the user.
+`packages/core/src/bot/middlewares/error.ts`
+
+Global generic error boundary spanning all bot activity.
+
+- **Pino Logging:** In the event of an uncaught exception, logs `{ err, userId, chatId, update }` ensuring no error completely sinks the process silently.
+- **Fallback UI:** Sends the `error-generic` i18n key back to the user to gracefully recover instead of completely freezing.
 
 ---
 
