@@ -1,6 +1,6 @@
 # Al-Saada Smart Bot — Documentation
 
-**Al-Saada Smart Bot** is an extensible, 4-layer Telegram bot architecture focusing on strict i18n, structured module development, and a future AI Assistant layer.
+**Al-Saada Smart Bot** is an extensible, 3-layer Telegram bot platform focusing on strict i18n, structured module development, and a planned AI Assistant layer.
 
 **Tech Stack**: Node.js (>= 20), TypeScript (Strict), grammY (Conversations & Hydrate), PostgreSQL + Prisma, Redis, Docker.
 
@@ -8,7 +8,7 @@
 
 | Document | Description | Audience |
 |----------|-------------|----------|
-| [Architecture](developer/architecture.md) | The 4-Layer Architecture and Infrastructure | Developer |
+| [Architecture](developer/architecture.md) | The 3-Layer Architecture and Infrastructure | Developer |
 | [Getting Started](developer/getting-started.md) | Developer onboarding (Local setup, Docker, Scripts) | Developer |
 | [CLI Cheatsheet](developer/cli-cheatsheet.md) | Complete command reference for development & operations | Developer |
 | [Platform Core Reference](developer/platform-core-reference.md) | Layer 1 API reference (Services, Utilities, Middleware) | Developer |
@@ -28,7 +28,7 @@
 | [Role Review](project/role-review.md) | AI role reviews and methodology alignment | Project Manager |
 
 ## Project Status
-- **Implemented**: Layer 1 (Platform Core), Layer 2 (Module Kit), Documentation restructure.
+- **Implemented**: Layer 1 (Platform Core), Layer 2 (Module Kit).
 - **Planned**: Layer 3 (Modules), Layer 4 (AI Assistant), BullMQ notifications, Section Management.
 
 ## Available Specifications
