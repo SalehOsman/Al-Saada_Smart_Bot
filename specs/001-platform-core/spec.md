@@ -8,13 +8,7 @@
 ## Definitions
 
 ### Module Kit
-Reusable UI components (Layer 2) used to build modules. Examples include:
-- InputText: Text input with validation rules
-- SelectMenu: Menu selection interface
-- DatePicker: Date selection with calendar
-- Confirm: Summary screen with save action
-- Approval: Manager/admin approval workflow step
-These components are configured in module flow definitions and implemented as part of the Module Kit in Phase 2.
+Reusable UI components and conversation flow utilities (Layer 2) used to build modules. Components are configured in module flow definitions and implemented as part of the Module Kit in Phase 2.
 
 ### ModuleConfig
 TypeScript interface defining a module's structure, standard fields, and flow steps. Includes:
@@ -248,7 +242,7 @@ Super Admin configures bot-wide settings.
 - **FR-036**: System MUST provide a "Settings" menu for Super Admins with the following sub-items:
   - **Maintenance Toggle**: Enable/disable maintenance mode (alias for FR-022, accessible from Settings as well as standalone command)
   - **Default Language**: Set the bot's default language (AR/EN) for new users
-  - **Notification Preferences**: Configure which notification types are active and delivery settings
+  - **Notification Preferences**: Configure which notification types are active. "Delivery settings" refers to mute/unmute toggle per notification type only — no email/SMS delivery channels in Phase 1 (bot-only).
   - **System Info Display**: Read-only view of system information (bot version, uptime, connected services status, environment). Service monitoring includes PostgreSQL and Redis connection status. BullMQ and Ollama are scoped out of the info display for Phase 1 (Phase 1 monitors only core infrastructure).
   - **Backup (Full Control)**: Trigger and manage database backups (export/download), view backup history, and restore from backup
 - **FR-037**: System MUST implement RBAC Scope Inheritance for two-level section hierarchy. AdminScope on a main section automatically grants access to ALL its sub-sections and their modules. AdminScope on a sub-section grants access to that sub-section's modules ONLY. Scopes are additive (main section scope + specific sub-section scope = union). The `canAccess()` function MUST resolve the parent chain when checking section permissions: if a user has scope on a main section, they can access all descendant sub-sections and modules; if they have scope on a sub-section, they can access only that sub-section's modules. When a section is deleted, its AdminScope records are automatically removed (FK with CASCADE).
@@ -382,6 +376,11 @@ Super Admin configures bot-wide settings.
 - Q: Does RBAC scope inheritance apply to section hierarchy? → A: Yes. AdminScope on a main section grants access to all its sub-sections and their modules. AdminScope on a sub-section grants access to that sub-section's modules only.
 - Q: How is navigation state tracked for hierarchical sections? → A: Session state tracks navigation breadcrumb as `currentMenu` array in Redis, allowing back buttons at each level.
 - Q: Are existing flat sections affected by the hierarchy changes? → A: No. Existing sections without `parentId` remain as standalone main sections. No migration required.
+
+### Session 2026-03-04
+
+- Q: What does "delivery settings" mean in FR-036 Notification Preferences? → A: "Delivery settings" refers to mute/unmute toggle per notification type only — no email/SMS delivery channels in Phase 1 (bot-only).
+- Q: What is the definition of "Module Kit" in Platform Core? → A: Reusable UI components and conversation flow utilities (Layer 2) used to build modules. Components are configured in module flow definitions and implemented as part of the Module Kit in Phase 2. Specific component names (InputText, SelectMenu, DatePicker, Confirm, Approval) belong to Layer 2 and are not defined in Platform Core spec/plan.
 
 ## Versioning Strategy
 

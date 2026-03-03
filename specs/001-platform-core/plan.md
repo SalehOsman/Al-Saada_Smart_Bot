@@ -205,7 +205,7 @@ packages/
 - **Relations**:
   - `parent`: Optional reference to parent Section (main section only, where parentId is NULL)
   - `children`: List of sub-sections (sections where parentId references this section's id)
-- **Constraint**: Maximum 2 levels enforced — if parentId is set, the referenced section MUST have parentId = NULL (main section cannot have children)
+- **Constraint**: Maximum 2 levels enforced — if parentId is set, the referenced section MUST have parentId = NULL (main section cannot have children) (maximum 2 levels: main section → sub-section only)
 
 **Module** - Discovered module configurations
 - `id` STRING PRIMARY KEY (cuid)
@@ -501,19 +501,6 @@ Technical decisions incorporated: grammY 1.x webhook mode via Hono, Redis sessio
 ✅ **Monorepo Structure**: Clear package separation in packages/core/
 ✅ **Zero-Defect Gate**: /speckit.analyze must pass with zero issues before implementation proceeds
 
-## Post-Plan Additions (Tasks added after initial plan)
-
-> These tasks were identified during implementation and added to `tasks.md` after the initial plan was created.
-
-| Task | Phase | Description | Reason Added |
-|------|-------|-------------|--------------|
-| T083 | 2 | Create input validation and sanitization utilities in `packages/validators/src/` | FR-033 coverage gap discovered during Phase 2 |
-| T084 | 4 | Implement AdminScope authorization logic in `canAccess()` | FR-029 required explicit AdminScope handling beyond basic RBAC |
-| T085 | 6 | Implement `unregisterModule()` API function | FR-030 explicitly requires this function alongside registerModule() |
-| T086 | 7 | Implement Redis pub/sub for maintenance mode propagation | NFR-002 requires 5-second propagation across all instances |
-| T087 | 10 | Implement Redis fallback to in-memory sessions | Edge case defined in spec (Redis unavailability fallback) |
-
----
 
 ## Next Steps
 
