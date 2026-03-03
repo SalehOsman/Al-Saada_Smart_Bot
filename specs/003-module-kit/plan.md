@@ -19,6 +19,32 @@ The Module Kit (Layer 2) provides a streamlined, developer-centric toolkit for b
 **Constraints**: Principle VII (i18n-Only User Text); Existing Layer 1 source files remain untouched. New infrastructure files (ModuleLoader, Draft Middleware) MAY be added to packages/core/ per SC-005. Minimal, non-breaking schema additions (e.g., Section.slug) are also permitted. PII masking in audit logs (Principle VI). Root `package.json` workspaces MUST include `modules/*` to allow modules to `import { defineModule } from '@al-saada/module-kit'`.  
 **Scale/Scope**: Support for ~1,000 concurrent users across multiple organization-specific modules
 
+## External Dependencies from Layer 1
+
+The Module Kit (Layer 2) depends on the following services already implemented in `packages/core/` (Layer 1). These are NOT built as part of this feature — they are consumed via direct imports.
+
+| Service | Location | Used By | Purpose |
+|---------|----------|---------|---------|
+| `auditService.log()` | `packages/core/src/services/audit-logs.ts` | `save()` helper | Creates AuditLog entries with PII redaction |
+| `queueNotification()` | `packages/core/src/services/notifications.ts` | `save()` helper | Queues individual notifications via BullMQ |
+| `queueBulkNotifications()` | `packages/core/src/services/notifications.ts` | `save()` helper | Queues batch notifications for multiple admins |
+| `notifyAdmins()` | `packages/core/src/bot/utils/formatters.ts` | `save()` helper | Sends notifications to ALL active admins (no scope filter) |
+
+## Design Decisions from Clarification
+
+Decisions made during `/speckit.clarify` session (2026-03-03). These document the current implementation and identify future improvements.
+
+| Decision | Current Implementation | Future Improvement (Backlog) |
+|----------|----------------------|------------------------------|
+| Redis unavailable mid-flow | Draft middleware catches Redis errors silently (try/catch + Pino log). Conversation continues normally | Add user warning via `module-kit-draft-save-unavailable` i18n key |
+| save() DB failure | Throws error, draft preserved in Redis. User sees `module-kit-save-failed` | Add max 1 automatic retry before throwing. Add `module-kit-save-failed-persistent` for retry failure |
+| Conversation inactivity timeout | No timeout — grammY handler stays active until user acts | Add 15-min timeout: release handler, keep draft, notify via `module-kit-conversation-timeout` |
+| Concurrent module conversations | One active conversation per user (grammY limitation). Starting new module exits current conversation. Draft preserved in Redis | No change needed — current behavior is correct |
+| confirm() with empty data | No validation — passes through | Add developer-facing error guard: throw if data object is empty |
+| Scoped admin notifications | `notifyScopedAdmins()` exists as private function inside `persistence.ts` — resolves sectionSlug → Section → AdminScope → ADMINs + all SUPER_ADMINs | No change needed — function works correctly despite being a separate function rather than inline logic |
+
+**Future i18n keys (not yet implemented)**: `module-kit-draft-save-unavailable`, `module-kit-save-failed-persistent`, `module-kit-conversation-timeout`
+
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*

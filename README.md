@@ -6,13 +6,20 @@
 
 **A smart, ready-made platform for recording and managing daily business operations for Egyptian companies via Telegram**
 
-[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)]()
 [![Node.js](https://img.shields.io/badge/Node.js-≥20-green.svg)]()
 [![Tests](https://img.shields.io/badge/tests-112%20passing-brightgreen.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-green.svg)]()
 
 [عربي](#ما-هو-بوت-السعادة) · [English](#what-is-al-saada-bot)
+
+<br/>
+
+> 📚 **التوثيق الشامل | Full Documentation:**
+> تم نقل جميع أدلة الاستخدام، الأدلة التقنية للـ Developers، ومراجع النظام إلى مجلد التوثيقات الجديد. الرجاء مراجعة [فهرس التوثيقات الشامل (docs/README.md)](docs/README.md) للوصول المباشر.
+>
+> All user guides, developer references, and architecture docs have been centralized. Please see the [Documentation Hub (docs/README.md)](docs/README.md).
 
 </div>
 
