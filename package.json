@@ -11,6 +11,8 @@
     "modules/*"
   ],
   "scripts": {
+    "docs:api": "typedoc",
+    "docs:api:watch": "typedoc --watch",
     "dev": "tsx --env-file=.env packages/core/src/main.ts",
     "dev:watch": "tsx watch packages/core/src/main.ts",
     "build": "tsup packages/core/src/main.ts --format esm --dts",
@@ -42,6 +44,7 @@
     "lint-staged": "^15.2.2",
     "tsup": "^8.0.2",
     "tsx": "^4.7.2",
+    "typedoc": "^0.25.12",
     "typescript": "^5.4.3",
     "vitest": "^1.4.0"
   },

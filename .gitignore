@@ -56,3 +56,7 @@ Thumbs.db
 .kilocode/
 packages/core/tsconfig.tsbuildinfo
 test-vitest.test.ts
+.gitnexus
+
+# TypeDoc generated API docs
+docs/api/
