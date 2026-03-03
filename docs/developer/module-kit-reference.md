@@ -191,9 +191,10 @@ Purges a specified slug directory iteratively alongside ripping corresponding pr
 
 ## 10. Known Limitations & Planned Improvements
 
-| Code | Description | Roadmap Status |
-| :--- | :--- | :--- |
-| **BL-001** | Support uploading images seamlessly through validation parameters. | Planned V2 |
-| **BL-002** | Export utility handling cross-module data joins automatically. | Deferred |
-| **BL-003** | Auto-registration of Module Kit validation loops with system Audit failures. | Planned V1.5 |
-| **BL-004** | Nested conditional dependencies requiring subsequent validation resends in `confirm()`. | In Review |
+| ID | Title | Current Behavior | Planned Improvement | Priority |
+|----|-------|-----------------|---------------------|----------|
+| BL-001 | Redis failure user warning | Draft middleware catches Redis errors silently (log only) | Warn user via `module-kit-draft-save-unavailable` i18n key | LOW |
+| BL-002 | save() automatic retry | Throws error immediately, draft preserved in Redis | Max 1 automatic retry before throwing, show `module-kit-save-failed-persistent` | LOW |
+| BL-003 | Conversation inactivity timeout | No timeout — conversation handler stays active indefinitely | 15-minute inactivity timeout, release handler, keep draft in Redis | LOW |
+| BL-004 | confirm() empty data guard | No validation on data parameter | Throw developer-facing error if data object is empty | LOW |
+| BL-005 | FR-007 doc alignment | FR-007 says "no standalone notifyScopedAdmins" | Update spec to reflect actual private helper in persistence.ts | LOW |
