@@ -7,14 +7,14 @@
 
 ## Definitions
 
-### Flow Blocks
+### Module Kit
 Reusable UI components (Layer 2) used to build modules. Examples include:
 - InputText: Text input with validation rules
 - SelectMenu: Menu selection interface
 - DatePicker: Date selection with calendar
 - Confirm: Summary screen with save action
 - Approval: Manager/admin approval workflow step
-These components are configured in module flow definitions and implemented as part of the Flow Engine in Phase 2.
+These components are configured in module flow definitions and implemented as part of the Module Kit in Phase 2.
 
 ### ModuleConfig
 TypeScript interface defining a module's structure, standard fields, and flow steps. Includes:
@@ -25,7 +25,13 @@ TypeScript interface defining a module's structure, standard fields, and flow st
 - configPath (path to module configuration file)
 - isActive (enable/disable toggle)
 - orderIndex (menu positioning)
-- flow steps (array of Flow Block references)
+- flow steps (array of Conversation Helper references)
+
+### Conversation Helpers
+Reusable conversation flow utilities that handle common multi-step interactions in the bot. These helpers manage user input collection, validation, and state transitions across different module flows.
+
+### Section Hierarchy
+A two-level organizational structure for grouping modules: main sections (level 1) and sub-sections (level 2). Main sections can have zero or more sub-sections, and sub-sections cannot have children. Modules are attached to either main sections (standalone) or sub-sections.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -70,11 +76,11 @@ New user submits join request and admin processes it.
 
 ### User Story 3 - Section Management (Priority: P3)
 
-Super Admin manages dynamic sections in the bot.
+Super Admin manages dynamic sections in the bot, including two-level hierarchy support.
 
 **Why this priority**: Section management is core to organizing the bot's structure and user navigation.
 
-**Independent Test**: Can be tested by creating, editing, and deleting sections and verifying they appear correctly in the bot menu.
+**Independent Test**: Can be tested by creating, editing, and deleting sections (including sub-sections) and verifying they appear correctly in the bot menu with proper hierarchical navigation.
 
 **Acceptance Scenarios**:
 
@@ -85,6 +91,18 @@ Super Admin manages dynamic sections in the bot.
 3. **Given** I am a Super Admin **When** I delete an empty section **Then** the section is removed from the system.
 
 4. **Given** I am a Super Admin **When** I click on a section **Then** I see either the list of modules (if any) or "No modules yet" message (if empty).
+
+5. **Given** I am a Super Admin **When** I create a sub-section under a main section **Then** the sub-section is created with parentId set to the main section's ID and does not appear in the main menu (only accessible via the parent section).
+
+6. **Given** I am a Super Admin **When** I attempt to create a 3rd level section (using a sub-section as parentId) **Then** the system rejects the request with an error via i18n key `errors-section-max-depth-exceeded`.
+
+7. **Given** I am a user navigating the bot **When** I am at main sections, click a main section with sub-sections **Then** I see a list of sub-sections with a back button to return to main menu.
+
+8. **Given** I am a user navigating the bot **When** I am at main sections, click a main section WITHOUT sub-sections (standalone) **Then** I see its modules directly with a back button to return to main menu.
+
+9. **Given** I am a user navigating the bot **When** I am viewing sub-sections, click a sub-section **Then** I see its modules with a back button to return to its parent main section.
+
+10. **Given** I am a Super Admin **When** I delete a main section that has sub-sections **Then** the system deletes the main section and cascades to delete all its sub-sections, BUT the deletion is blocked if ANY sub-section (or the main section itself) contains active modules.
 
 ---
 
@@ -162,6 +180,10 @@ Super Admin configures bot-wide settings.
 - What happens when a user sends an unsupported message type (sticker, voice, photo, document, location) outside an active conversation flow? The bot should reply with a message via i18n key `errors-unsupported-message` guiding the user to use supported commands.
 - What happens when a user whose join request was REJECTED sends /start again? The user CAN re-apply by submitting a new join request (a new row is created). The previous rejected request is retained for auditing.
 - Can a deactivated user be reactivated? Only a Super Admin can reactivate a deactivated user. The user cannot self-reactivate via /start or any other command. The deactivated user's `nationalId` remains reserved in the User table (`@unique` constraint); re-entry to the system requires reactivation by a Super Admin, not creation of a new account.
+- What happens when a main section is deleted while a user is viewing its sub-section? The user is returned to the main menu with a message via i18n key `errors-section-deleted`.
+- What happens when a sub-section is re-parented to a different main section? The sub-section's parentId is updated, RBAC must be re-evaluated for all users with scopes on the old parent section (inherited access is lost), and the navigation state is invalidated for affected users.
+- How does the system handle orphaned sections? Foreign key constraints prevent orphaned sections. Deleting a main section automatically cascades to delete its sub-sections. Attempting to set parentId to a non-existent section is rejected at the database level.
+- What happens when a user has admin scope on a main section that is later deleted? The AdminScope record is automatically deleted when the section is deleted (FK with CASCADE), and the user loses access to all descendant sub-sections and modules.
 
 ## Requirements *(mandatory)*
 
@@ -200,8 +222,8 @@ Super Admin configures bot-wide settings.
 - **FR-015**: System MUST implement RBAC with 4 roles: SUPER_ADMIN, ADMIN, EMPLOYEE, VISITOR
 - **FR-016**: System MUST check user role before processing any action. Scope: all bot command handlers (/start, /sections, /maintenance, /audit) and all conversation flows. Implementation: via RBAC middleware injected into the Grammy middleware chain. Visitors are restricted to join-request flow only. Unauthenticated requests are rejected via i18n key `errors-auth-unauthorized`.
 - **FR-017**: System MUST implement AdminScope table for scoped permissions (sections/modules). Only Super Admins can assign or revoke admin scopes, via bot UI (inline buttons under the "Users" menu).
-- **FR-018**: System MUST allow Super Admins to create, edit, delete, enable/disable sections. Deletion constraint: a section can only be deleted if it has ZERO active modules. Attempting to delete a non-empty section MUST show error via i18n key `errors-section-has-active-modules`. Name validation: 2-50 characters. Icon: single Unicode emoji only.
-- **FR-019**: System MUST display sections as main menu buttons in the bot
+- **FR-018**: System MUST allow Super Admins to create, edit, delete, enable/disable sections. Section model includes optional `parentId` (nullable, self-referential FK to Section) to support two-level hierarchy. Deletion constraints: (a) a section can only be deleted if it has ZERO active modules, and (b) deleting a main section cascades to delete all its sub-sections BUT is blocked if ANY sub-section contains active modules. Attempting to delete a non-empty section MUST show error via i18n key `errors-section-has-active-modules`. Name validation: 2-50 characters. Icon: single Unicode emoji only. Maximum depth constraint: system MUST reject any attempt to create a section with a sub-section as parentId (maximum 2 levels: main section → sub-section). Deleting a main section MUST cascade delete sub-sections ONLY (modules are auto-discovered from filesystem via ModuleLoader).
+- **FR-019**: System MUST display sections as main menu buttons in the bot. Main menu shows ONLY main sections (parentId = null). Clicking a main section: (a) if it has sub-sections, show sub-section list + back button; (b) if it has no sub-sections (standalone), show its modules directly + back button. Clicking a sub-section shows its modules + back button. Session state tracks navigation breadcrumb as `currentMenu` array in Redis.
 - **FR-020**: System MUST implement dynamic module discovery at startup
 - **FR-021**: System MUST skip invalid module configs without crashing (log warnings)
 - **FR-022**: System MUST allow Super Admin to toggle maintenance mode via bot command
@@ -229,6 +251,7 @@ Super Admin configures bot-wide settings.
   - **Notification Preferences**: Configure which notification types are active and delivery settings
   - **System Info Display**: Read-only view of system information (bot version, uptime, connected services status, environment). Service monitoring includes PostgreSQL and Redis connection status. BullMQ and Ollama are scoped out of the info display for Phase 1 (Phase 1 monitors only core infrastructure).
   - **Backup (Full Control)**: Trigger and manage database backups (export/download), view backup history, and restore from backup
+- **FR-037**: System MUST implement RBAC Scope Inheritance for two-level section hierarchy. AdminScope on a main section automatically grants access to ALL its sub-sections and their modules. AdminScope on a sub-section grants access to that sub-section's modules ONLY. Scopes are additive (main section scope + specific sub-section scope = union). The `canAccess()` function MUST resolve the parent chain when checking section permissions: if a user has scope on a main section, they can access all descendant sub-sections and modules; if they have scope on a sub-section, they can access only that sub-section's modules. When a section is deleted, its AdminScope records are automatically removed (FK with CASCADE).
 
 ### Key Entities *(include if feature involves data)*
 
@@ -236,17 +259,24 @@ Super Admin configures bot-wide settings.
 
 - **User**: Represents bot users with `telegramId` (BigInt, database primary key — directly used as PK, no separate auto-generated id), `telegramUsername`, `fullName`, `nickname` (optional, auto-generated if empty), `phone`, `nationalId` (`@unique` — one real-world identity per account; deactivated users retain their National ID), `role`, `isActive`, `language` (ar/en preference, persists independently of Redis session TTL), `lastActiveAt`, and `createdAt`. All foreign key references to User (e.g., in AuditLog, JoinRequest, AdminScope, Notification) use `telegramId` (as BigInt in database, but as String in API/JSON contexts per the rule above).
 - **JoinRequest**: Pending user registrations with `fullName`, `nickname` (optional), `phone`, `nationalId`, and `status`. Rejected requests are retained indefinitely for auditing and compliance (no automatic purge).
-- **Section**: Dynamic departments with Arabic/English names, icons, active state, ordering. Section icons must be standard Unicode emoji characters (e.g., 📁, 💼, 🔧). No custom images or icon files.
+- **Section**: Dynamic departments with Arabic/English names, icons, active state, ordering. Section icons must be standard Unicode emoji characters (e.g., 📁, 💼, 🔧). No custom images or icon files. Includes `parentId` (optional, self-referential FK to Section, nullable) to support two-level hierarchy. Relations: `parent` (optional reference to parent Section), `children` (list of sub-sections). Constraint: if parentId is set, the referenced section MUST have parentId = null (enforces maximum 2 levels: main section → sub-section). Deleting a main section cascades to delete all sub-sections.
 - **Module**: Discovered modules with configuration, section assignment (many-to-one: each module belongs to exactly one section via `sectionId`), permissions
 - **AuditLog**: All significant actions with user, action type, target, details, timestamp
 - **Notification**: Queued messages with type, target users, read status, timestamps. Phase 1 notification types: `JOIN_REQUEST_NEW`, `JOIN_REQUEST_APPROVED`, `JOIN_REQUEST_REJECTED`, `USER_DEACTIVATED`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`.
-- **AdminScope**: Permission assignments for admins (sections/modules access). Attributes: `id` (PK, auto-generated), `userId` (FK→User, as BigInt in database but String in API/JSON contexts per database key type rule), `sectionId` (FK→Section), `moduleId` (FK→Module, nullable — when null, grants access to entire section; when set, grants access to specific module only), `createdAt`, `createdBy` (FK→User, as BigInt in database but String in API/JSON contexts per database key type rule — the Super Admin who assigned the scope).
+- **AdminScope**: Permission assignments for admins (sections/modules access). Attributes: `id` (PK, auto-generated), `userId` (FK→User, as BigInt in database but String in API/JSON contexts per database key type rule), `sectionId` (FK→Section), `moduleId` (FK→Module, nullable — when null, grants access to entire section; when set, grants access to specific module only), `createdAt`, `createdBy` (FK→User, as BigInt in database but String in API/JSON contexts per database key type rule — the Super Admin who assigned the scope). When `sectionId` references a main section, access extends to all sub-sections and their modules (RBAC Scope Inheritance, FR-037).
+
+## Backward Compatibility
+
+- Existing sections without `parentId` remain as standalone main sections
+- Existing modules attached to sections continue working unchanged
+- No migration changes required for existing data (parentId defaults to null)
+- The two-level hierarchy is opt-in: existing flat section structures continue to function normally
 
 ## Constitutional Principles & Constraints *(mandatory)*
 
 ### Al-Saada Smart Bot Development Principles
 
-1. **Platform-First Principle (Constitution Principle I — NON-NEGOTIABLE)**: The platform (Layer 1 + Layer 2) must be 100% complete and tested before any module is created. No module code may be written until Platform Core and Flow Engine are fully operational.
+1. **Platform-First Principle (Constitution Principle I — NON-NEGOTIABLE)**: The platform (Layer 1 + Layer 2) must be 100% complete and tested before any module is created. No module code may be written until Platform Core and Module Kit are fully operational.
 
 2. **Config-Driven Architecture**: All functionality must be primarily implementable as configuration. Optional lifecycle hooks (beforeValidate, beforeSave, afterSave, beforeDelete, onApproval, onRejection) are allowed for complex business logic that cannot be expressed as configuration. The 90/10 rule applies: 90% config, max 10% hook code per module.
 
@@ -256,7 +286,7 @@ Super Admin configures bot-wide settings.
 
 5. **i18n-Only User Text (No Hardcoded Strings)**: All user-facing text — including messages, labels, button captions, error messages, and status strings — MUST be defined exclusively in `.ftl` locale files (`packages/core/src/locales/ar.ftl` and `en.ftl`). Hardcoding any user-facing string (Arabic or English) directly in TypeScript source files is strictly prohibited. Code must reference translation keys via `ctx.t('key')`. Functions that format or classify data (e.g., gender, status) MUST return i18n keys, not display text. This rule applies to all packages across the entire monorepo.
 
-6. **Flow Block Reusability**: UI components must be reusable across modules with configurable parameters.
+6. **Module Kit Reusability**: UI components must be reusable across modules with configurable parameters.
 
 7. **Shared-First Principle (مبدأ الوحدات الجاهزة أولاً)**: Before writing any flow or step inside a flow, ask: "Can this code be used elsewhere?" If yes — create it as a shared unit in `bot/utils/` first, then call it from the flow. Duplicate logic between two flows is strictly forbidden. Current shared units: `conversation.ts` (message tracking, waiting, confirm, cancel), `user-inputs.ts` (Arabic name, phone, national ID, nickname), `formatters.ts` (dates, i18n keys for gender/status/role, admin notifications).
 
@@ -274,7 +304,8 @@ Super Admin configures bot-wide settings.
 - **SC-007**: All user-facing messages are in Arabic with proper RTL support
 - **SC-008**: System maintains 99.9% uptime for core services (PostgreSQL, Redis, Bot)
 - **SC-009**: Notification delivery rate is above 95% for join request notifications. Measurement: within 30 seconds of join request submission, at least 95% of Super Admins must receive the Telegram notification. Verification method: integration test.
-- **SC-010**: Super Admin can create and manage sections without requiring developer assistance
+- **SC-010**: Super Admin can create and manage sections (including sub-sections) without requiring developer assistance
+- **SC-011**: Section hierarchy navigation allows users to navigate main sections → sub-sections → modules with back buttons at each level
 
 ### Non-Functional Requirements
 - **NFR-001 (Performance)**: System must maintain <500ms average response time for 95% of requests under normal load (normal load defined as up to 200 concurrent users — see SC-002).
@@ -344,10 +375,18 @@ Super Admin configures bot-wide settings.
 - Q: What should the Super Admin "Settings" menu include in Phase 1? → A: Maintenance Toggle, Default Language, Notification Preferences, System Info Display (read-only), and Backup (Full Control).
 - Q: Should users be able to change their own language preference via a bot command (e.g., `/lang`)? → A: No. User language toggle is explicitly OUT OF SCOPE for Phase 1. The `User.language` field is set once at account creation using the bot's default language (FR-036 Default Language setting). Individual language switching will be considered for a future phase if needed. Do NOT add tasks for this feature in Phase 1.
 
+### Session 2026-03-03 (Section Hierarchy)
+
+- Q: What is the maximum depth of the section hierarchy? → A: Maximum 2 levels (main section → sub-section only). Sub-sections cannot have children.
+- Q: What happens when deleting a main section with sub-sections? → A: Cascade delete sub-sections only. Modules are not deleted — they are auto-discovered from filesystem via ModuleLoader. Deletion is blocked if ANY sub-section contains active modules.
+- Q: Does RBAC scope inheritance apply to section hierarchy? → A: Yes. AdminScope on a main section grants access to all its sub-sections and their modules. AdminScope on a sub-section grants access to that sub-section's modules only.
+- Q: How is navigation state tracked for hierarchical sections? → A: Session state tracks navigation breadcrumb as `currentMenu` array in Redis, allowing back buttons at each level.
+- Q: Are existing flat sections affected by the hierarchy changes? → A: No. Existing sections without `parentId` remain as standalone main sections. No migration required.
+
 ## Versioning Strategy
 
 This project follows the Semantic Versioning (SemVer) and Development Phases outlined in the project constitution.
 - **Phase 1: Platform Core** completion tags as v0.1.0.
-- **Phase 2: Flow Engine** completion tags as v0.2.0.
+- **Phase 2: Module Kit** completion tags as v0.2.0.
 - **Phase 3: Test Module** completion tags as v0.3.0.
 - **Phase 4: AI Operational Assistant** completion tags as v1.0.0 (first production release).
