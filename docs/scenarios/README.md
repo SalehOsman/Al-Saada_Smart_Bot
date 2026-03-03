@@ -20,6 +20,7 @@
 | C-08 | [الرسائل غير المدعومة](core/C-08-fallback.md) | `fallback.ts` | ✅ مُنفذ |
 | C-09 | [إدارة الأقسام](core/C-09-section-management.md) | — | ⏳ غير مُنفذ |
 | C-10 | [وضع الصيانة](core/C-10-maintenance-mode.md) | — | ⏳ غير مُنفذ |
+| C-11 | [التنقل في الأقسام الفرعية](core/C-11-sub-section-navigation.md) | — | ⏳ مقترح |
 
 ---
 
