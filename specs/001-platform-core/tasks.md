@@ -23,12 +23,12 @@
 
 - [x] T001 [P] Create root package.json with Node.js ≥20, TypeScript 5.x, essential scripts, and dependencies including node-cron and dayjs
 - [x] T002 [P] Create root tsconfig.json with strict mode configuration
-- [x] T003 [P] Create root .gitignore, .eslintrc, and .prettierrc configuration files
+- [x] T003 [P] Create root .gitignore, .eslintrc and .prettierrc configuration files
 - [x] T004 [P] Initialize packages/core/ with its own package.json and tsconfig
 
 ### Docker Configuration
 
-- [x] T005 [P] Create docker-compose.yml with PostgreSQL 16 + Redis 7 services. Redis MUST be configured with persistence enabled: set `--appendonly yes` (AOF) in the Redis command, and mount a named volume `redis_data` to `/data`. This ensures system settings (e.g., `system:defaultLanguage`, `system:activeNotificationTypes`) survive container restarts (required by T105, T106).
+- [x] T005 [P] Create docker-compose.yml with PostgreSQL 16 + Redis 7 services. Redis MUST be configured with persistence enabled: set `--appendonly yes` (AOF) in Redis command, and mount a named volume `redis_data` to `/data`. This ensures system settings (e.g., `system:defaultLanguage`, `system:activeNotificationTypes`) survive container restarts (required by T105, T106).
 - [x] T006 [P] Create .env.example with Zod validation schema for environment variables
 
 ### Database Setup
@@ -81,7 +81,7 @@
 
 - [x] T053 [P] Setup BullMQ with Redis connection in `packages/core/src/services/queue.ts`
 - [x] T054 [P] Create notification service (queue-based message sending) in `packages/core/src/services/notifications.ts`
-- [x] T055 [P] Define notification types in `packages/core/src/types/notification.ts`. Use the 6 types from the Prisma `NotificationType` enum: `JOIN_REQUEST_NEW`, `JOIN_REQUEST_APPROVED`, `JOIN_REQUEST_REJECTED`, `USER_DEACTIVATED`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`. These 6 notification types are DISTINCT from the 23 `AuditAction` enum values in schema.prisma — do not conflate the two enums. Each notification type maps to i18n params passed via `params` field (JSONB) — no title/body fields. Re-export `NotificationType` from `@prisma/client` for use across the codebase.
+- [x] T055 [P] Define notification types in `packages/core/src/types/notification.ts`. Use 6 types from Prisma `NotificationType` enum: `JOIN_REQUEST_NEW`, `JOIN_REQUEST_APPROVED`, `JOIN_REQUEST_REJECTED`, `USER_DEACTIVATED`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`. These 6 notification types are DISTINCT from 23 `AuditAction` enum values in schema.prisma — do not conflate the two enums. Each notification type maps to i18n params passed via `params` field (JSONB) — no title/body fields. Re-export `NotificationType` from `@prisma/client` for use across codebase.
 - [x] T057 [P] Create notification delivery worker in `packages/core/src/workers/notification.ts`. Configure BullMQ rate limiter at max 30 messages per 1000ms to comply with Telegram API flood control limits (FR-024).
 
 **Checkpoint**: Bot foundation complete - core infrastructure services ready
@@ -94,7 +94,7 @@
 
 ### Bootstrap System
 
-- [x] T022-A [US1] Update prisma/schema.prisma logic for User and JoinRequest based on the new spec (FR-014, FR-035)
+- [x] T022-A [US1] Update prisma/schema.prisma logic for User and JoinRequest based on new spec (FR-014, FR-035)
 - [x] T022 [US1] Create /start command handler with user lookup logic in `packages/core/src/bot/handlers/start.ts`
 - [x] T022-B [US1] Implement FR-014 Bootstrap Lock security logic inside `joinRequestService.createOrBootstrap()` (check 0 admins + env var)
 - [x] T023 [US1] Implement .env-based Super Admin bootstrap logic using `INITIAL_SUPER_ADMIN_ID` — bootstrap logic is handled by `joinRequestService.createOrBootstrap()` which evaluates eligibility (0 admins + matching telegramId) AFTER data collection. No separate bootstrap conversation needed; unified join conversation handles both bootstrap and regular join request cases.
@@ -152,7 +152,7 @@
 ### User Management Handlers
 
 - [x] T032 [US1] Create user management handlers (List, Change Role, Activate/Deactivate) in `packages/core/src/bot/handlers/users.ts`. On deactivation: invalidate user's Redis session immediately and respond via i18n key `errors-account-deactivated`.
-- [x] T115 [P] [US2] Implement AdminScope assignment/revocation UI in `packages/core/src/bot/handlers/users.ts` — inline buttons under the Users menu allowing Super Admin to assign or revoke section/module scopes for Admin users (FR-017). Uses AdminScope service from T031. ALL button labels and messages MUST use i18n keys from `.ftl` files (Constitution Principle VII — i18n-Only). No hardcoded Arabic or English strings in source.
+- [x] T115 [P] [US2] Implement AdminScope assignment/revocation UI in `packages/core/src/bot/handlers/users.ts` — inline buttons under the Users menu allowing Super Admin to assign or revoke section/module scopes for Admin users (FR-017). Uses the AdminScope service from T031. ALL button labels and messages MUST use i18n keys from `.ftl` files (Constitution Principle VII — i18n-Only). No hardcoded Arabic or English strings in source.
 - [x] T033 [US2] Create join request approval/rejection handlers in `packages/core/src/bot/handlers/approvals.ts` — ALL success/confirmation messages MUST use .ftl i18n keys (Constitution Principle VII — i18n-Only). No hardcoded Arabic or English strings for user-facing responses.
 - [x] T102 [US2] Implement concurrent admin protection in approval/rejection handlers: atomic status check before any DB write — if request already handled, show error via i18n key `errors-join-request-already-handled` (see spec.md Edge Cases + Clarifications Session 2026-02-24)
 - [x] T103 [US2] Verify join request history retention: rejected requests are never overwritten — each new submission after rejection creates a new DB row. Add unit test to confirm (FR-012)
@@ -163,16 +163,23 @@
 
 ## Phase 6: Section & Module Management (US3)
 
-**Purpose**: Dynamic section and module organization (Priority P3)
+**Purpose**: Dynamic section and module organization with two-level hierarchy support (Priority P3)
 
-### Section Management
+### Section Hierarchy Schema Update
 
-- [ ] T035 [P] [US3] Create section CRUD service in `packages/core/src/services/sections.ts`
-- [ ] T036 [P] [US3] Create section management handlers for Super Admin in `packages/core/src/bot/handlers/sections.ts` — includes: (1) deletion constraint: reject delete if section has active modules, show error via i18n key `errors-section-has-active-modules` (FR-018), (2) input validation via Zod: section name must be 2-50 characters, icon must be exactly one Unicode emoji character — use Zod regex pattern `/^\p{Emoji}$/u` to validate emoji, reject invalid input with i18n key `errors-validation-section-name` and `errors-validation-section-icon` respectively (FR-018).
-- [ ] T037 [P] [US3] Create section menu display (list active sections) in `packages/core/src/bot/menus/sections.ts`
+- [ ] T035 [P] [US3] Create section CRUD service in `packages/core/src/services/sections.ts` (includes parentId handling, 2-level depth validation, cascade delete logic per FR-018)
+- [ ] T035-A [P] [US3] Update prisma/schema.prisma: add `parentId` field to Section model (self-referential FK to Section, nullable), add `parent` and `children` relations, add constraint check to enforce 2-level depth (referenced section MUST have parentId = null)
+- [ ] T035-B [P] [US3] Create Prisma migration for Section.parentId field and constraint
+- [ ] T035-C [P] [US3] Update AdminScope schema: set sectionId FK to `onDelete: Cascade` (FR-037: when section deleted, its AdminScope records automatically removed)
+- [ ] T036 [P] [US3] Create section management handlers for Super Admin in `packages/core/src/bot/handlers/sections.ts` — includes: (1) deletion constraint: reject delete if section has active modules, show error via i18n key `errors-section-has-active-modules` (FR-018), (2) hierarchy validation: reject creating section with sub-section as parentId (3rd level) via i18n key `errors-section-max-depth-exceeded`, (3) cascade delete: when deleting main section with sub-sections, cascade delete all sub-sections (FR-018), (4) input validation via Zod: section name must be 2-50 characters, icon must be exactly one Unicode emoji character — use Zod regex pattern `/^\p{Emoji}$/u` to validate emoji, reject invalid input with i18n key `errors-validation-section-name` and `errors-validation-section-icon` respectively (FR-018).
+- [ ] T037 [P] [US3] Create hierarchical section menu display in `packages/core/src/bot/menus/sections.ts` — main menu shows ONLY main sections (parentId = null), clicking main section with sub-sections shows sub-section list + back button, clicking standalone main section shows modules directly + back button (FR-019)
+- [ ] T037-A [P] [US3] Implement breadcrumb navigation tracking: store `currentMenu` array in Redis session as navigation stack (e.g., ['sections', 'section-id-123'] for main section, then add 'subsection-id-456' when viewing sub-section). Update FR-028 session contract to document array structure.
+- [ ] T037-B [P] [US3] Implement back button handling at each navigation level: when user clicks back, pop last item from `currentMenu` array and display previous level (FR-019)
 - [ ] T038 [P] [US3] Create "empty section" message logic — reply via i18n key `section-empty-modules` when a section has no active modules. Add key to both `ar.ftl` and `en.ftl`.
 - [ ] T039 [P] [US3] Create section enable/disable toggle handler
-- [ ] T040 [P] Write integration tests for section CRUD including: create, edit, enable/disable, delete empty section (success), delete non-empty section (must fail with i18n error `errors-section-has-active-modules`)
+- [ ] T039-A [P] [US3] Implement sub-section creation handler: Super Admin can create sub-section by selecting a main section as parent. Validate parentId exists and is a main section (parentId = null). Save with parentId set to main section ID.
+- [ ] T040 [P] Write integration tests for section CRUD including: (1) create main section, (2) create sub-section under main section, (3) reject 3rd level creation (sub-section as parent), (4) delete standalone empty section (success), (5) delete non-empty section (must fail with i18n error `errors-section-has-active-modules`), (6) delete main section with sub-sections (cascade delete), (7) delete main section blocked if sub-section has active modules
+- [ ] T040-A [P] [US3] Write integration test for hierarchical navigation: (1) main menu shows only main sections, (2) clicking main section with sub-sections shows sub-section list + back button, (3) clicking main section without sub-sections shows modules directly + back button, (4) clicking sub-section shows its modules + back button, (5) breadcrumb tracking via currentMenu array works correctly (FR-019)
 
 ### Module Discovery & Loading
 
@@ -183,10 +190,10 @@
 - [ ] T045 [P] Create `registerModule()` and `getModulesBySection()` APIs
 - [ ] T085 [P] Implement `unregisterModule()` API function
 - [ ] T117 [P] [ISSUE-012] Explicitly implement `getModulesBySection()` API function in `packages/core/src/services/modules.ts` as required by FR-030 — returns active modules for a given section with proper filtering by `isActive` flag and `orderIndex` sorting
-- [ ] T046 [P] Create module list display within sections
+- [ ] T046 [P] Create module list display within sections (supports both main sections and sub-sections)
 - [ ] T047 [P] Write unit tests for module loader
 
-**Checkpoint**: Section & Module system complete - dynamic structure functional
+**Checkpoint**: Section & Module system complete - dynamic structure with hierarchy functional
 
 ---
 
@@ -218,7 +225,7 @@
 - [ ] T106 [P] [US6] Implement Notification Preferences: Super Admin can mute/unmute each of the 6 NotificationType values (`JOIN_REQUEST_NEW`, `JOIN_REQUEST_APPROVED`, `JOIN_REQUEST_REJECTED`, `USER_DEACTIVATED`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`). "Delivery settings" in FR-036 means mute/unmute toggle only — no email/SMS (bot-only in Phase 1). Store active types as a Redis set `system:activeNotificationTypes`. Default: all 6 types active.
 - [ ] T107 [P] [US6] Implement System Info Display: read-only view (bot version, uptime, connected services status, environment)
 - [ ] T113 [P] [US6] Configure Docker for backup support (prerequisite for T108): (1) add `backup_data` named volume to `docker-compose.yml` mounted at `/backups` in the bot service, (2) ensure `postgresql-client` is installed in the bot's Dockerfile so `pg_dump`/`pg_restore` binaries are available at runtime.
-- [ ] T108 [P] [US6] Implement Backup (Full Control): trigger DB backup (pg_dump), download, view history, restore. The double-confirmation prompt for restore MUST use i18n key `backup-restore-confirm` (NOT hardcoded text). The confirmation keyword the user must type MUST be read from i18n key `backup-restore-confirm-keyword` — this allows Arabic/English versions (e.g., "تأكيد" / "CONFIRM") without hardcoded strings (Constitution Principle VII).
+- [ ] T108 [P] [US6] Implement Backup (Full Control): trigger DB backup (pg_dump), download, view history, restore. The double-confirmation prompt for restore MUST use i18n key `backup-restore-confirm` (NOT hardcoded text). The confirmation keyword that the user must type MUST be read from i18n key `backup-restore-confirm-keyword` — this allows Arabic/English versions (e.g., "تأكيد" / "CONFIRM") without hardcoded strings (Constitution Principle VII).
 - [ ] T116 [P] [US6] Manual verification: confirm Docker backup/restore works end-to-end — (1) trigger `pg_dump` from within the bot container, verify `.sql` file appears in `/backups` volume, (2) trigger `pg_restore` from the same file, verify data integrity after restore. Document verification steps in `quickstart.md` under a "Backup & Restore" section (FR-036).
 - [ ] T109 [P] Write unit tests for settings handlers
 
@@ -226,7 +233,23 @@
 
 ---
 
-## Phase 8: Audit & Session Management (US5)
+## Phase 8: RBAC Scope Inheritance (FR-037)
+
+**Purpose**: Implement RBAC scope inheritance for two-level section hierarchy
+
+### Scope Inheritance Implementation
+
+- [ ] T084-A [P] [FR-037] Update `canAccess()` function in `packages/core/src/services/rbac.ts` to resolve parent chain: when checking section access, if user has scope on a main section, grant access to all descendant sub-sections and their modules. If user has scope on a sub-section, grant access to that sub-section's modules ONLY. Scopes are additive (main section scope + specific sub-section scope = union).
+- [ ] T084-B [P] [FR-037] Update AdminScope sectionId FK constraint in prisma/schema.prisma to include `onDelete: Cascade` (FR-037: when a section is deleted, its AdminScope records are automatically removed, and the user loses access to all descendant sub-sections and modules).
+- [ ] T084-C [P] [FR-037] Add migration for AdminScope FK CASCADE delete
+- [ ] T084-D [P] [FR-037] Write unit tests for RBAC scope inheritance: (1) main section scope grants access to all sub-sections, (2) sub-section scope grants access to that sub-section only, (3) scopes are additive (union), (4) cascading delete removes inherited access
+- [ ] T084-E [P] [FR-037] Write integration test: verify admin with main section scope can access all descendant sub-sections and modules, but admin with sub-section scope cannot access parent main section or other sub-sections
+
+**Checkpoint**: RBAC Scope Inheritance complete - hierarchical permissions functional
+
+---
+
+## Phase 9: Audit & Session Management (US5)
 
 **Purpose**: Comprehensive audit trail and session persistence (Priority P2)
 
@@ -234,7 +257,7 @@
 
 - [ ] T059 [P] [US5] Create audit log service in `packages/core/src/services/audit.ts` implementing ALL 25 auditable actions defined in spec.md FR-026. Each log entry: `{ userId: bigint, action: AuditAction, targetType?: string, targetId?: string, details?: Json }`. Complete action list: `USER_BOOTSTRAP`, `USER_LOGIN`, `USER_LOGOUT`, `ROLE_CHANGE`, `USER_APPROVE`, `USER_REJECT`, `USER_ACTIVATE`, `USER_DEACTIVATE`, `JOIN_REQUEST_SUBMIT`, `SECTION_CREATE`, `SECTION_UPDATE`, `SECTION_DELETE`, `SECTION_ENABLE`, `SECTION_DISABLE`, `MODULE_REGISTER`, `MODULE_UNREGISTER`, `MODULE_ENABLE`, `MODULE_DISABLE`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`, `PERMISSION_CHANGE`, `ADMIN_SCOPE_ASSIGN`, `ADMIN_SCOPE_REVOKE`, `BACKUP_TRIGGER`, `BACKUP_RESTORE`
 - [ ] T060 [P] [US5] Create audit middleware (auto-logs actions) in `packages/core/src/bot/middlewares/audit.ts`
-- [x] T061 [P] [US5] ~~Define `AuditAction` in `packages/core/src/types/audit.ts`~~ — SUPERSEDED: `AuditAction` enum is already defined directly in `prisma/schema.prisma` with all 25 actions (migration pending). Import via `import { AuditAction } from '@prisma/client'` across the codebase. No separate types file needed.
+- [x] T061 [P] [US5] ~~Define `AuditAction` in `packages/core/src/types/audit.ts`~~ — SUPERSEDED: `AuditAction` enum is already defined directly in `prisma/schema.prisma` with all 25 actions (migration pending). Import via `import { AuditAction } from '@prisma/client'` across codebase. No separate types file needed.
 - [ ] T062 [P] [US5] Create audit log viewer for Super Admin in `packages/core/src/bot/handlers/audit.ts`
 - [ ] T063 [P] [US5] Ensure NO sensitive data is logged in AuditLog.details (FR-027). Explicitly NEVER log the following fields in any audit entry: `nationalId`, `phone`, `password`, `token`, API keys. These fields must be stripped or replaced with `[REDACTED]` before writing to AuditLog. `userId` (telegramId) and `fullName` are acceptable in audit logs. Add unit test to verify redaction.
 - [ ] T064 [P] Write unit tests for audit service
@@ -242,9 +265,10 @@
 ### Session Management
 
 - [ ] T065 [P] [US5] Create Redis session service with 24-hour TTL
-- [ ] T087 [P] [US5] Implement Redis fallback to in-memory sessions: if Redis is unavailable, fall back to in-memory Map for the current request session. Log CRITICAL warning via Pino. On every subsequent request, attempt Redis reconnection with exponential backoff (1s → 2s → 4s). Resume Redis sessions automatically once connection is restored.
+- [ ] T087 [P] [US5] Implement Redis fallback to in-memory sessions: if Redis is unavailable, fall back to an in-memory Map for the current request session. Log CRITICAL warning via Pino. On every subsequent request, attempt Redis reconnection with exponential backoff (1s → 2s → 4s). Resume Redis sessions automatically once connection is restored.
 - [ ] T066 [P] [US5] Create session middleware (load/save) in `packages/core/src/bot/middlewares/session.ts`. On new session creation (no existing session found), initialize `locale` from `User.language` field (DB lookup by telegramId). If user not found in DB (e.g., first-ever request before bootstrap), default `locale` to `'ar'`.
 - [ ] T067 [P] [US5] Store navigation state as `currentMenu` array (navigation breadcrumb stack) in Redis session — aligns with FR-028 session contract. Example: `['sections', 'section-id-123']`. Do NOT use separate currentSection/currentModule fields.
+- [ ] T067-A [P] [US5] Implement orphaned session handling: when a main section is deleted while a user is viewing its sub-section, return user to main menu with message via i18n key `errors-section-deleted` (spec Edge Case)
 - [ ] T068 [P] [US5] Handle session expiry gracefully — when a session expires after 24h inactivity, clear session state and redirect user to /start flow. No i18n message needed (user simply restarts); log expiry via Pino at debug level.
 - [ ] T069 [P] Write unit tests for session service
 
@@ -252,7 +276,7 @@
 
 ---
 
-## Phase 9: Integration & Polish
+## Phase 10: Integration & Polish
 
 **Purpose**: End-to-end testing and final cleanup
 
@@ -263,8 +287,8 @@
 - [ ] T099 [P] [US2] Integration test: verify SC-009 — send join request, confirm 95%+ of Super Admins receive Telegram notification within 30 seconds (FR-013, SC-009)
 - [ ] T100 [P] Verify SC-008: confirm Docker health checks are configured for all services (PostgreSQL, Redis, Bot) in docker-compose.yml
 - [ ] T101 [P] Document uptime monitoring approach: add note in quickstart.md recommending UptimeRobot or similar tool for production deployment
-- [ ] T070 [US1] End-to-end test: complete user journey covering US1 acceptance scenarios: (1) INITIAL_SUPER_ADMIN_ID user sends /start → completes join flow → receives Super Admin welcome, (2) each of the 4 roles (SUPER_ADMIN, ADMIN, EMPLOYEE, VISITOR) sends /start → sees the correct role-appropriate menu with no cross-role leakage
-- [ ] T071 [US3] End-to-end test: Super Admin journey (Sections -> Modules -> Users)
+- [ ] T070 [US1] End-to-end test: complete user journey covering US1 acceptance scenarios: (1) INITIAL_SUPER_ADMIN_ID user sends /start → completes join flow → receives Super Admin welcome, (2) each of the 4 roles (SUPER_ADMIN, ADMIN, EMPLOYEE, VISITOR) sends /start → sees correct role-appropriate menu with no cross-role leakage
+- [ ] T071 [US3] End-to-end test: Super Admin journey (Sections → Modules → Users) including hierarchical navigation (main sections → sub-sections → modules with back buttons)
 - [ ] T072 Verify 80% code coverage across all packages
 - [ ] T073 Code cleanup, formatting, and final linting
 - [ ] T074 Update quickstart.md with actual commands and verification steps
@@ -277,13 +301,14 @@
 - [ ] T093 Verify SC-001: Manual test — first-time bootstrap user completes full flow (name → phone → national ID → confirm → Super Admin welcome) in ≤ 30 seconds
 - [ ] T094 Verify SC-004: Manual test — session state (current section, navigation) persists correctly across bot interactions within a 24-hour window; new session starts after 24hr inactivity
 - [ ] T095 Verify SC-005 + SC-006: Manual test — maintenance mode toggle propagates to all non-Super Admin users within 5 seconds; module discovery completes within 10 seconds of bot startup
-- [ ] T096 Verify SC-007 + SC-010: Manual test — all user-facing messages are in Arabic with no hardcoded strings; Super Admin can create, rename, reorder, and delete sections without any developer intervention
+- [ ] T096 Verify SC-007 + SC-010: Manual test — all user-facing messages are in Arabic with no hardcoded strings; Super Admin can create, rename, reorder, and delete sections (including sub-sections) without any developer intervention
+- [ ] T096-A [P] Verify SC-011: Manual test — section hierarchy navigation allows users to navigate main sections → sub-sections → modules with back buttons at each level
 
 **Checkpoint**: Platform Core complete - ready for production deployment
 
 ---
 
-## Parallel AI Prep (مهام تحضير AI الموازية)
+## Parallel AI Prep (تحضير AI الموازية)
 
 > Executed in parallel with main development — no conflicts with any Phase
 > Full details in `specs/002-ai-assistant/tasks.md`
@@ -303,3 +328,103 @@
 ### Phase C — After Phase 11
 
 - [ ] T-AI-07 Full integration — see `specs/002-ai-assistant/tasks.md` for details
+
+---
+
+## Dependencies & Execution Order
+
+### Phase Dependencies
+
+- **Setup (Phase 1)**: No dependencies - can start immediately
+- **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
+- **User Stories (Phase 3+)**: All depend on Foundational phase completion
+  - User stories can then proceed in parallel (if staffed)
+  - Or sequentially in priority order (P1 → P2 → P3)
+- **Polish (Final Phase)**: Depends on all desired user stories being complete
+
+### User Story Dependencies
+
+- **User Story 1 (P1)**: Can start after Foundational (Phase 2) - No dependencies on other stories
+- **User Story 2 (P2)**: Can start after Foundational (Phase 2) - May integrate with US1 but should be independently testable
+- **User Story 3 (P3)**: Can start after Foundational (Phase 2) - Depends on Phase 8 (RBAC Scope Inheritance) for complete hierarchy support
+- **User Story 4 (P3)**: Can start after Foundational (Phase 2) - No dependencies on other stories
+- **User Story 5 (P2)**: Can start after Foundational (Phase 2) - No dependencies on other stories
+- **User Story 6 (P3)**: Can start after Foundational (Phase 2) - No dependencies on other stories
+
+### Within Each Phase
+
+- Tests (if included) MUST be written and FAIL before implementation
+- Models before services
+- Services before endpoints
+- Core implementation before integration
+- Story complete before moving to next priority
+
+### Parallel Opportunities
+
+- All Setup tasks marked [P] can run in parallel
+- All Foundational tasks marked [P] can run in parallel (within Phase 2)
+- Once Foundational phase completes, all user stories can start in parallel (if team capacity allows)
+- All tests for a user story marked [P] can run in parallel
+- Models within a story marked [P] can run in parallel
+- Different user stories can be worked on in parallel by different team members
+
+---
+
+## Parallel Example: User Story 1
+
+```bash
+# Launch all tests for User Story 1 together (if tests requested):
+Task: "Contract test for [endpoint] in tests/contract/test_[name].py"
+Task: "Integration test for [user journey] in tests/integration/test_[name].py"
+
+# Launch all models for User Story 1 together:
+Task: "Create [Entity1] model in src/models/[entity1].py"
+Task: "Create [Entity2] model in src/models/[entity2].py"
+```
+
+---
+
+## Implementation Strategy
+
+### MVP First (User Story 1 Only)
+
+1. Complete Phase 1: Setup
+2. Complete Phase 2: Foundational (CRITICAL - blocks all stories)
+3. Complete Phase 3: User Story 1
+4. **STOP and VALIDATE**: Test User Story 1 independently
+5. Deploy/demo if ready
+
+### Incremental Delivery
+
+1. Complete Setup + Foundational → Foundation ready
+2. Add User Story 1 → Test independently → Deploy/Demo (MVP!)
+3. Add User Story 2 → Test independently → Deploy/Demo
+4. Add User Story 3 → Test independently → Deploy/Demo
+5. Add User Story 4 → Test independently → Deploy/Demo
+6. Add User Story 5 → Test independently → Deploy/Demo
+7. Add User Story 6 → Test independently → Deploy/Demo
+8. Each story adds value without breaking previous stories
+
+### Parallel Team Strategy
+
+With multiple developers:
+
+1. Team completes Setup + Foundational together
+2. Once Foundational is done:
+   - Developer A: User Story 1
+   - Developer B: User Story 2
+   - Developer C: User Story 3 (after Phase 8)
+3. Stories complete and integrate independently
+
+---
+
+## Notes
+
+- [P] tasks = different files, no dependencies
+- [Story] label maps task to specific user story for traceability
+- Each user story should be independently completable and testable
+- Verify tests fail before implementing
+- Commit after each task or logical group
+- Stop at any checkpoint to validate story independently
+- Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
+- Phase 8 (RBAC Scope Inheritance) is NEW and must be completed before Phase 6 section hierarchy tasks can fully support FR-037
