@@ -33,6 +33,7 @@
 | M-02 | [دورة حياة الموديول (validate → confirm → save)](module-kit/M-02-module-lifecycle.md) | Module Kit API |
 | M-03 | [نظام المسودات (Drafts)](module-kit/M-03-draft-system.md) | `draft.ts` |
 | M-04 | [تحميل الموديولات تلقائياً](module-kit/M-04-module-loading.md) | `module-loader.ts` |
+| M-05 | [ربط الموديولات (Relations & Lookup)](module-kit/M-05-module-relations.md) | مقترح ⏳ |
 
 ---
 
