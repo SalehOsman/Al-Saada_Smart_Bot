@@ -142,7 +142,7 @@
 
 ### Core RBAC Infrastructure
 
-- [x] T029 [P] Create RBAC middleware in `packages/core/src/bot/middlewares/rbac.ts` and register it in the Grammy middleware chain for ALL handlers: /start, /sections, /maintenance, /audit, /users, and all conversation flows (FR-016)
+- [x] T029 [P] Create RBAC middleware in `packages/core/src/bot/middlewares/rbac.ts` and register it in the Grammy middleware chain for ALL handlers: /start, /sections, /maintenance, /audit, /users, and all conversation flows (FR-016) — Registration file: packages/core/src/bot/index.ts. Actual order: errorHandler → hydrate → session → lazySession → RBAC → i18n → draft → conversations → sanitize → handlers → fallback
 - [x] T030 [P] Implement `canAccess(userId, sectionId?, moduleId?)` in `packages/core/src/services/rbac.ts` with Redis caching
 - [x] T084 [P] Implement AdminScope authorization logic in `canAccess()` (FR-017, FR-029)
 - [x] T031 [P] Create AdminScope service (assign/revoke permissions) in `packages/core/src/services/admin-scope.ts`
