@@ -41,10 +41,72 @@ export const auditService = {
           details: redactedDetails || {},
         },
       })
-    }
-    catch (error) {
+    } catch (error) {
       // Fail silently for the user but log the error
       logger.error({ err: error, action: data.action, userId: String(data.userId) }, 'Audit logging failed')
     }
+  },
+
+  /**
+   * Retrieves paginated audit logs with optional filters.
+   */
+  async getAuditLogs(options: {
+    page?: number
+    limit?: number
+    userId?: bigint
+    action?: AuditAction
+    fromDate?: Date
+    toDate?: Date
+  }) {
+    const page = options.page || 1
+    const limit = options.limit || 20
+    const skip = (page - 1) * limit
+
+    const where: any = {}
+    if (options.userId) where.userId = options.userId
+    if (options.action) where.action = options.action
+    if (options.fromDate || options.toDate) {
+      where.createdAt = {}
+      if (options.fromDate) where.createdAt.gte = options.fromDate
+      if (options.toDate) where.createdAt.lte = options.toDate
+    }
+
+    const [logs, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.auditLog.count({ where }),
+    ])
+
+    return {
+      logs,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    }
+  },
+
+  /**
+   * Convenience wrapper to get logs for a specific user.
+   */
+  async getAuditLogsByUser(userId: bigint, page = 1, limit = 20) {
+    return this.getAuditLogs({ userId, page, limit })
+  },
+
+  /**
+   * Convenience wrapper to get logs for a specific action.
+   */
+  async getAuditLogsByAction(action: AuditAction, page = 1, limit = 20) {
+    return this.getAuditLogs({ action, page, limit })
+  },
+
+  /**
+   * Returns total audit log count for admin dashboard.
+   */
+  async getAuditLogCount() {
+    return prisma.auditLog.count()
   },
 }
