@@ -68,7 +68,7 @@
 - [x] T020 Create error handling middleware (catches errors, sends message via i18n key `errors-system-internal`). Depends on T014 (Logger).
 - [x] T083 [P] Create input validation and sanitization utilities in `packages/validators/src/` (Zod schemas, XSS sanitization, and explicit `egyptianPhoneNumber` in `packages/validators/src/phone.ts` and `egyptianNationalId` in `packages/validators/src/national-id.ts` extraction functions)
 - [x] T110 [P] Create global input sanitization middleware in `packages/core/src/bot/middlewares/sanitize.ts` — strips/escapes HTML entities from all incoming text fields before handlers process them (FR-033). Register in grammY middleware chain.
-- [x] T112 [P] Create unsupported message type handler in `packages/core/src/bot/handlers/fallback.ts` — for stickers, voice messages, photos, documents, locations, and other non-text messages received outside an active conversation flow, reply via i18n key `errors-unsupported-message` guiding user to supported commands (spec Edge Case + FR-033)
+- [x] T112 [P] Create unsupported message type handler in `packages/core/src/bot/handlers/fallback.ts` — for stickers, voice messages, photos, documents, locations, and other non-text messages received outside an active conversation flow, reply via i18n key `errors-unsupported-message` guiding user to supported commands (spec Edge Case)
 
 ### Internationalization & Utilities
 
