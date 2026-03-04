@@ -2,6 +2,7 @@ import type { BotContext } from '../../types/context'
 import { prisma } from '../../database/prisma'
 import logger from '../../utils/logger'
 import { moduleLoader } from '../module-loader'
+import { replyOrEdit } from '../utils/reply'
 
 /**
  * Section menu display utilities
@@ -28,7 +29,8 @@ export async function showMainSectionsMenu(ctx: BotContext): Promise<void> {
   })
 
   if (sections.length === 0) {
-    ctx.reply(ctx.t('sections-list-empty'))
+    const emptyKeyboard = [[{ text: ctx.t('button-back-to-menu'), callback_data: 'menu:main' }]]
+    await replyOrEdit(ctx, ctx.t('sections-list-empty'), { inline_keyboard: emptyKeyboard })
     return
   }
 
@@ -65,9 +67,7 @@ export async function showMainSectionsMenu(ctx: BotContext): Promise<void> {
     { text: ctx.t('button-back-to-menu'), callback_data: 'menu:main' },
   ])
 
-  ctx.reply(ctx.t('sections-menu-title'), {
-    reply_markup: { inline_keyboard: keyboard },
-  })
+  await replyOrEdit(ctx, ctx.t('sections-menu-title'), { inline_keyboard: keyboard })
 }
 
 /**
@@ -107,8 +107,6 @@ export async function showSubSectionsMenu(ctx: BotContext, parentSectionId: stri
   const keyboard: any[][] = []
 
   for (const section of subSections) {
-    const hasModules = (section._count?.modules ?? 0) > 0
-
     keyboard.push([
       {
         text: `${section.icon} ${ctx.t(section.name as any)}`,

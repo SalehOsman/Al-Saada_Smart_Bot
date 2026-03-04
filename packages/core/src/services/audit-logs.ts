@@ -81,6 +81,7 @@ export const auditService = {
         where,
         orderBy: { createdAt: 'desc' },
         skip,
+        include: { user: true },
         take: limit,
       }),
       prisma.auditLog.count({ where }),

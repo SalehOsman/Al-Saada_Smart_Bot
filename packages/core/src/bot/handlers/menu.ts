@@ -4,6 +4,8 @@ import { prisma } from '../../database/prisma'
 import logger from '../../utils/logger'
 import type { LoadedModule } from '../module-loader'
 import { moduleLoader } from '../module-loader'
+import { maintenanceService } from '../../services/maintenance'
+import { replyOrEdit } from '../utils/reply'
 
 /** User row including adminScopes — matches to findUnique query in menuHandler */
 type MenuUser = Prisma.UserGetPayload<{ include: { adminScopes: true } }>
@@ -32,11 +34,14 @@ export async function menuHandler(ctx: BotContext) {
     // Menu access is not one of the 25 defined AuditActions — no audit log here.
     // Audit logging is reserved for state-changing actions (FR-026).
 
+    logger.debug('menuHandler: User fetched successfully, building modules list...')
     // Get authorized modules
     const modules = await getAuthorizedModules(user)
+    logger.debug(`menuHandler: Got ${modules.length} authorized modules, rendering menu...`)
 
     // Build menu based on role and modules
     await showDynamicMenu(ctx, user, modules)
+    logger.debug('menuHandler: Menu successfully sent to user.')
   }
   catch (error) {
     logger.error('Error in menu handler:', error)
@@ -86,27 +91,25 @@ async function getAuthorizedModules(user: MenuUser): Promise<LoadedModule[]> {
  * Renders a menu with system buttons and authorized modules.
  */
 async function showDynamicMenu(ctx: BotContext, user: MenuUser, modules: LoadedModule[]) {
-  const menuText = ctx.t(`menu-${user.role.toLowerCase()}` as any, { name: user.fullName })
+  const displayName = user.nickname || user.fullName
+  const menuText = ctx.t(`menu-${user.role.toLowerCase()}` as any, { name: displayName })
 
   const keyboard: any[][] = []
 
   // 1. Add Role-Specific System Buttons
   if (user.role === 'SUPER_ADMIN') {
-    keyboard.push([
-      { text: ctx.t('button-sections'), callback_data: 'menu-sections' },
-      { text: ctx.t('button-users'), callback_data: 'menu-users' },
-    ])
-    keyboard.push([
-      { text: ctx.t('button-maintenance'), callback_data: 'menu-maintenance' },
-      { text: ctx.t('button-audit'), callback_data: 'menu-audit' },
-    ])
-    keyboard.push([
-      { text: ctx.t('button-settings'), callback_data: 'menu-settings' },
-    ])
-    keyboard.push([
-      { text: ctx.t('button-modules'), callback_data: 'menu-modules' },
-      { text: ctx.t('button-notifications'), callback_data: 'menu-notifications' },
-    ])
+    const isMaintenance = await maintenanceService.isMaintenanceMode()
+    const maintenanceLabel = isMaintenance
+      ? ctx.t('button-maintenance-off')
+      : ctx.t('button-maintenance-on')
+
+    keyboard.push([{ text: `🗂️ ${ctx.t('button-sections')}`, callback_data: 'menu-sections' }])
+    keyboard.push([{ text: `👥 ${ctx.t('button-users')}`, callback_data: 'menu-users' }])
+    keyboard.push([{ text: `🔧 ${maintenanceLabel}`, callback_data: 'menu-maintenance' }])
+    keyboard.push([{ text: `📋 ${ctx.t('button-audit')}`, callback_data: 'menu-audit' }])
+    keyboard.push([{ text: ctx.t('button-settings'), callback_data: 'menu-settings' }])
+    keyboard.push([{ text: `📦 ${ctx.t('button-modules')}`, callback_data: 'menu-modules' }])
+    keyboard.push([{ text: `🔔 ${ctx.t('button-notifications')}`, callback_data: 'menu-notifications' }])
   }
   else if (user.role === 'ADMIN') {
     // ADMIN: Sections (scoped) + Users (scoped) only — no Maintenance/Audit (spec US1)
@@ -140,9 +143,9 @@ async function showDynamicMenu(ctx: BotContext, user: MenuUser, modules: LoadedM
     }
   }
 
-  await ctx.reply(menuText, {
-    reply_markup: {
-      inline_keyboard: keyboard,
-    },
+  logger.debug('showDynamicMenu: Calling replyOrEdit()')
+  await replyOrEdit(ctx, menuText, {
+    inline_keyboard: keyboard,
   })
+  logger.debug('showDynamicMenu: replyOrEdit() completed')
 }

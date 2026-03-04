@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { settingsService } from '../src/services/settings'
 import { settingsHandler } from '../src/bot/handlers/settings'
 import { redis } from '../src/cache/redis'
@@ -13,25 +13,25 @@ vi.mock('../src/cache/redis', () => ({
     sismember: vi.fn(),
     sadd: vi.fn(),
     srem: vi.fn(),
-    ping: vi.fn()
-  }
+    ping: vi.fn(),
+  },
 }))
 
 vi.mock('../src/database/prisma', () => ({
   prisma: {
-    $queryRaw: vi.fn()
-  }
+    $queryRaw: vi.fn(),
+  },
 }))
 
 vi.mock('../src/utils/logger', () => ({
   default: {
     info: vi.fn(),
     error: vi.fn(),
-    debug: vi.fn()
-  }
+    debug: vi.fn(),
+  },
 }))
 
-describe('Settings Service', () => {
+describe('settings Service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -50,7 +50,7 @@ describe('Settings Service', () => {
   it('should get system info', async () => {
     vi.mocked(prisma.$queryRaw).mockResolvedValue([1])
     vi.mocked(redis.ping).mockResolvedValue('PONG')
-    
+
     const info = await settingsService.getSystemInfo()
     expect(info.dbStatus).toBe('UP')
     expect(info.redisStatus).toBe('UP')
@@ -58,11 +58,11 @@ describe('Settings Service', () => {
   })
 })
 
-describe('Settings Handler', () => {
+describe('settings Handler', () => {
   const mockCtx = {
     session: { role: 'SUPER_ADMIN' },
     t: vi.fn(key => key),
-    reply: vi.fn()
+    reply: vi.fn(),
   } as any
 
   it('should show settings menu for Super Admin', async () => {

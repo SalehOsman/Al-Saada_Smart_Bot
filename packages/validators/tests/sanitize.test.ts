@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { sanitizeHtml } from '../src/sanitize'
 
 describe('sanitizeHtml', () => {
@@ -9,7 +9,7 @@ describe('sanitizeHtml', () => {
   })
 
   it('should escape single quotes', () => {
-    const input = "I'm a string"
+    const input = 'I\'m a string'
     const expected = 'I&#39;m a string'
     expect(sanitizeHtml(input)).toBe(expected)
   })

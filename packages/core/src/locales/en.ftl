@@ -8,6 +8,7 @@ welcome-super-admin = Welcome, { $name }, as the System Super Admin. You can sta
 welcome-visitor = Welcome! This system is for company employees. Please submit a join request to get started.
 
 # Menu Strings
+menu-super_admin = Welcome, { $name }! As the Super Admin, you have full system access:
 menu-super-admin = Welcome, { $name }! As the Super Admin, you have full system access:
 menu-admin = Welcome, { $name }! As an Admin, you can manage sections and users:
 menu-employee = Welcome, { $name }! You can access the sections assigned to you:
@@ -16,6 +17,8 @@ menu-visitor = Welcome, { $name }! You have basic system access.
 button-sections = Sections
 button-users = Users
 button-maintenance = Maintenance
+button-maintenance-on = Enable Maintenance 🟢
+button-maintenance-off = Disable Maintenance 🔴
 button-audit = Audit Log
 button-modules = Modules
 button-notifications = Notifications
@@ -367,3 +370,18 @@ audit-stats-total = Total logs: { $count }
 audit-page-info = Page { $page } of { $totalPages }
 button-next-page = Next ⬅️
 button-prev-page = ➡️ Previous
+
+# Users Menu
+users-list-title = 👥 Users List:
+users-list-empty = No users to display.
+
+# User Details
+user-details = 👤 User Details
+status-active = 🟢 Active
+status-inactive = 🔴 Inactive
+button-back-to-list = 🔙 Back to List
+role-admin = 🛡️ Admin
+role-employee = 💼 Employee
+role-visitor = 👤 Visitor
+button-deactivate = 🔴 Deactivate Account
+button-activate = 🟢 Activate Account

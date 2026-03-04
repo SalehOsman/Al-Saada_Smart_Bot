@@ -50,9 +50,13 @@ export async function handleGracefulShutdown(bot: Bot<BotContext>): Promise<void
     process.exit(1)
   })
 
-  // Handle unhandled promise rejections
-  process.on('unhandledRejection', (reason, promise) => {
-    logger.error('Unhandled rejection at:', promise, 'reason:', reason)
-    process.exit(1)
+  // Handle unhandled promise rejections — log only, do not exit
+  process.on('unhandledRejection', (reason, _promise) => {
+    logger.error(
+      { err: reason instanceof Error ? reason : new Error(String(reason)) },
+      'Unhandled promise rejection',
+    )
+    // Note: We intentionally do NOT call process.exit() here to avoid
+    // crashing the bot on transient rejections (e.g., BullMQ initialization)
   })
 }

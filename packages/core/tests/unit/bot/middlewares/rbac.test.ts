@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Role } from '@prisma/client'
 import { rbacService } from '../../../../src/services/rbac'
 import { rbacMiddleware } from '../../../../src/bot/middlewares/rbac'
@@ -32,7 +32,7 @@ vi.mock('../../../../src/bot/middlewares/session', () => ({
 }))
 vi.mock('../../../../src/services/audit-logs', () => ({ auditService: { log: vi.fn() } }))
 
-describe('RBAC Service & Middleware (T034)', () => {
+describe('rBAC Service & Middleware (T034)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })

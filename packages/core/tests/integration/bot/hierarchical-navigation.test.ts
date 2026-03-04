@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { handleBackNavigation, showMainSectionsMenu, showSectionModules, showSubSectionsMenu } from '../../../src/bot/menus/sections'
+import { handleBackNavigation, showMainSectionsMenu, showSectionModules } from '../../../src/bot/menus/sections'
 import { moduleLoader } from '../../../src/bot/module-loader'
 
 // ─── Mocks ──────────────────────────────────────────────────────────────

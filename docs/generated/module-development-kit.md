@@ -21,8 +21,8 @@ The `defineModule` function is the entry point for defining a new module's confi
 *   **Purpose**: To validate and freeze a module's configuration, enforcing consistency and immutability.
 *   **Usage**:
     ```typescript
-    import { defineModule } from '@module-kit';
-    import { Role } from '@prisma/client';
+    import { defineModule } from '@module-kit'
+    import { Role } from '@prisma/client'
 
     const myModuleConfig = defineModule({
       slug: 'my-awesome-module',
@@ -40,7 +40,7 @@ The `defineModule` function is the entry point for defining a new module's confi
         // ... module creation logic
       },
       // ... other optional fields
-    });
+    })
     ```
 *   **Validation**:
     *   Ensures all required fields (`slug`, `sectionSlug`, `name`, `nameEn`, `icon`, `permissions`, `addEntryPoint`) are provided.
@@ -55,7 +55,7 @@ The `validate` function provides a standardized way to prompt users for input, a
 *   **Purpose**: To guide users through input prompts, validate their responses, and offer retries for invalid input.
 *   **Usage**:
     ```typescript
-    import { validate } from '@module-kit';
+    import { validate } from '@module-kit'
 
     async function askForQuantity(conversation, ctx) {
       const quantity = await validate(conversation, ctx, {
@@ -63,17 +63,16 @@ The `validate` function provides a standardized way to prompt users for input, a
         errorKey: 'module-fuel-entry-error-quantity-invalid',
         field: 'quantity',
         validator: (text) => {
-          const num = Number(text);
-          return !isNaN(num) && num > 0;
+          const num = Number(text)
+          return !isNaN(num) && num > 0
         },
-        formatter: (text) => Number(text),
+        formatter: text => Number(text),
         maxRetries: 2,
-      });
+      })
 
       if (quantity === undefined) {
         // User cancelled or max retries exceeded
-        await ctx.reply(ctx.t('module-fuel-entry-cancelled'));
-        return;
+        await ctx.reply(ctx.t('module-fuel-entry-cancelled'))
       }
       // Use the valid quantity
     }
@@ -94,7 +93,7 @@ The `confirm` function presents a summary of collected data to the user, allowin
 *   **Purpose**: To display a summary of user-provided data and enable targeted editing before final submission.
 *   **Usage**:
     ```typescript
-    import { confirm } from '@module-kit';
+    import { confirm } from '@module-kit'
 
     async function reviewAndConfirm(conversation, ctx, draftData, reAskFunction) {
       const confirmed = await confirm(conversation, ctx, {
@@ -105,13 +104,14 @@ The `confirm` function presents a summary of collected data to the user, allowin
         },
         editableFields: ['item', 'quantity'],
         reAsk: reAskFunction, // A function that re-prompts for a specific field
-      });
+      })
 
       if (confirmed) {
-        await ctx.reply(ctx.t('module-data-confirmed'));
+        await ctx.reply(ctx.t('module-data-confirmed'))
         // Proceed to save
-      } else {
-        await ctx.reply(ctx.t('module-data-cancelled'));
+      }
+      else {
+        await ctx.reply(ctx.t('module-data-cancelled'))
         // Abort or restart
       }
     }
@@ -133,22 +133,22 @@ The `save` function is the central utility for persisting data, ensuring consist
 *   **Purpose**: To encapsulate database write operations with automatic auditing, admin notifications, and Redis draft cleanup.
 *   **Usage**:
     ```typescript
-    import { save } from '@module-kit';
-    import { AuditAction } from '@prisma/client';
+    import { save } from '@module-kit'
+    import { AuditAction } from '@prisma/client'
 
     async function saveFuelEntry(ctx, entryData) {
       await save(ctx, {
         moduleSlug: 'fuel-entry',
         action: async (prisma) => {
-          await prisma.fuelEntry.create({ data: entryData });
+          await prisma.fuelEntry.create({ data: entryData })
         },
         audit: {
           action: AuditAction.MODULE_CREATE,
           targetType: 'FuelEntry',
           details: entryData,
         },
-      });
-      await ctx.reply(ctx.t('module-fuel-entry-saved'));
+      })
+      await ctx.reply(ctx.t('module-fuel-entry-saved'))
     }
     ```
 *   **Flow**:

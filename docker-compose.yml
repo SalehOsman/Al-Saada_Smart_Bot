@@ -12,7 +12,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      test: [CMD-SHELL, 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -21,14 +21,14 @@ services:
   redis:
     image: redis:7-alpine
     container_name: al-saada-redis
-    command: ["redis-server", "--appendonly", "yes"]
+    command: [redis-server, --appendonly, yes]
     ports:
       - '6379:6379'
     volumes:
       - redis_data:/data
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: [CMD, redis-cli, ping]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -42,6 +42,9 @@ services:
     ports:
       - '${PORT:-3000}:3000'
     env_file: .env
+    environment:
+      - REDIS_URL=redis://al-saada-redis:6379
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@al-saada-postgres:5432/${POSTGRES_DB}
     volumes:
       - backup_data:/app/backups
     depends_on:
@@ -51,7 +54,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health" ]
+      test: [CMD, wget, --no-verbose, --tries=1, --spider, 'http://localhost:3000/health']
       interval: 30s
       timeout: 10s
       retries: 3

@@ -16,10 +16,17 @@ All these utilities are re-exported through `index.ts`, allowing for a unified i
 
 ```typescript
 import {
-  createMessageTracker, waitForTextOrCancel, deleteTrackedMessages,
-  askForArabicName, askForPhone, askForNationalId, generateNickname,
-  formatArabicDate, formatGender, notifyAdmins
-} from '../utils';
+  askForArabicName,
+  askForNationalId,
+  askForPhone,
+  createMessageTracker,
+  deleteTrackedMessages,
+  formatArabicDate,
+  formatGender,
+  generateNickname,
+  notifyAdmins,
+  waitForTextOrCancel
+} from '../utils'
 ```
 
 ### High-Level Dependencies
@@ -94,37 +101,40 @@ Sends a standardized cancellation `message` to the user. Optionally includes a r
 
 ```typescript
 import {
-  createMessageTracker, deleteTrackedMessages, waitForTextOrCancel, sendCancelled
-} from './conversation'; // Assuming relative import for example
+  createMessageTracker,
+  deleteTrackedMessages,
+  sendCancelled,
+  waitForTextOrCancel
+} from './conversation' // Assuming relative import for example
 
 // Inside a conversation handler:
 async function myConversation(conversation, ctx) {
-  const tracker = createMessageTracker();
+  const tracker = createMessageTracker()
   // Bind a 'wait' function for convenience, applying the tracker
-  const wait = (prompt: string) => waitForTextOrCancel(conversation, ctx, prompt, { tracker });
+  const wait = (prompt: string) => waitForTextOrCancel(conversation, ctx, prompt, { tracker })
 
-  const name = await wait(ctx.t('prompt-name'));
+  const name = await wait(ctx.t('prompt-name'))
   if (name === null) {
-    await deleteTrackedMessages(ctx, tracker);
+    await deleteTrackedMessages(ctx, tracker)
     await sendCancelled(ctx, ctx.t('flow-cancelled-message'), {
       retryLabel: ctx.t('button-retry'),
       retryData: 'start_my_flow',
-    });
-    return;
+    })
+    return
   }
 
-  const age = await wait(ctx.t('prompt-age'));
+  const age = await wait(ctx.t('prompt-age'))
   if (age === null) {
-    await deleteTrackedMessages(ctx, tracker);
-    await sendCancelled(ctx, ctx.t('flow-cancelled-message'));
-    return;
+    await deleteTrackedMessages(ctx, tracker)
+    await sendCancelled(ctx, ctx.t('flow-cancelled-message'))
+    return
   }
 
   // ... more steps
 
   // Clean up all messages sent during the flow before sending the final result
-  await deleteTrackedMessages(ctx, tracker);
-  await ctx.reply(ctx.t('final-result-message', { name, age }));
+  await deleteTrackedMessages(ctx, tracker)
+  await ctx.reply(ctx.t('final-result-message', { name, age }))
 }
 ```
 
@@ -173,42 +183,48 @@ Prompts the user for an Egyptian National ID.
 
 ```typescript
 import {
-  createMessageTracker, deleteTrackedMessages, waitForTextOrCancel, sendCancelled,
-  askForArabicName, askForPhone, askForNationalId, generateNickname
-} from './index'; // Assuming import from bot/utils/index
+  askForArabicName,
+  askForNationalId,
+  askForPhone,
+  createMessageTracker,
+  deleteTrackedMessages,
+  generateNickname,
+  sendCancelled,
+  waitForTextOrCancel
+} from './index' // Assuming import from bot/utils/index
 
 // Inside a conversation handler:
 async function joinConversation(conversation, ctx) {
-  const tracker = createMessageTracker();
-  const wait = (prompt: string) => waitForTextOrCancel(conversation, ctx, prompt, { tracker });
+  const tracker = createMessageTracker()
+  const wait = (prompt: string) => waitForTextOrCancel(conversation, ctx, prompt, { tracker })
 
-  const fullName = await askForArabicName(ctx, wait);
+  const fullName = await askForArabicName(ctx, wait)
   if (!fullName) {
-    await deleteTrackedMessages(ctx, tracker);
-    await sendCancelled(ctx, ctx.t('join-cancelled'));
-    return;
+    await deleteTrackedMessages(ctx, tracker)
+    await sendCancelled(ctx, ctx.t('join-cancelled'))
+    return
   }
-  const nickname = generateNickname(fullName);
+  const nickname = generateNickname(fullName)
 
-  const phone = await askForPhone(ctx, wait);
+  const phone = await askForPhone(ctx, wait)
   if (!phone) {
-    await deleteTrackedMessages(ctx, tracker);
-    await sendCancelled(ctx, ctx.t('join-cancelled'));
-    return;
+    await deleteTrackedMessages(ctx, tracker)
+    await sendCancelled(ctx, ctx.t('join-cancelled'))
+    return
   }
 
-  const nationalIdInfo = await askForNationalId(ctx, wait);
+  const nationalIdInfo = await askForNationalId(ctx, wait)
   if (!nationalIdInfo) {
-    await deleteTrackedMessages(ctx, tracker);
-    await sendCancelled(ctx, ctx.t('join-cancelled'));
-    return;
+    await deleteTrackedMessages(ctx, tracker)
+    await sendCancelled(ctx, ctx.t('join-cancelled'))
+    return
   }
-  const { nationalId, birthDate, gender } = nationalIdInfo;
+  const { nationalId, birthDate, gender } = nationalIdInfo
 
   // ... process collected data
 
-  await deleteTrackedMessages(ctx, tracker);
-  await ctx.reply(ctx.t('join-success', { nickname }));
+  await deleteTrackedMessages(ctx, tracker)
+  await ctx.reply(ctx.t('join-success', { nickname }))
 }
 ```
 
@@ -242,19 +258,19 @@ Sends a notification to all active users with `SUPER_ADMIN` or `ADMIN` roles.
 ### Usage Pattern Example
 
 ```typescript
-import { formatArabicDate, formatGender, notifyAdmins } from './index'; // Assuming import from bot/utils/index
-import { NotificationType } from '@prisma/client';
+import { NotificationType } from '@prisma/client'
+import { formatArabicDate, formatGender, notifyAdmins } from './index' // Assuming import from bot/utils/index
 
 // Inside a conversation or other handler:
 async function processNewUser(ctx, newUser) {
-  const formattedBirthDate = ctx.t(formatArabicDate(newUser.birthDate));
-  const formattedGender = ctx.t(formatGender(newUser.gender));
+  const formattedBirthDate = ctx.t(formatArabicDate(newUser.birthDate))
+  const formattedGender = ctx.t(formatGender(newUser.gender))
 
   await ctx.reply(ctx.t('user-summary', {
     name: newUser.fullName,
     birthDate: formattedBirthDate,
     gender: formattedGender,
-  }));
+  }))
 
   // Notify admins about the new user
   await notifyAdmins({
@@ -263,7 +279,7 @@ async function processNewUser(ctx, newUser) {
       userName: newUser.fullName,
       userId: newUser.telegramId.toString(),
     },
-  });
+  })
 }
 ```
 

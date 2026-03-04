@@ -132,13 +132,13 @@ action: 'MENU_ACCESS' as any
 **الملف:** `packages/core/src/bot/module-loader.ts` — سطر 177
 **المشكلة:** كان:
 ```typescript
-await bot.api.sendMessage(Number(admin.telegramId), message);
+await bot.api.sendMessage(Number(admin.telegramId), message)
 ```
 `Number()` على BigInt كبير يفقد الدقة (> 2^53).
 
 **الإصلاح المطبّق (commit `7b62b5e`):**
 ```typescript
-await bot.api.sendMessage(admin.telegramId.toString(), message);
+await bot.api.sendMessage(admin.telegramId.toString(), message)
 ```
 
 ---

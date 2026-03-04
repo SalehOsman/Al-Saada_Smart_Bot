@@ -27,13 +27,13 @@ The `BotContext` object is the central data carrier for every update processed b
 
 ```typescript
 interface SessionData {
-  userId?: number; // Telegram user ID
-  role: 'VISITOR' | 'USER' | 'ADMIN' | 'SUPER_ADMIN'; // User's role
-  language: string; // User's preferred language
-  __language_code: string; // Internal i18n language code
-  currentSection: string | null; // Active section for the user
-  currentModule: string | null; // Active module/conversation for the user
-  lastActivity: number; // Timestamp of last interaction
+  userId?: number // Telegram user ID
+  role: 'VISITOR' | 'USER' | 'ADMIN' | 'SUPER_ADMIN' // User's role
+  language: string // User's preferred language
+  __language_code: string // Internal i18n language code
+  currentSection: string | null // Active section for the user
+  currentModule: string | null // Active module/conversation for the user
+  lastActivity: number // Timestamp of last interaction
   // ... other module-specific conversation data
 }
 ```

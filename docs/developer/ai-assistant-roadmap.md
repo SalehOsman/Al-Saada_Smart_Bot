@@ -46,7 +46,7 @@ Cloud models (Gemini/GPT/Claude) are deployed in a "Smart Mode" or "Training Mod
 The AI implementation mirrors the "Phase 4" structure defined within the platform methodology.
 
 ### Phase 0: Outline & Research *(Completed)*
-Established natural language extraction paradigms via semantic prompts, implemented pgvector architecture over Prisma, and cemented Google TTS and Whisper STT for Arabic logic. 
+Established natural language extraction paradigms via semantic prompts, implemented pgvector architecture over Prisma, and cemented Google TTS and Whisper STT for Arabic logic.
 
 ### Phase 1: Design & Contracts *(Completed)*
 Established all underlying models: `AIInteraction`, `AISuggestion`, `ScheduledReport`, `PrivacyRule`, `DocumentAnalysis`, and `VoiceSession`. Drafted OpenAPI specs isolating `rag.service`, `document-parser.service`, and `voice.service`.
@@ -62,13 +62,13 @@ Unlike standard stateless operations, the AI is heavily intertwined with system 
 
 Every single query against PostgreSQL utilizing pgvector must dynamically apply scope variables.
 - **Employee Search**: Is strictly filtered exclusively against their exact operating context.
-- **Managers / Admins**: Cannot ask the AI questions correlating to Sections or Modules they do not explicitly oversee. 
+- **Managers / Admins**: Cannot ask the AI questions correlating to Sections or Modules they do not explicitly oversee.
 - **Redaction Logic**: Handled centrally by `PrivacyRule` mapping arrays, ensuring phone numbers, National IDs, and configured financial keys are stripped down to structural tokens before engaging generalized models via REST.
 
 ---
 
 ## 5. Current State & Configuration
-Currently, infrastructural scaffolding relies heavily on active container orchestration. 
+Currently, infrastructural scaffolding relies heavily on active container orchestration.
 
 **Required Containers:**
 While the standard application runs `postgres:16` and `redis:7-alpine`, the complete AI stack requires manual setup/orchestration with `ollama`:

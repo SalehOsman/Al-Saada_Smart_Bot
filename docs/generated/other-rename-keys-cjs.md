@@ -25,22 +25,22 @@ While the specific API and implementation details are unknown due to the unreada
 
 ```javascript
 // This is a conceptual example, not actual code from rename-keys.cjs
-const renameKeys = require('./rename-keys.cjs'); // Assuming it exports a function
+const renameKeys = require('./rename-keys.cjs') // Assuming it exports a function
 
 const originalData = {
   firstName: 'John',
   lastName: 'Doe',
   emailAddress: 'john.doe@example.com'
-};
+}
 
 const keyMap = {
   firstName: 'first_name',
   lastName: 'last_name',
   emailAddress: 'email'
-};
+}
 
 // Conceptually, it would be used like this:
-const transformedData = renameKeys(originalData, keyMap);
+const transformedData = renameKeys(originalData, keyMap)
 
 /*
 transformedData would conceptually be:

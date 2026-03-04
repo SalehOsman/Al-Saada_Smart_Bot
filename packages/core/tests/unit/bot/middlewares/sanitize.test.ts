@@ -1,12 +1,12 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { sanitizeMiddleware } from '../../../../src/bot/middlewares/sanitize'
 
 describe('sanitizeMiddleware', () => {
   it('should sanitize ctx.message.text', async () => {
     const ctx = {
       message: {
-        text: '<script>alert(1)</script>'
-      }
+        text: '<script>alert(1)</script>',
+      },
     } as any
     const next = vi.fn()
 
@@ -18,7 +18,7 @@ describe('sanitizeMiddleware', () => {
 
   it('should do nothing if ctx.message.text is missing', async () => {
     const ctx = {
-      message: {}
+      message: {},
     } as any
     const next = vi.fn()
 

@@ -4,6 +4,7 @@ import { settingsService } from '../../services/settings'
 import { backupService } from '../../services/backup'
 import { maintenanceService } from '../../services/maintenance'
 import logger from '../../utils/logger'
+import { replyOrEdit } from '../utils/reply'
 
 /**
  * Main Settings Menu (Super Admin only).
@@ -21,7 +22,7 @@ export async function settingsHandler(ctx: BotContext) {
     .text(ctx.t('button-settings-backup'), 'settings:backup').row()
     .text(ctx.t('button-back-to-menu'), 'menu:main')
 
-  return ctx.reply(ctx.t('settings-menu-welcome'), { reply_markup: keyboard })
+  return replyOrEdit(ctx, ctx.t('settings-menu-welcome'), keyboard)
 }
 
 /**
@@ -165,7 +166,6 @@ export async function settingsActionsHandler(ctx: BotContext) {
   }
 
   if (data === 'settings:main') {
-    await ctx.editMessageReplyMarkup({ reply_markup: { inline_keyboard: [] } })
     return settingsHandler(ctx)
   }
 }

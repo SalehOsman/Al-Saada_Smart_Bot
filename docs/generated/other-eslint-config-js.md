@@ -74,7 +74,7 @@ Developers needing to adjust the linting rules for project-specific requirements
     }, {
       rules: {
         'indent': ['error', 2], // Example: enforce 2-space indentation
-        'no-console': 'warn',  // Example: change 'no-console' from error to warn
+        'no-console': 'warn', // Example: change 'no-console' from error to warn
         // ... other custom rules
       },
     })

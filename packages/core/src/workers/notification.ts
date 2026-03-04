@@ -3,7 +3,7 @@ import { Worker } from 'bullmq'
 import logger from '../utils/logger'
 import { bot } from '../bot/index'
 import { i18n } from '../bot/i18n'
-import { redis } from '../cache/redis'
+import { bullmqRedis } from '../cache/redis'
 import type { NotificationJobData } from '../types/notification'
 
 /**
@@ -37,13 +37,12 @@ export const notificationWorker = new Worker<NotificationJobData>(
         error: error.message,
       })
 
-      // If it's a Telegram flood error, we might want to rethrow to let BullMQ retry
-      // but for now we follow the instruction: "do NOT crash the worker"
-      throw error // BullMQ handles retries based on queue configuration
+      // BullMQ handles retries based on queue configuration
+      throw error
     }
   },
   {
-    connection: redis,
+    connection: bullmqRedis,
     // FR-024: Max 30 messages per 1000ms
     limiter: {
       max: 30,
@@ -54,33 +53,23 @@ export const notificationWorker = new Worker<NotificationJobData>(
 
 /**
  * Maps notification types to i18n keys.
- *
- * @param data The notification job data
- * @returns i18n key string
  */
 function formatNotificationMessage(data: NotificationJobData): string {
   const { type } = data
 
-  // Mapping based on i18n key pattern: notifications.{type}
   switch (type) {
     case 'JOIN_REQUEST_NEW':
       return 'notifications.join_request_new'
-
     case 'JOIN_REQUEST_APPROVED':
       return 'notifications.join_request_approved'
-
     case 'JOIN_REQUEST_REJECTED':
       return 'notifications.join_request_rejected'
-
     case 'USER_DEACTIVATED':
       return 'notifications.user_deactivated'
-
     case 'MAINTENANCE_ON':
       return 'notifications.maintenance_on'
-
     case 'MAINTENANCE_OFF':
       return 'notifications.maintenance_off'
-
     default:
       return 'notification-generic'
   }

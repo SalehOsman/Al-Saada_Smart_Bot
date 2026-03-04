@@ -1,4 +1,4 @@
-﻿# _Al-Saada_Smart_Bot Development Guidelines
+# _Al-Saada_Smart_Bot Development Guidelines
 
 Auto-generated from all feature plans. Last updated: 2026-03-01
 

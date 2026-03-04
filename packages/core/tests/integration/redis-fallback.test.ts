@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { ResilientRedisStorage } from '../../src/bot/middlewares/session'
+import { redis } from '../../src/cache/redis'
+
 // Mock ALL transitive imports of session.ts BEFORE importing it
 vi.mock('grammy', () => ({
   session: vi.fn((_opts: any) => async (_ctx: any, next: any) => next()),
@@ -17,9 +20,6 @@ vi.mock('../../src/utils/logger', () => ({
 }))
 vi.mock('../../src/database/prisma', () => ({ prisma: {} }))
 vi.mock('../../src/services/audit-logs', () => ({ auditService: { log: vi.fn() } }))
-
-import { ResilientRedisStorage } from '../../src/bot/middlewares/session'
-import { redis } from '../../src/cache/redis'
 
 const mockRedis = redis as any
 

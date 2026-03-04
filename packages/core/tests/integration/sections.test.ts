@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { sectionService } from '../../src/services/sections'
-import logger from '../../src/utils/logger'
 
 // ─── Mocks ──────────────────────────────────────────────────────────────
 const { mockPrisma } = vi.hoisted(() => ({
@@ -25,7 +24,7 @@ vi.mock('../../src/utils/logger', () => ({
   },
 }))
 
-describe('Section Service Integration (T040)', () => {
+describe('section Service Integration (T040)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -56,7 +55,7 @@ describe('Section Service Integration (T040)', () => {
     it('(2) should create a sub-section under main section', async () => {
       // Mock parent section lookup (must be a main section)
       mockPrisma.section.findUnique.mockResolvedValue({ id: 'parent-id', parentId: null })
-      
+
       const params = {
         slug: 'sub-sec',
         name: 'قسم فرعي',
@@ -147,9 +146,9 @@ describe('Section Service Integration (T040)', () => {
         id: 'main-id',
         modules: [],
         children: [
-          { 
-            id: 'sub-id', 
-            modules: [{ id: 'm1', isActive: true }] 
+          {
+            id: 'sub-id',
+            modules: [{ id: 'm1', isActive: true }],
           },
         ],
       })

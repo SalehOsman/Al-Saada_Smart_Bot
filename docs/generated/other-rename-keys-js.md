@@ -72,7 +72,7 @@ graph TD
 
 ```javascript
 // Assuming rename-keys.js exports a function named renameKeys
-import { renameKeys } from './rename-keys.js';
+import { renameKeys } from './rename-keys.js'
 
 const rawData = {
   firstName: 'Alice',
@@ -85,7 +85,7 @@ const rawData = {
     { settingName: 'theme', settingValue: 'dark' },
     { settingName: 'notifications', settingValue: true }
   ]
-};
+}
 
 // --- Example 1: Using an object map for specific renames ---
 const keyMap = {
@@ -93,10 +93,10 @@ const keyMap = {
   lastName: 'last_name',
   emailAddress: 'email',
   phoneNumber: 'phone'
-};
+}
 
-const transformedData1 = renameKeys(rawData, keyMap);
-console.log('Transformed with map:', JSON.stringify(transformedData1, null, 2));
+const transformedData1 = renameKeys(rawData, keyMap)
+console.log('Transformed with map:', JSON.stringify(transformedData1, null, 2))
 /* Expected output:
 {
   "first_name": "Alice",
@@ -119,12 +119,12 @@ console.log('Transformed with map:', JSON.stringify(transformedData1, null, 2));
 */
 
 // --- Example 2: Using a function for a global transformation (e.g., camelCase to snake_case) ---
-const camelToSnakeCase = (key) => {
-  return key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-};
+function camelToSnakeCase(key) {
+  return key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)
+}
 
-const transformedData2 = renameKeys(rawData, camelToSnakeCase);
-console.log('\nTransformed with function:', JSON.stringify(transformedData2, null, 2));
+const transformedData2 = renameKeys(rawData, camelToSnakeCase)
+console.log('\nTransformed with function:', JSON.stringify(transformedData2, null, 2))
 /* Expected output:
 {
   "first_name": "Alice",

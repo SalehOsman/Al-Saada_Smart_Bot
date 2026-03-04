@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { maintenanceService } from '../src/services/maintenance'
 import { maintenanceMiddleware } from '../src/bot/middlewares/maintenance'
 import { redis } from '../src/cache/redis'
@@ -12,26 +12,26 @@ vi.mock('../src/cache/redis', () => ({
     publish: vi.fn(),
     duplicate: vi.fn(() => ({
       subscribe: vi.fn(),
-      on: vi.fn()
-    }))
-  }
+      on: vi.fn(),
+    })),
+  },
 }))
 
 vi.mock('../src/services/audit-logs', () => ({
   auditService: {
-    log: vi.fn()
-  }
+    log: vi.fn(),
+  },
 }))
 
 vi.mock('../src/utils/logger', () => ({
   default: {
     info: vi.fn(),
     debug: vi.fn(),
-    error: vi.fn()
-  }
+    error: vi.fn(),
+  },
 }))
 
-describe('Maintenance Service', () => {
+describe('maintenance Service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -52,33 +52,33 @@ describe('Maintenance Service', () => {
   it('should set maintenance mode and publish update', async () => {
     const userId = BigInt(123)
     await maintenanceService.setMaintenanceMode(true, userId)
-    
+
     expect(redis.set).toHaveBeenCalledWith('system:maintenance:status', 'on')
     expect(redis.publish).toHaveBeenCalledWith('system:maintenance:updates', 'on')
     expect(auditService.log).toHaveBeenCalledWith(expect.objectContaining({
       userId,
-      action: 'MAINTENANCE_ON'
+      action: 'MAINTENANCE_ON',
     }))
   })
 
   it('should toggle maintenance mode', async () => {
     const userId = BigInt(123)
     vi.mocked(redis.get).mockResolvedValue('off')
-    
+
     const result = await maintenanceService.toggleMaintenance(userId)
-    
+
     expect(result).toBe(true)
     expect(redis.set).toHaveBeenCalledWith('system:maintenance:status', 'on')
   })
 })
 
-describe('Maintenance Middleware', () => {
+describe('maintenance Middleware', () => {
   const mockNext = vi.fn()
   const mockCtx = {
     session: {},
     from: { id: 123 },
     t: vi.fn(key => key),
-    reply: vi.fn()
+    reply: vi.fn(),
   } as any
 
   beforeEach(() => {

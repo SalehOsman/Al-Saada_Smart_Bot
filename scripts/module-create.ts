@@ -1,17 +1,17 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { execSync } from 'node:child_process';
-import inquirer from 'inquirer';
-import { PrismaClient } from '@prisma/client';
-import 'dotenv/config';
+import fs from 'node:fs'
+import path from 'node:path'
+import { execSync } from 'node:child_process'
+import inquirer from 'inquirer'
+import { PrismaClient } from '@prisma/client'
+import 'dotenv/config'
 
 async function main() {
-  const slugArg = process.argv[2];
-  
+  const slugArg = process.argv[2]
+
   // Support for non-interactive mode via arguments (Issue D1 / Testing)
-  const isNonInteractive = process.argv.includes('--non-interactive');
-  
-  let slug = slugArg;
+  const isNonInteractive = process.argv.includes('--non-interactive')
+
+  let slug = slugArg
   if (!isNonInteractive) {
     const response = await inquirer.prompt([
       {
@@ -20,48 +20,51 @@ async function main() {
         message: 'Enter module slug (lowercase, hyphen-separated):',
         default: slugArg,
         validate: (input) => {
-          if (/^[a-z0-9]+(-[a-z0-9]+)*$/.test(input)) return true;
-          return 'Invalid slug format. Must be lowercase, hyphen-separated (e.g., "fuel-entry").';
-        }
-      }
-    ]);
-    slug = response.slug;
-  } else if (!slug || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) {
-    console.error('Error: Slug must be provided and valid in non-interactive mode.');
-    process.exit(1);
+          if (/^[a-z0-9]+(-[a-z0-9]+)*$/.test(input))
+            return true
+          return 'Invalid slug format. Must be lowercase, hyphen-separated (e.g., "fuel-entry").'
+        },
+      },
+    ])
+    slug = response.slug
+  }
+  else if (!slug || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) {
+    console.error('Error: Slug must be provided and valid in non-interactive mode.')
+    process.exit(1)
   }
 
-  const moduleDir = path.join(process.cwd(), 'modules', slug);
+  const moduleDir = path.join(process.cwd(), 'modules', slug)
   if (fs.existsSync(moduleDir)) {
-    console.error(`Error: Module directory already exists at ${moduleDir}`);
-    process.exit(1);
+    console.error(`Error: Module directory already exists at ${moduleDir}`)
+    process.exit(1)
   }
 
-  const prisma = new PrismaClient();
-  
+  const prisma = new PrismaClient()
+
   try {
-    let name, nameEn, sectionSlug, icon, includeEdit, includeHooks;
+    let name, nameEn, sectionSlug, icon, includeEdit, includeHooks
 
     if (isNonInteractive) {
-      name = process.argv.find(a => a.startsWith('--name='))?.split('=')[1] || `${slug}-name`;
-      nameEn = process.argv.find(a => a.startsWith('--nameEn='))?.split('=')[1] || `${slug}-name-en`;
-      sectionSlug = process.argv.find(a => a.startsWith('--sectionSlug='))?.split('=')[1] || 'operations';
-      icon = process.argv.find(a => a.startsWith('--icon='))?.split('=')[1] || '📦';
-      includeEdit = process.argv.includes('--includeEdit');
-      includeHooks = process.argv.includes('--includeHooks');
-    } else {
+      name = process.argv.find(a => a.startsWith('--name='))?.split('=')[1] || `${slug}-name`
+      nameEn = process.argv.find(a => a.startsWith('--nameEn='))?.split('=')[1] || `${slug}-name-en`
+      sectionSlug = process.argv.find(a => a.startsWith('--sectionSlug='))?.split('=')[1] || 'operations'
+      icon = process.argv.find(a => a.startsWith('--icon='))?.split('=')[1] || '📦'
+      includeEdit = process.argv.includes('--includeEdit')
+      includeHooks = process.argv.includes('--includeHooks')
+    }
+    else {
       const response = await inquirer.prompt([
         {
           type: 'input',
           name: 'name',
           message: 'Enter Arabic display name (i18n key):',
-          default: `${slug}-name`
+          default: `${slug}-name`,
         },
         {
           type: 'input',
           name: 'nameEn',
           message: 'Enter English display name (i18n key):',
-          default: `${slug}-name-en`
+          default: `${slug}-name-en`,
         },
         {
           type: 'input',
@@ -69,48 +72,50 @@ async function main() {
           message: 'Enter section slug (e.g., "operations"):',
           validate: async (input) => {
             try {
-              const section = await prisma.section.findUnique({ where: { slug: input } });
-              if (section) return true;
-              return `Section "${input}" not found in database. Please ensure the section exists first.`;
-            } catch (err) {
-              console.warn(`\n⚠️ Warning: Database connection failed. Skipping validation for sectionSlug: "${input}".`);
-              return true; // Allow continuation even if DB is unreachable (Issue F1)
+              const section = await prisma.section.findUnique({ where: { slug: input } })
+              if (section)
+                return true
+              return `Section "${input}" not found in database. Please ensure the section exists first.`
             }
-          }
+            catch (err) {
+              console.warn(`\n⚠️ Warning: Database connection failed. Skipping validation for sectionSlug: "${input}".`)
+              return true // Allow continuation even if DB is unreachable (Issue F1)
+            }
+          },
         },
         {
           type: 'input',
           name: 'icon',
           message: 'Enter emoji icon:',
-          default: '📦'
+          default: '📦',
         },
         {
           type: 'confirm',
           name: 'includeEdit',
           message: 'Include edit flow?',
-          default: false
+          default: false,
         },
         {
           type: 'confirm',
           name: 'includeHooks',
           message: 'Include lifecycle hooks?',
-          default: false
-        }
-      ]);
-      name = response.name;
-      nameEn = response.nameEn;
-      sectionSlug = response.sectionSlug;
-      icon = response.icon;
-      includeEdit = response.includeEdit;
-      includeHooks = response.includeHooks;
+          default: false,
+        },
+      ])
+      name = response.name
+      nameEn = response.nameEn
+      sectionSlug = response.sectionSlug
+      icon = response.icon
+      includeEdit = response.includeEdit
+      includeHooks = response.includeHooks
     }
 
-    console.log(`Scaffolding module "${slug}"...`);
+    console.log(`Scaffolding module "${slug}"...`)
 
     // Create directories
-    fs.mkdirSync(moduleDir, { recursive: true });
-    fs.mkdirSync(path.join(moduleDir, 'locales'), { recursive: true });
-    fs.mkdirSync(path.join(moduleDir, 'tests'), { recursive: true });
+    fs.mkdirSync(moduleDir, { recursive: true })
+    fs.mkdirSync(path.join(moduleDir, 'locales'), { recursive: true })
+    fs.mkdirSync(path.join(moduleDir, 'tests'), { recursive: true })
 
     // 1. config.ts
     const configTemplate = `import { defineModule } from '@al-saada/module-kit';
@@ -133,8 +138,8 @@ export default defineModule({
   addEntryPoint: add${slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('')}Conversation,
   ${includeEdit ? `editEntryPoint: edit${slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('')}Conversation,` : ''}
 });
-`;
-    fs.writeFileSync(path.join(moduleDir, 'config.ts'), configTemplate);
+`
+    fs.writeFileSync(path.join(moduleDir, 'config.ts'), configTemplate)
 
     // 2. add.conversation.ts
     const addConvTemplate = `import { Conversation } from '@grammyjs/conversations';
@@ -154,8 +159,8 @@ export async function add${slug.split('-').map(s => s.charAt(0).toUpperCase() + 
 
   await ctx.reply('Draft conversation for ${slug} initiated.');
 }
-`;
-    fs.writeFileSync(path.join(moduleDir, 'add.conversation.ts'), addConvTemplate);
+`
+    fs.writeFileSync(path.join(moduleDir, 'add.conversation.ts'), addConvTemplate)
 
     // 3. edit.conversation.ts
     if (includeEdit) {
@@ -165,8 +170,8 @@ import { BotContext, validate, confirm, save } from '@al-saada/module-kit';
 export async function edit${slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('')}Conversation(conversation: Conversation<BotContext>, ctx: BotContext) {
   await ctx.reply('Edit conversation for ${slug} initiated.');
 }
-`;
-      fs.writeFileSync(path.join(moduleDir, 'edit.conversation.ts'), editConvTemplate);
+`
+      fs.writeFileSync(path.join(moduleDir, 'edit.conversation.ts'), editConvTemplate)
     }
 
     // 4. hooks.ts
@@ -174,8 +179,8 @@ export async function edit${slug.split('-').map(s => s.charAt(0).toUpperCase() +
       const hooksTemplate = `export async function onModuleLoad() {
   // Logic to run when module is loaded
 }
-`;
-      fs.writeFileSync(path.join(moduleDir, 'hooks.ts'), hooksTemplate);
+`
+      fs.writeFileSync(path.join(moduleDir, 'hooks.ts'), hooksTemplate)
     }
 
     // 5. schema.prisma
@@ -184,12 +189,12 @@ export async function edit${slug.split('-').map(s => s.charAt(0).toUpperCase() +
 //   id        String   @id @default(cuid())
 //   createdAt DateTime @default(now())
 // }
-`;
-    fs.writeFileSync(path.join(moduleDir, 'schema.prisma'), schemaTemplate);
+`
+    fs.writeFileSync(path.join(moduleDir, 'schema.prisma'), schemaTemplate)
 
     // 6. locales
-    fs.writeFileSync(path.join(moduleDir, 'locales', 'ar.ftl'), `# ${slug} Arabic translations\n${slug}-name = ${name}\n`);
-    fs.writeFileSync(path.join(moduleDir, 'locales', 'en.ftl'), `# ${slug} English translations\n${slug}-name = ${nameEn}\n`);
+    fs.writeFileSync(path.join(moduleDir, 'locales', 'ar.ftl'), `# ${slug} Arabic translations\n${slug}-name = ${name}\n`)
+    fs.writeFileSync(path.join(moduleDir, 'locales', 'en.ftl'), `# ${slug} English translations\n${slug}-name = ${nameEn}\n`)
 
     // 7. tests
     const testTemplate = `import { describe, it, expect } from 'vitest';
@@ -199,8 +204,8 @@ describe('${slug} flow', () => {
     expect(true).toBe(true);
   });
 });
-`;
-    fs.writeFileSync(path.join(moduleDir, 'tests', 'flow.test.ts'), testTemplate);
+`
+    fs.writeFileSync(path.join(moduleDir, 'tests', 'flow.test.ts'), testTemplate)
 
     // 8. package.json (required for monorepo workspaces)
     const packageJsonTemplate = JSON.stringify({
@@ -209,26 +214,27 @@ describe('${slug} flow', () => {
       private: true,
       type: 'module',
       dependencies: {
-        '@al-saada/module-kit': 'workspace:*'
-      }
-    }, null, 2);
-    fs.writeFileSync(path.join(moduleDir, 'package.json'), packageJsonTemplate);
+        '@al-saada/module-kit': 'workspace:*',
+      },
+    }, null, 2)
+    fs.writeFileSync(path.join(moduleDir, 'package.json'), packageJsonTemplate)
 
     // Copy schema to prisma/schema/modules/
-    const targetSchemaPath = path.join(process.cwd(), 'prisma', 'schema', 'modules', `${slug}.prisma`);
-    fs.copyFileSync(path.join(moduleDir, 'schema.prisma'), targetSchemaPath);
+    const targetSchemaPath = path.join(process.cwd(), 'prisma', 'schema', 'modules', `${slug}.prisma`)
+    fs.copyFileSync(path.join(moduleDir, 'schema.prisma'), targetSchemaPath)
 
-    console.log('Running prisma generate...');
-    execSync('npx prisma generate', { stdio: 'inherit' });
+    console.log('Running prisma generate...')
+    execSync('npx prisma generate', { stdio: 'inherit' })
 
-    console.log(`\n✅ Module "${slug}" scaffolded successfully at modules/${slug}/`);
-    console.log(`🔗 Schema copied to prisma/schema/modules/${slug}.prisma`);
-
-  } catch (error) {
-    console.error('Error during scaffolding:', error);
-  } finally {
-    await prisma.$disconnect();
+    console.log(`\n✅ Module "${slug}" scaffolded successfully at modules/${slug}/`)
+    console.log(`🔗 Schema copied to prisma/schema/modules/${slug}.prisma`)
+  }
+  catch (error) {
+    console.error('Error during scaffolding:', error)
+  }
+  finally {
+    await prisma.$disconnect()
   }
 }
 
-main();
+main()

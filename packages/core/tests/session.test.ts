@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { Role, AuditAction } from '@prisma/client'
-import { defaultSession, lazySessionMiddleware, sessionMiddleware, ResilientRedisStorage } from '../src/bot/middlewares/session'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { AuditAction } from '@prisma/client'
+import { ResilientRedisStorage, defaultSession, lazySessionMiddleware } from '../src/bot/middlewares/session'
 
 // ─── Mocks ──────────────────────────────────────────────────────────────
 const { mockRedis, mockPrisma, mockAuditService, mockLogger } = vi.hoisted(() => ({
@@ -28,7 +28,7 @@ vi.mock('../src/database/prisma', () => ({ prisma: mockPrisma }))
 vi.mock('../src/services/audit-logs', () => ({ auditService: mockAuditService }))
 vi.mock('../src/utils/logger', () => ({ default: mockLogger }))
 
-describe('Session Management (T087/T069)', () => {
+describe('session Management (T087/T069)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.useFakeTimers()
@@ -53,7 +53,7 @@ describe('Session Management (T087/T069)', () => {
     })
   })
 
-  describe('ResilientRedisStorage', () => {
+  describe('resilientRedisStorage', () => {
     let storage: ResilientRedisStorage
 
     beforeEach(() => {
@@ -91,7 +91,7 @@ describe('Session Management (T087/T069)', () => {
 
       expect(mockLogger.fatal).toHaveBeenCalledWith(
         expect.objectContaining({ operation: 'write' }),
-        expect.stringContaining('CRITICAL: Redis connection lost')
+        expect.stringContaining('CRITICAL: Redis connection lost'),
       )
 
       // Subsequent calls should use in-memory without calling redis
@@ -135,12 +135,12 @@ describe('Session Management (T087/T069)', () => {
       expect(mockAuditService.log).toHaveBeenCalledWith(expect.objectContaining({
         userId: 12345n,
         action: AuditAction.USER_LOGOUT,
-        details: { reason: 'session_expired_lazy' }
+        details: { reason: 'session_expired_lazy' },
       }))
 
       expect(mockAuditService.log).toHaveBeenCalledWith(expect.objectContaining({
         userId: 12345n,
-        action: AuditAction.USER_LOGIN
+        action: AuditAction.USER_LOGIN,
       }))
 
       expect(ctx.session.userId).toBe(12345)

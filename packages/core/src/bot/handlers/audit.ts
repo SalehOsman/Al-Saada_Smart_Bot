@@ -2,6 +2,8 @@ import { InlineKeyboard } from 'grammy'
 import { AuditAction } from '@prisma/client'
 import type { BotContext } from '../../types/context'
 import { auditService } from '../../services/audit-logs'
+import { prisma } from '../../database/prisma'
+import { replyOrEdit } from '../utils/reply'
 
 /**
  * Shows the main audit menu.
@@ -16,11 +18,14 @@ export async function auditHandler(ctx: BotContext) {
     .text(ctx.t('audit-button-recent'), 'audit:recent')
     .row()
     .text(ctx.t('audit-button-filter-action'), 'audit:filter_action')
+    .row()
     .text(ctx.t('audit-button-filter-user'), 'audit:filter_user')
     .row()
     .text(ctx.t('audit-button-stats'), 'audit:stats')
+    .row()
+    .text(ctx.t('button-back-to-menu'), 'menu:main')
 
-  await ctx.reply(ctx.t('audit-menu-title'), { reply_markup: keyboard })
+  await replyOrEdit(ctx, ctx.t('audit-menu-title'), keyboard)
 }
 
 /**
@@ -41,6 +46,7 @@ export async function auditActionsHandler(ctx: BotContext) {
       .text(ctx.t('audit-button-recent'), 'audit:recent')
       .row()
       .text(ctx.t('audit-button-filter-action'), 'audit:filter_action')
+      .row()
       .text(ctx.t('audit-button-filter-user'), 'audit:filter_user')
       .row()
       .text(ctx.t('audit-button-stats'), 'audit:stats')
@@ -56,6 +62,9 @@ export async function auditActionsHandler(ctx: BotContext) {
   }
   else if (query === 'audit:filter_action') {
     await showActionFilter(ctx)
+  }
+  else if (query === 'audit:filter_user') {
+    await showUserFilter(ctx)
   }
   else if (query.startsWith('audit:action:')) {
     const action = query.split(':')[2] as AuditAction
@@ -92,7 +101,7 @@ async function showAuditLogs(ctx: BotContext, page: number, filters: { action?: 
     message += `${ctx.t('audit-log-entry', {
       date,
       action: log.action,
-      userId: log.userId.toString(),
+      userId: log.user?.nickname ?? log.user?.fullName ?? log.userId.toString(),
     })}\n`
     if (log.targetType || log.targetId) {
       message += `└ target: ${log.targetType || '?'}/${log.targetId || '?'}\n`
@@ -135,6 +144,35 @@ async function showActionFilter(ctx: BotContext) {
   keyboard.text(ctx.t('button-back'), 'audit:main')
 
   await ctx.editMessageText(ctx.t('audit-button-filter-action'), { reply_markup: keyboard })
+}
+
+/**
+ * Shows list of users who have audit log entries to filter by.
+ */
+async function showUserFilter(ctx: BotContext) {
+  // Fetch the 15 most recent distinct users referenced in audit logs
+  const recentLogs = await prisma.auditLog.findMany({
+    distinct: ['userId'],
+    orderBy: { createdAt: 'desc' },
+    take: 15,
+    include: { user: true },
+  })
+
+  if (recentLogs.length === 0) {
+    await ctx.editMessageText(ctx.t('audit-no-logs'), {
+      reply_markup: new InlineKeyboard().text(ctx.t('button-back'), 'audit:main'),
+    })
+    return
+  }
+
+  const keyboard = new InlineKeyboard()
+  for (const log of recentLogs) {
+    const label = log.user?.nickname ?? log.user?.fullName ?? log.userId.toString()
+    keyboard.text(label, `audit:user:${log.userId}`).row()
+  }
+  keyboard.text(ctx.t('button-back'), 'audit:main')
+
+  await ctx.editMessageText(ctx.t('audit-button-filter-user'), { reply_markup: keyboard })
 }
 
 /**

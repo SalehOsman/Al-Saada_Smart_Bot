@@ -257,9 +257,9 @@
 ### Audit Infrastructure
 
 - [x] T059 [P] [US5] Create audit log service in `packages/core/src/services/audit.ts` implementing ALL 25 auditable actions defined in spec.md FR-026. Each log entry: `{ userId: bigint, action: AuditAction, targetType?: string, targetId?: string, details?: Json }`. Complete action list: `USER_BOOTSTRAP`, `USER_LOGIN`, `USER_LOGOUT`, `ROLE_CHANGE`, `USER_APPROVE`, `USER_REJECT`, `USER_ACTIVATE`, `USER_DEACTIVATE`, `JOIN_REQUEST_SUBMIT`, `SECTION_CREATE`, `SECTION_UPDATE`, `SECTION_DELETE`, `SECTION_ENABLE`, `SECTION_DISABLE`, `MODULE_REGISTER`, `MODULE_UNREGISTER`, `MODULE_ENABLE`, `MODULE_DISABLE`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`, `PERMISSION_CHANGE`, `ADMIN_SCOPE_ASSIGN`, `ADMIN_SCOPE_REVOKE`, `BACKUP_TRIGGER`, `BACKUP_RESTORE`
-- [ ] T060 [P] [US5] Create audit middleware (auto-logs actions) in `packages/core/src/bot/middlewares/audit.ts`
+- [x] T060 [P] [US5] Create audit middleware (auto-logs actions) in `packages/core/src/bot/middlewares/audit.ts`
 - [x] T061 [P] [US5] ~~Define `AuditAction` in `packages/core/src/types/audit.ts`~~ — SUPERSEDED: `AuditAction` enum is already defined directly in `prisma/schema.prisma` with all 25 actions (migration pending). Import via `import { AuditAction } from '@prisma/client'` across codebase. No separate types file needed.
-- [ ] T062 [P] [US5] Create audit log viewer for Super Admin in `packages/core/src/bot/handlers/audit.ts`
+- [x] T062 [P] [US5] Create audit log viewer for Super Admin in `packages/core/src/bot/handlers/audit.ts`
 - [x] T063 [P] [US5] Ensure NO sensitive data is logged in AuditLog.details (FR-027). Explicitly NEVER log the following fields in any audit entry: `nationalId`, `phone`, `password`, `token`, API keys. These fields must be stripped or replaced with `[REDACTED]` before writing to AuditLog. `userId` (telegramId) and `fullName` are acceptable in audit logs. Add unit test to verify redaction.
 - [x] T064 [P] Write unit tests for audit service
 

@@ -63,8 +63,8 @@ Any part of the application performing a critical action (e.g., user creation, r
 
 **Example:**
 ```typescript
-import { auditService, AuditLogData } from './audit-logs'
 import { AuditAction } from '@prisma/client'
+import { AuditLogData, auditService } from './audit-logs'
 
 const logData: AuditLogData = {
   userId: 123n,
@@ -114,7 +114,8 @@ const result = await joinRequestService.createOrBootstrap(joinParams)
 
 if (result.type === 'bootstrap') {
   console.log('Super Admin user bootstrapped successfully!')
-} else {
+}
+else {
   console.log(`Join request created with ID: ${result.requestId}`)
 }
 ```
@@ -143,8 +144,8 @@ Used by various parts of the application (e.g., `notifyScopedAdmins`, `approvals
 
 **Example:**
 ```typescript
-import { queueNotification, queueBulkNotifications } from './notifications'
 import { NotificationType } from '../types/notification'
+import { queueBulkNotifications, queueNotification } from './notifications'
 
 // Queue a single notification
 await queueNotification({
@@ -182,8 +183,8 @@ This service is critical for authorization middleware (e.g., `rbacMiddleware`) a
 
 **Example:**
 ```typescript
-import { rbacService, AccessOptions } from './rbac'
 import { Role } from '@prisma/client'
+import { AccessOptions, rbacService } from './rbac'
 
 // Check if a SUPER_ADMIN can access the 'settings' section
 const canSuperAdminAccess = await rbacService.canAccess(1n, Role.SUPER_ADMIN, { sectionId: 'settings' }) // true

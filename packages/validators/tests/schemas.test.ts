@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest'
-import { stringSchema, phoneSchema, nationalIdSchema } from '../src/schemas'
+import { describe, expect, it } from 'vitest'
+import { nationalIdSchema, phoneSchema, stringSchema } from '../src/schemas'
 
-describe('Zod Schemas', () => {
+describe('zod Schemas', () => {
   describe('stringSchema', () => {
     it('should trim strings', () => {
       expect(stringSchema.parse('  hello  ')).toBe('hello')

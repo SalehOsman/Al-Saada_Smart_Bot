@@ -1,5 +1,4 @@
 import { config } from 'dotenv'
-import { vi } from 'vitest'
 
 // Load .env.test file
 config({ path: '.env.test' })

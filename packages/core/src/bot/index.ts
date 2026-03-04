@@ -97,6 +97,32 @@ bot.command('maintenance', maintenanceHandler)
 bot.command('settings', settingsHandler)
 bot.command('audit', auditHandler)
 
+// Main menu buttons router (routes callback data to commands)
+bot.callbackQuery(/^menu-(.+)$/, async (ctx) => {
+  await ctx.answerCallbackQuery()
+  const target = ctx.match[1]
+
+  if (target === 'sections') {
+    const { showMainSectionsMenu } = await import('./menus/sections')
+    return showMainSectionsMenu(ctx)
+  }
+  if (target === 'users')
+    return usersHandler(ctx)
+  if (target === 'maintenance')
+    return maintenanceHandler(ctx)
+  if (target === 'settings')
+    return settingsHandler(ctx)
+  if (target === 'audit')
+    return auditHandler(ctx)
+})
+
+// Handle "back to main menu" from any sub-menu
+bot.callbackQuery('menu:main', async (ctx) => {
+  await ctx.answerCallbackQuery()
+  const { menuHandler } = await import('./handlers/menu')
+  return menuHandler(ctx)
+})
+
 // Handle "submit join request" button (shown after cancellation)
 bot.callbackQuery('start_join', async (ctx) => {
   await ctx.answerCallbackQuery()
@@ -104,7 +130,7 @@ bot.callbackQuery('start_join', async (ctx) => {
 })
 
 // User management callback queries
-bot.callbackQuery(/^user:/, userActionsHandler)
+bot.callbackQuery(/^(user|users):/, userActionsHandler)
 
 // Join request approval/rejection callback queries
 bot.callbackQuery(/^(approve|reject):/, approvalsHandler)

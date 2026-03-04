@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { startHandler } from '../../../src/bot/handlers/start'
 import { joinConversation } from '../../../src/bot/conversations/join'
 import { joinRequestService } from '../../../src/services/join-requests'
@@ -177,7 +177,7 @@ describe('start to join flow integration', () => {
 
       // Assert: Should route to join conversation again
       expect(mockEnter).toHaveBeenCalledWith('join')
-      
+
       // Ensure no delete was called
       // Since we don't have delete mocked in the hoisted mockPrisma,
       // and it's not imported or used in startHandler, this is implicitly satisfied.

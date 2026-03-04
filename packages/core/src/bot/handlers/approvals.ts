@@ -82,7 +82,7 @@ export async function approvalsHandler(ctx: BotContext) {
     }
 
     // Since we passed the error check, result is the JoinRequest object
-    const joinReq = result as { telegramId: bigint, fullName: string }
+    const joinReq = result as { telegramId: bigint, fullName: string, nickname?: string | null }
 
     // On success: notify user
     if (action === 'approve') {
@@ -96,7 +96,8 @@ export async function approvalsHandler(ctx: BotContext) {
         },
       })
       await ctx.answerCallbackQuery(ctx.t('join-request-approved-success'))
-      await ctx.editMessageText(ctx.t('join-request-approved-msg', { name: joinReq.fullName }))
+      const displayName = joinReq.nickname || joinReq.fullName
+      await ctx.editMessageText(ctx.t('join-request-approved-msg', { name: displayName }))
     }
     else {
       await queueNotification({
@@ -108,7 +109,8 @@ export async function approvalsHandler(ctx: BotContext) {
         },
       })
       await ctx.answerCallbackQuery(ctx.t('join-request-rejected-success'))
-      await ctx.editMessageText(ctx.t('join-request-rejected-msg', { name: joinReq.fullName }))
+      const displayName = joinReq.nickname || joinReq.fullName
+      await ctx.editMessageText(ctx.t('join-request-rejected-msg', { name: displayName }))
     }
 
     logger.info(

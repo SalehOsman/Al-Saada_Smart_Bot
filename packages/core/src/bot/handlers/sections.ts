@@ -37,6 +37,7 @@ export async function sectionsCallbackHandler(ctx: BotContext): Promise<void> {
   await updateNavigationBreadcrumb(ctx, 'sections')
 
   if (action === 'add') {
+    await ctx.answerCallbackQuery()
     if (id) {
       // Adding sub-section under main section
       return addSubSectionPrompt(ctx, id)
@@ -45,6 +46,7 @@ export async function sectionsCallbackHandler(ctx: BotContext): Promise<void> {
   }
 
   if (action === 'view') {
+    await ctx.answerCallbackQuery()
     return showSectionModules(ctx, id)
   }
 
@@ -65,6 +67,7 @@ export async function sectionsCallbackHandler(ctx: BotContext): Promise<void> {
   }
 
   if (action === 'back') {
+    await ctx.answerCallbackQuery()
     return handleBackNavigation(ctx)
   }
 }

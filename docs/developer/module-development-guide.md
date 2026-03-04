@@ -96,7 +96,7 @@ modules/
 ### 1. Minimal config.ts (Config Only Level)
 
 ```typescript
-import { defineModule } from '@al-saada/module-kit';
+import { defineModule } from '@al-saada/module-kit'
 
 export const config = defineModule({
   slug: 'fuel-entries',
@@ -134,13 +134,13 @@ export const config = defineModule({
       required: true,
     },
   ],
-});
+})
 ```
 
 ### 2. Config with Hooks (Config + Hooks Level)
 
 ```typescript
-import { defineModule } from '@al-saada/module-kit';
+import { defineModule } from '@al-saada/module-kit'
 
 export const config = defineModule({
   slug: 'fuel-entries',
@@ -164,34 +164,34 @@ export const config = defineModule({
     // Validate data before moving to next step
     onStepValidate: async (step, data) => {
       if (step === 'amount' && data.amount > 1000) {
-        throw new Error('fuel-entries-error-max-amount');
+        throw new Error('fuel-entries-error-max-amount')
       }
     },
 
     // Run before saving to database
     beforeSave: async (data) => {
       // Calculate derived fields
-      data.costPerLiter = data.totalCost / data.amount;
-      return data;
+      data.costPerLiter = data.totalCost / data.amount
+      return data
     },
 
     // Run after successful save
     afterSave: async (savedData) => {
       // Trigger notifications
-      await notifyTruckDriver(savedData.truckId, 'fuel-entries-notification');
+      await notifyTruckDriver(savedData.truckId, 'fuel-entries-notification')
     },
 
     // Run when record is approved
     onApproval: async (record) => {
-      await updateInventory(record);
+      await updateInventory(record)
     },
 
     // Run when record is rejected
     onRejection: async (record, reason) => {
-      await notifySubmitter(record, reason);
+      await notifySubmitter(record, reason)
     },
   },
-});
+})
 ```
 
 ### 3. Custom Code Directory Structure
@@ -199,19 +199,20 @@ export const config = defineModule({
 ```typescript
 // custom/calculations.ts
 export function calculateEfficiency(distance: number, fuel: number): number {
-  if (fuel === 0) return 0;
-  return distance / fuel;
+  if (fuel === 0)
+    return 0
+  return distance / fuel
 }
 
 export function estimateNextRefuel(
   currentFuel: number,
   avgConsumption: number
 ): Date {
-  const kmRemaining = currentFuel * avgConsumption;
-  const daysRemaining = kmRemaining / 100; // Assume 100km/day average
-  const nextRefuel = new Date();
-  nextRefuel.setDate(nextRefuel.getDate() + daysRemaining);
-  return nextRefuel;
+  const kmRemaining = currentFuel * avgConsumption
+  const daysRemaining = kmRemaining / 100 // Assume 100km/day average
+  const nextRefuel = new Date()
+  nextRefuel.setDate(nextRefuel.getDate() + daysRemaining)
+  return nextRefuel
 }
 ```
 
@@ -283,47 +284,47 @@ model FuelEntry {
 ### 6. Test Example
 
 ```typescript
-import { describe, it, expect, beforeEach } from 'vitest';
-import { config } from '../config';
-import { createFuelEntry } from '../custom/calculations';
+import { beforeEach, describe, expect, it } from 'vitest'
+import { config } from '../config'
+import { createFuelEntry } from '../custom/calculations'
 
 describe('FuelEntries Module', () => {
   describe('Module Contract', () => {
     it('exports defineModule', () => {
-      expect(config).toBeDefined();
-      expect(typeof config).toBe('object');
-    });
+      expect(config).toBeDefined()
+      expect(typeof config).toBe('object')
+    })
 
     it('has unique kebab-case slug', () => {
-      expect(config.slug).toBe('fuel-entries');
-      expect(config.slug).toMatch(/^[a-z0-9-]+$/);
-    });
+      expect(config.slug).toBe('fuel-entries')
+      expect(config.slug).toMatch(/^[a-z0-9-]+$/)
+    })
 
     it('has non-empty view permissions', () => {
-      expect(config.permissions.view).toBeDefined();
-      expect(config.permissions.view.length).toBeGreaterThan(0);
-    });
+      expect(config.permissions.view).toBeDefined()
+      expect(config.permissions.view.length).toBeGreaterThan(0)
+    })
 
     it('has all required i18n keys with correct prefix', () => {
-      const i18nKeys = ['name', 'description', 'fields'];
-      i18nKeys.forEach(key => {
-        expect(config[key]).toMatch(/^fuel-entries-/);
-      });
-    });
-  });
+      const i18nKeys = ['name', 'description', 'fields']
+      i18nKeys.forEach((key) => {
+        expect(config[key]).toMatch(/^fuel-entries-/)
+      })
+    })
+  })
 
   describe('Calculations', () => {
     it('calculates efficiency correctly', () => {
-      const efficiency = createFuelEntry.calculateEfficiency(500, 50);
-      expect(efficiency).toBe(10);
-    });
+      const efficiency = createFuelEntry.calculateEfficiency(500, 50)
+      expect(efficiency).toBe(10)
+    })
 
     it('handles zero fuel amount', () => {
-      const efficiency = createFuelEntry.calculateEfficiency(500, 0);
-      expect(efficiency).toBe(0);
-    });
-  });
-});
+      const efficiency = createFuelEntry.calculateEfficiency(500, 0)
+      expect(efficiency).toBe(0)
+    })
+  })
+})
 ```
 
 ---

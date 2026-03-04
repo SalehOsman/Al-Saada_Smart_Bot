@@ -21,7 +21,7 @@ This guide details exactly how testing is implemented, focusing specifically on 
 ---
 
 ## 2. Testing Validators (Pure Logic)
-Validators like Egyptian National IDs, Phones, and string stripping are natively stateless and pure, mostly reliant on Zod. 
+Validators like Egyptian National IDs, Phones, and string stripping are natively stateless and pure, mostly reliant on Zod.
 
 **Example: Zod Schema Tests (`schemas.test.ts`)**
 ```typescript
@@ -128,7 +128,7 @@ vi.mock('@core/cache/redis', () => ({ redis: mockRedis }))
 describe('save() helper', () => {
   it('saves data, logs masked audit, and clears draft', async () => {
     const action = vi.fn().mockResolvedValue({ id: 'new-id' })
-    
+
     // Arrange: Resolve internal data lookups
     mockPrisma.section.findUnique.mockResolvedValue({ id: 'sec-1' })
     mockPrisma.adminScope.findMany.mockResolvedValue([{ userId: 111n }])
@@ -155,7 +155,7 @@ describe('save() helper', () => {
 
 ---
 
-## 5. Integration Test Status 
+## 5. Integration Test Status
 
 - **Current Coverage Matrix**: The system currently heavily biases towards Unit Tests masking dependencies.
 - **Database Bootstraps**: Full isolated End-to-End integration tests operating on shadow databases via `docker-compose.test.yml` are marked for configuration under the Phase 12 constitutional alignment.

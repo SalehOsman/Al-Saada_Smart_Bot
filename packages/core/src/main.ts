@@ -26,7 +26,18 @@ async function main() {
   }
   else {
     logger.info('No WEBHOOK_URL set — starting in long polling mode')
-    await bot.start()
+
+    // Catch polling errors specifically
+    bot.catch((err) => {
+      logger.error({ err }, '🚨 ERROR IN GRAMMY POLLING / UPDATE PIPELINE')
+    })
+
+    await bot.start({
+      onStart: (botInfo) => {
+        logger.info(`Bot @${botInfo.username} started successfully`)
+      },
+      drop_pending_updates: true, // Drop old updates that might be stuck
+    })
   }
 }
 

@@ -1,13 +1,13 @@
 import { Queue } from 'bullmq'
 import logger from '../utils/logger'
-import { redis } from '../cache/redis'
+import { bullmqRedis } from '../cache/redis'
 
 /**
  * BullMQ Queue for notifications.
  * Uses the Redis connection singleton for performance and reliability.
  */
 export const notificationsQueue = new Queue('notifications', {
-  connection: redis,
+  connection: bullmqRedis,
   defaultJobOptions: {
     attempts: 3,
     backoff: {

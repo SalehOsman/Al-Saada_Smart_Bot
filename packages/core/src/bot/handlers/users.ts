@@ -6,6 +6,7 @@ import { adminScopeService } from '../../services/admin-scope'
 import type { BotContext } from '../../types/context'
 import { auditService } from '../../services/audit-logs'
 import logger from '../../utils/logger'
+import { replyOrEdit } from '../utils/reply'
 
 /**
  * Super Admin user management handler (/users)
@@ -18,17 +19,22 @@ export async function usersHandler(ctx: BotContext) {
   })
 
   if (users.length === 0) {
-    return ctx.reply(ctx.t('users-list-empty'))
+    const emptyKeyboard = new InlineKeyboard().text(ctx.t('button-back-to-menu'), 'menu:main')
+    return replyOrEdit(ctx, ctx.t('users-list-empty'), emptyKeyboard)
   }
 
   const keyboard = new InlineKeyboard()
   for (const user of users) {
     const status = user.isActive ? '✅' : '🚫'
-    keyboard.text(`${status} ${user.fullName} (${user.role})`, `user:view:${user.telegramId}`)
+    const displayName = user.nickname || user.fullName
+    keyboard.text(`${status} ${displayName} (${user.role})`, `user:view:${user.telegramId}`)
     keyboard.row()
   }
 
-  return ctx.reply(ctx.t('users-list-title'), { reply_markup: keyboard })
+  // Add back button for super admin menus matching the pattern
+  keyboard.text(ctx.t('button-back-to-menu'), 'menu:main')
+
+  return replyOrEdit(ctx, ctx.t('users-list-title'), keyboard)
 }
 
 /**
@@ -38,6 +44,10 @@ export async function userActionsHandler(ctx: BotContext) {
   const query = ctx.callbackQuery?.data
   if (!query)
     return
+
+  if (query === 'users:list') {
+    return usersHandler(ctx)
+  }
 
   const [_, action, targetIdStr, extra] = query.split(':')
   const targetId = BigInt(targetIdStr)
@@ -190,7 +200,7 @@ async function showUserScopes(ctx: BotContext, telegramId: bigint) {
 
   keyboard.text(ctx.t('button-back-to-user'), `user:view:${telegramId}`)
 
-  return ctx.editMessageText(ctx.t('user-scopes-title', { name: user.fullName }), {
+  return ctx.editMessageText(ctx.t('user-scopes-title', { name: user.nickname || user.fullName }), {
     reply_markup: keyboard,
   })
 }

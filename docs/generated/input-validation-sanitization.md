@@ -36,17 +36,18 @@ This component provides a Zod schema for validating Egyptian phone numbers.
     *   **Description**: This function returns a Zod schema that preprocesses input by trimming whitespace and then validates it against `EGYPTIAN_PHONE_REGEX`.
     *   **Usage**:
         ```typescript
-        import { egyptianPhoneNumber } from '@packages/validators';
+        import { egyptianPhoneNumber } from '@packages/validators'
 
-        const phoneSchema = egyptianPhoneNumber();
+        const phoneSchema = egyptianPhoneNumber()
 
         // Example usage
-        phoneSchema.parse('01012345678'); // Valid
-        phoneSchema.parse('  01198765432  '); // Valid, trims whitespace
+        phoneSchema.parse('01012345678') // Valid
+        phoneSchema.parse('  01198765432  ') // Valid, trims whitespace
         try {
-          phoneSchema.parse('0101234567'); // Throws ZodError: Invalid Egyptian phone number format.
-        } catch (e) {
-          console.error(e.errors);
+          phoneSchema.parse('0101234567') // Throws ZodError: Invalid Egyptian phone number format.
+        }
+        catch (e) {
+          console.error(e.errors)
         }
         ```
 
@@ -68,17 +69,18 @@ This component offers robust validation for Egyptian National IDs, including com
         5.  **Checksum Refinement**: Calls `isValidChecksum` to verify the ID's checksum digit.
     *   **Usage**:
         ```typescript
-        import { egyptianNationalId } from '@packages/validators';
+        import { egyptianNationalId } from '@packages/validators'
 
-        const nationalIdSchema = egyptianNationalId();
+        const nationalIdSchema = egyptianNationalId()
 
         // Example usage
-        nationalIdSchema.parse('29901010100001'); // Valid (example, actual valid IDs are complex)
+        nationalIdSchema.parse('29901010100001') // Valid (example, actual valid IDs are complex)
         try {
-          nationalIdSchema.parse('12345678901234'); // Throws ZodError: ID must be 14 digits and start with 2 or 3.
-          nationalIdSchema.parse('29901010100000'); // Throws ZodError: Invalid checksum in National ID. (example)
-        } catch (e) {
-          console.error(e.errors);
+          nationalIdSchema.parse('12345678901234') // Throws ZodError: ID must be 14 digits and start with 2 or 3.
+          nationalIdSchema.parse('29901010100000') // Throws ZodError: Invalid checksum in National ID. (example)
+        }
+        catch (e) {
+          console.error(e.errors)
         }
         ```
 *   **`extractEgyptianNationalIdInfo(id: string): { birthDate: Date, gender: 'MALE' | 'FEMALE' }`**:
@@ -87,12 +89,12 @@ This component offers robust validation for Egyptian National IDs, including com
     *   **Description**: This utility function parses a *valid* Egyptian National ID to extract the birth date and gender. It assumes the ID has already passed validation via `egyptianNationalId()`.
     *   **Usage**:
         ```typescript
-        import { extractEgyptianNationalIdInfo } from '@packages/validators';
+        import { extractEgyptianNationalIdInfo } from '@packages/validators'
 
-        const validId = '29901010100001'; // Assume this is a valid ID
-        const info = extractEgyptianNationalIdInfo(validId);
-        console.log(info.birthDate); // Date object
-        console.log(info.gender);    // 'MALE' or 'FEMALE'
+        const validId = '29901010100001' // Assume this is a valid ID
+        const info = extractEgyptianNationalIdInfo(validId)
+        console.log(info.birthDate) // Date object
+        console.log(info.gender) // 'MALE' or 'FEMALE'
         ```
 
 #### HTML Sanitization (`sanitize.ts`)
@@ -105,11 +107,11 @@ This component provides a simple function to sanitize strings for safe display i
     *   **Description**: Replaces HTML-sensitive characters (`&`, `<`, `>`, `"`, `'`) with their corresponding HTML entities (`&amp;`, `&lt;`, `&gt;`, `&quot;`, `&#39;`). This helps prevent XSS attacks when user-provided content is rendered directly into HTML.
     *   **Usage**:
         ```typescript
-        import { sanitizeHtml } from '@packages/validators';
+        import { sanitizeHtml } from '@packages/validators'
 
-        const userInput = '<script>alert("XSS")</script> & "hello"';
-        const safeOutput = sanitizeHtml(userInput);
-        console.log(safeOutput);
+        const userInput = '<script>alert("XSS")</script> & "hello"'
+        const safeOutput = sanitizeHtml(userInput)
+        console.log(safeOutput)
         // Output: &lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt; &amp; &quot;hello&quot;
         ```
 

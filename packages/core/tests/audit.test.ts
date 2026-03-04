@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { AuditAction } from '@prisma/client'
 import { auditService } from '../src/services/audit-logs'
-import { AuditAction } from '@prisma/client'
 
 // ─── Mocks ──────────────────────────────────────────────────────────────
 const { mockPrisma, mockLogger } = vi.hoisted(() => ({
@@ -22,7 +22,7 @@ const { mockPrisma, mockLogger } = vi.hoisted(() => ({
 vi.mock('../src/database/prisma', () => ({ prisma: mockPrisma }))
 vi.mock('../src/utils/logger', () => ({ default: mockLogger }))
 
-describe('Audit Service', () => {
+describe('audit Service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -65,11 +65,11 @@ describe('Audit Service', () => {
       await expect(auditService.log(data)).resolves.not.toThrow()
       expect(mockLogger.error).toHaveBeenCalledWith(
         expect.objectContaining({ err: error }),
-        'Audit logging failed'
+        'Audit logging failed',
       )
     })
 
-    describe('Redaction (T063)', () => {
+    describe('redaction (T063)', () => {
       it('should redact nationalId and phone', async () => {
         const data = {
           userId: BigInt(123),
@@ -204,22 +204,22 @@ describe('Audit Service', () => {
     })
   })
 
-  describe('Convenience Wrappers', () => {
+  describe('convenience Wrappers', () => {
     it('should provide getAuditLogsByUser convenience wrapper', async () => {
       const userId = BigInt(123)
       const spy = vi.spyOn(auditService, 'getAuditLogs').mockResolvedValue({} as any)
-      
+
       await auditService.getAuditLogsByUser(userId, 1, 10)
-      
+
       expect(spy).toHaveBeenCalledWith({ userId, page: 1, limit: 10 })
     })
 
     it('should provide getAuditLogsByAction convenience wrapper', async () => {
       const action = 'USER_LOGIN' as AuditAction
       const spy = vi.spyOn(auditService, 'getAuditLogs').mockResolvedValue({} as any)
-      
+
       await auditService.getAuditLogsByAction(action, 2, 50)
-      
+
       expect(spy).toHaveBeenCalledWith({ action, page: 2, limit: 50 })
     })
   })
@@ -227,9 +227,9 @@ describe('Audit Service', () => {
   describe('getAuditLogCount', () => {
     it('should return total count from prisma', async () => {
       mockPrisma.auditLog.count.mockResolvedValue(100)
-      
+
       const result = await auditService.getAuditLogCount()
-      
+
       expect(result).toBe(100)
       expect(mockPrisma.auditLog.count).toHaveBeenCalled()
     })

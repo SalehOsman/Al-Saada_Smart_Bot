@@ -36,18 +36,18 @@ flowchart TD
 defineModule({
   slug: 'employee-withdrawals',
   sectionSlug: 'hr',
-  name: 'module-withdrawals-name',       // مفتاح i18n
+  name: 'module-withdrawals-name', // مفتاح i18n
   icon: '💰',
 
   // ✨ تعريف العلاقة
   relations: [
     {
-      field: 'employeeId',                // اسم الحقل في هذا الموديول
-      targetModule: 'employee-data',       // slug الموديول المصدر
-      targetTable: 'employees',            // اسم جدول Prisma
-      displayField: 'fullName',            // الحقل الذي يظهر للمستخدم
+      field: 'employeeId', // اسم الحقل في هذا الموديول
+      targetModule: 'employee-data', // slug الموديول المصدر
+      targetTable: 'employees', // اسم جدول Prisma
+      displayField: 'fullName', // الحقل الذي يظهر للمستخدم
       searchFields: ['fullName', 'phone'], // حقول البحث
-      filters: { isActive: true },         // فقط العاملين النشطين
+      filters: { isActive: true }, // فقط العاملين النشطين
     }
   ],
 
@@ -63,7 +63,7 @@ async function withdrawalConversation(conversation, ctx) {
   // الخطوة 1: اختيار العامل — سطر واحد فقط!
   const employee = await lookup(ctx, conversation, {
     relation: 'employeeId',
-    prompt: 'withdrawal-select-employee',  // مفتاح i18n
+    prompt: 'withdrawal-select-employee', // مفتاح i18n
   })
   // employee = { id: 'abc123', fullName: 'محمد أحمد علي', phone: '01012345678' }
 

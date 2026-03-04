@@ -70,7 +70,10 @@ export async function joinConversation(
 
     // ── Step 1: Full Name ────────────────────────────────────────────────
     const fullName = await askForArabicName(ctx, wait)
-    if (!fullName) { await cancel(); return }
+    if (!fullName) {
+      await cancel()
+      return
+    }
 
     // ── Step 2: Nickname (optional) ──────────────────────────────────────
     const nickResult = await waitForSkippable(
@@ -80,18 +83,27 @@ export async function joinConversation(
       ctx.t('button-skip-nickname'),
       { tracker, skipData: 'skip_nickname' },
     )
-    if (nickResult === null) { await cancel(); return }
+    if (nickResult === null) {
+      await cancel()
+      return
+    }
     const nickname = nickResult === '__skip__'
       ? generateNickname(fullName)
       : (nickResult || generateNickname(fullName))
 
     // ── Step 3: Phone ────────────────────────────────────────────────────
     const phone = await askForPhone(ctx, wait)
-    if (!phone) { await cancel(); return }
+    if (!phone) {
+      await cancel()
+      return
+    }
 
     // ── Step 4: National ID ──────────────────────────────────────────────
     const idInfo = await askForNationalId(ctx, wait)
-    if (!idInfo) { await cancel(); return }
+    if (!idInfo) {
+      await cancel()
+      return
+    }
     const { nationalId, birthDate, gender } = idInfo
 
     // ── Step 5: Confirmation ─────────────────────────────────────────────
@@ -142,9 +154,10 @@ export async function joinConversation(
         requestCode,
         date: new Date().toLocaleDateString('ar-EG'),
       }))
+      const displayName = nickname || fullName
       await notifyAdmins({
         type: 'JOIN_REQUEST_NEW',
-        params: { userName: fullName, requestCode: result.requestId },
+        params: { userName: displayName, requestCode: result.requestId },
       })
     }
   }

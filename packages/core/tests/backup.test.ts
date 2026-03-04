@@ -1,26 +1,26 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import fs from 'node:fs/promises'
 import { exec } from 'node:child_process'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { AuditAction } from '@prisma/client'
 import { backupService } from '../src/services/backup'
 import { auditService } from '../src/services/audit-logs'
-import { AuditAction } from '@prisma/client'
 
 // Mock dependencies
 vi.mock('node:fs/promises')
 vi.mock('node:child_process', () => ({
-  exec: vi.fn((cmd, cb) => cb(null, { stdout: '', stderr: '' }))
+  exec: vi.fn((cmd, cb) => cb(null, { stdout: '', stderr: '' })),
 }))
 vi.mock('../src/services/audit-logs', () => ({
   auditService: {
-    log: vi.fn().mockResolvedValue({})
-  }
+    log: vi.fn().mockResolvedValue({}),
+  },
 }))
 vi.mock('../src/config/env', () => ({
   env: {
     NODE_ENV: 'test',
     DATABASE_URL: 'postgresql://user:pass@localhost:5432/db',
-    LOG_LEVEL: 'info'
-  }
+    LOG_LEVEL: 'info',
+  },
 }))
 
 describe('backupService', () => {
@@ -37,18 +37,18 @@ describe('backupService', () => {
 
   it('createBackup() should execute pg_dump and log audit action', async () => {
     vi.mocked(fs.stat).mockResolvedValue({ size: 1024 * 1024 } as any)
-    
+
     const result = await backupService.createBackup(userId)
-    
+
     expect(exec).toHaveBeenCalledWith(
       expect.stringContaining('pg_dump "postgresql://user:pass@localhost:5432/db"'),
-      expect.any(Function)
+      expect.any(Function),
     )
     expect(auditService.log).toHaveBeenCalledWith({
       userId,
       action: AuditAction.BACKUP_TRIGGER,
       targetType: 'DATABASE',
-      details: expect.objectContaining({ filename: expect.stringContaining('.sql'), size: '1.00 MB' })
+      details: expect.objectContaining({ filename: expect.stringContaining('.sql'), size: '1.00 MB' }),
     })
     expect(result.size).toBe('1.00 MB')
     expect(result.filename).toContain('.sql')
@@ -64,7 +64,7 @@ describe('backupService', () => {
     })
 
     const history = await backupService.getBackupHistory()
-    
+
     expect(history).toHaveLength(2)
     expect(history[0].filename).toBe('backup-2.sql') // Newest first
     expect(history[1].filename).toBe('backup-1.sql')
@@ -72,18 +72,18 @@ describe('backupService', () => {
 
   it('restoreFromBackup() should execute psql and log audit action', async () => {
     const filename = 'backup-test.sql'
-    
+
     await backupService.restoreFromBackup(filename, userId)
-    
+
     expect(exec).toHaveBeenCalledWith(
       expect.stringContaining('psql "postgresql://user:pass@localhost:5432/db"'),
-      expect.any(Function)
+      expect.any(Function),
     )
     expect(auditService.log).toHaveBeenCalledWith({
       userId,
       action: AuditAction.BACKUP_RESTORE,
       targetType: 'DATABASE',
-      details: { filename }
+      details: { filename },
     })
   })
 

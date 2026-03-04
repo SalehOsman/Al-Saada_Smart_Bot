@@ -1,4 +1,4 @@
-import { ModuleDefinition } from './types.js';
+import type { ModuleDefinition } from './types.js'
 
 /**
  * Validates and freezes a module definition.
@@ -17,26 +17,33 @@ export function defineModule(config: ModuleDefinition): ModuleDefinition {
     icon,
     permissions,
     addEntryPoint,
-  } = config;
+  } = config
 
   // 1. Check for missing required fields
-  if (!slug) throw new Error('Module definition is missing required field: "slug"');
-  if (!sectionSlug) throw new Error('Module definition is missing required field: "sectionSlug"');
-  if (!name) throw new Error('Module definition is missing required field: "name"');
-  if (!nameEn) throw new Error('Module definition is missing required field: "nameEn"');
-  if (!icon) throw new Error('Module definition is missing required field: "icon"');
-  if (!permissions) throw new Error('Module definition is missing required field: "permissions"');
-  if (!addEntryPoint) throw new Error('Module definition is missing required field: "addEntryPoint"');
+  if (!slug)
+    throw new Error('Module definition is missing required field: "slug"')
+  if (!sectionSlug)
+    throw new Error('Module definition is missing required field: "sectionSlug"')
+  if (!name)
+    throw new Error('Module definition is missing required field: "name"')
+  if (!nameEn)
+    throw new Error('Module definition is missing required field: "nameEn"')
+  if (!icon)
+    throw new Error('Module definition is missing required field: "icon"')
+  if (!permissions)
+    throw new Error('Module definition is missing required field: "permissions"')
+  if (!addEntryPoint)
+    throw new Error('Module definition is missing required field: "addEntryPoint"')
 
   // 2. Validate slug format (lowercase, hyphen-separated, no trailing hyphen)
-  const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+  const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/
   if (!slugRegex.test(slug)) {
-    throw new Error(`Invalid slug format: "${slug}". Must be lowercase, hyphen-separated (e.g., "fuel-entry").`);
+    throw new Error(`Invalid slug format: "${slug}". Must be lowercase, hyphen-separated (e.g., "fuel-entry").`)
   }
 
   // 3. Validate permissions.view
   if (!permissions.view || permissions.view.length === 0) {
-    throw new Error('Module definition "permissions.view" cannot be empty.');
+    throw new Error('Module definition "permissions.view" cannot be empty.')
   }
 
   // 4. Sanitize and deep freeze
@@ -47,16 +54,20 @@ export function defineModule(config: ModuleDefinition): ModuleDefinition {
     name: name.trim(),
     nameEn: nameEn.trim(),
     icon: icon.trim(),
-  };
+  }
 
   // Deep freeze permissions as well
   if (sanitizedConfig.permissions) {
-    Object.freeze(sanitizedConfig.permissions);
-    if (sanitizedConfig.permissions.view) Object.freeze(sanitizedConfig.permissions.view);
-    if (sanitizedConfig.permissions.create) Object.freeze(sanitizedConfig.permissions.create);
-    if (sanitizedConfig.permissions.edit) Object.freeze(sanitizedConfig.permissions.edit);
-    if (sanitizedConfig.permissions.delete) Object.freeze(sanitizedConfig.permissions.delete);
+    Object.freeze(sanitizedConfig.permissions)
+    if (sanitizedConfig.permissions.view)
+      Object.freeze(sanitizedConfig.permissions.view)
+    if (sanitizedConfig.permissions.create)
+      Object.freeze(sanitizedConfig.permissions.create)
+    if (sanitizedConfig.permissions.edit)
+      Object.freeze(sanitizedConfig.permissions.edit)
+    if (sanitizedConfig.permissions.delete)
+      Object.freeze(sanitizedConfig.permissions.delete)
   }
 
-  return Object.freeze(sanitizedConfig);
+  return Object.freeze(sanitizedConfig)
 }

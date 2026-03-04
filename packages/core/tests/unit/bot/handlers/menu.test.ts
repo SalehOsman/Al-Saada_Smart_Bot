@@ -2,6 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { menuHandler } from '../../../../src/bot/handlers/menu'
 import type { BotContext } from '../../../../src/types/context'
 
+// Captured references after hoisting — safe to use in tests
+import { prisma } from '../../../../src/database/prisma'
+import logger from '../../../../src/utils/logger'
+
 // Prisma mock — factory uses vi.fn() directly (no top-level variable reference)
 vi.mock('../../../../src/database/prisma', () => ({
   prisma: {
@@ -12,10 +16,6 @@ vi.mock('../../../../src/database/prisma', () => ({
 vi.mock('../../../../src/utils/logger', () => ({
   default: { info: vi.fn(), error: vi.fn(), warn: vi.fn() },
 }))
-
-// Captured references after hoisting — safe to use in tests
-import { prisma } from '../../../../src/database/prisma'
-import logger from '../../../../src/utils/logger'
 const mockPrisma = prisma as any
 const mockLogger = logger as any
 
@@ -54,7 +54,7 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
     vi.restoreAllMocks()
   })
 
-  describe('T024 - Main Menu Router RBAC Tests', () => {
+  describe('t024 - Main Menu Router RBAC Tests', () => {
     it('should show Super Admin menu for SUPER_ADMIN role', async () => {
       const mockUser = {
         id: 'user-1',
@@ -75,16 +75,16 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
       expect(call[0]).toContain('Welcome Super Admin Super Admin')
       expect(call[1]?.reply_markup?.inline_keyboard).toHaveLength(4)
       expect(call[1]?.reply_markup?.inline_keyboard[0]).toContainEqual(
-        expect.objectContaining({ text: 'Sections', callback_data: 'menu-sections' })
+        expect.objectContaining({ text: 'Sections', callback_data: 'menu-sections' }),
       )
       expect(call[1]?.reply_markup?.inline_keyboard[0]).toContainEqual(
-        expect.objectContaining({ text: 'Users', callback_data: 'menu-users' })
+        expect.objectContaining({ text: 'Users', callback_data: 'menu-users' }),
       )
       expect(call[1]?.reply_markup?.inline_keyboard[3]).toContainEqual(
-        expect.objectContaining({ text: 'Modules', callback_data: 'menu-modules' })
+        expect.objectContaining({ text: 'Modules', callback_data: 'menu-modules' }),
       )
       expect(call[1]?.reply_markup?.inline_keyboard[3]).toContainEqual(
-        expect.objectContaining({ text: 'Notifications', callback_data: 'menu-notifications' })
+        expect.objectContaining({ text: 'Notifications', callback_data: 'menu-notifications' }),
       )
     })
 
@@ -113,7 +113,7 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
           expect.arrayContaining([
             expect.objectContaining({ text: 'Modules', callback_data: 'menu-modules' }),
           ]),
-        ])
+        ]),
       )
     })
 
