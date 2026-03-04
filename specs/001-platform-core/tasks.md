@@ -183,15 +183,15 @@
 
 ### Module Discovery & Loading
 
-- [ ] T041 [P] Define ModuleConfig type in `packages/core/src/types/module.ts`
-- [ ] T042 [P] Create module discovery service in `packages/core/src/services/modules.ts` (scans `modules/`)
-- [ ] T043 [P] Implement module registry (Map<string, ModuleConfig>)
-- [ ] T044 [P] Implement module validation (skip invalid configs with warning)
+- [x] T041 [P] Define ModuleConfig type in `packages/core/src/types/module.ts` (Implemented as ModuleDefinition in 003-module-kit T002)
+- [x] T042 [P] Create module discovery service in `packages/core/src/services/modules.ts` (scans `modules/`) (Implemented as ModuleLoader.loadModules() in 003-module-kit T008)
+- [x] T043 [P] Implement module registry (Map<string, ModuleConfig>) (Implemented as Map<string, LoadedModule> in ModuleLoader, 003-module-kit T008)
+- [x] T044 [P] Implement module validation (skip invalid configs with warning) (Implemented with try/catch + skip invalid in ModuleLoader, 003-module-kit T008)
 - [ ] T045 [P] Create `registerModule()` and `getModulesBySection()` APIs
 - [ ] T085 [P] Implement `unregisterModule()` API function
 - [ ] T117 [P] [FR-030] Explicitly implement `getModulesBySection()` API function in `packages/core/src/services/modules.ts` as required by FR-030 — returns active modules for a given section with proper filtering by `isActive` flag and `orderIndex` sorting
 - [ ] T046 [P] Create module list display within sections (supports both main sections and sub-sections)
-- [ ] T047 [P] Write unit tests for module loader
+- [x] T047 [P] Write unit tests for module loader (Implemented in packages/core/tests/module-loader.test.ts, 003-module-kit T013)
 
 **Checkpoint**: Section & Module system complete - dynamic structure with hierarchy functional
 
