@@ -187,10 +187,10 @@
 - [x] T042 [P] Create module discovery service in `packages/core/src/services/modules.ts` (scans `modules/`) (Implemented as ModuleLoader.loadModules() in 003-module-kit T008)
 - [x] T043 [P] Implement module registry (Map<string, ModuleConfig>) (Implemented as Map<string, LoadedModule> in ModuleLoader, 003-module-kit T008)
 - [x] T044 [P] Implement module validation (skip invalid configs with warning) (Implemented with try/catch + skip invalid in ModuleLoader, 003-module-kit T008)
-- [ ] T045 [P] Create `registerModule()` and `getModulesBySection()` APIs
-- [ ] T085 [P] Implement `unregisterModule()` API function
-- [ ] T117 [P] [FR-030] Explicitly implement `getModulesBySection()` API function in `packages/core/src/services/modules.ts` as required by FR-030 — returns active modules for a given section with proper filtering by `isActive` flag and `orderIndex` sorting
-- [ ] T046 [P] Create module list display within sections (supports both main sections and sub-sections)
+- [x] T045 [P] Create `registerModule()` and `getModulesBySection()` APIs (Implemented in `packages/core/src/services/modules.ts` — both functions exist and operational)
+- [x] T085 [P] Implement `unregisterModule()` API function (Implemented in `packages/core/src/services/modules.ts`)
+- [x] T117 [P] [FR-030] Explicitly implement `getModulesBySection()` API function in `packages/core/src/services/modules.ts` as required by FR-030 — returns active modules for a given section with proper filtering by `isActive` flag and `orderIndex` sorting (Implemented with isActive filter + orderIndex sort)
+- [x] T046 [P] Create module list display within sections (supports both main sections and sub-sections) (Implemented in `bot/menus/sections.ts` showSectionModules() — unified to use moduleLoader as single source of truth)
 - [x] T047 [P] Write unit tests for module loader (Implemented in packages/core/tests/module-loader.test.ts, 003-module-kit T013)
 
 **Checkpoint**: Section & Module system complete - dynamic structure with hierarchy functional
@@ -240,11 +240,11 @@
 
 ### Scope Inheritance Implementation
 
-- [ ] T084-A [P] [FR-037] Update `canAccess()` function in `packages/core/src/services/rbac.ts` to resolve parent chain: when checking section access, if user has scope on a main section, grant access to all descendant sub-sections and their modules. If user has scope on a sub-section, grant access to that sub-section's modules ONLY. Scopes are additive (main section scope + specific sub-section scope = union).
-- [ ] T084-B [P] [FR-037] Update AdminScope sectionId FK constraint in prisma/schema.prisma to include `onDelete: Cascade` (FR-037: when a section is deleted, its AdminScope records are automatically removed, and the user loses access to all descendant sub-sections and modules).
-- [ ] T084-C [P] [FR-037] Add migration for AdminScope FK CASCADE delete
-- [ ] T084-D [P] [FR-037] Write unit tests for RBAC scope inheritance: (1) main section scope grants access to all sub-sections, (2) sub-section scope grants access to that sub-section only, (3) scopes are additive (union), (4) cascading delete removes inherited access
-- [ ] T084-E [P] [FR-037] Write integration test: verify admin with main section scope can access all descendant sub-sections and modules, but admin with sub-section scope cannot access parent main section or other sub-sections
+- [x] T084-A [P] [FR-037] Update `canAccess()` function in `packages/core/src/services/rbac.ts` to resolve parent chain: when checking section access, if user has scope on a main section, grant access to all descendant sub-sections and their modules. If user has scope on a sub-section, grant access to that sub-section's modules ONLY. Scopes are additive (main section scope + specific sub-section scope = union).
+- [x] T084-B [P] [FR-037] Update AdminScope sectionId FK constraint in prisma/schema.prisma to include `onDelete: Cascade` (FR-037: when a section is deleted, its AdminScope records are automatically removed, and the user loses access to all descendant sub-sections and modules). (Already implemented in T035-C — `onDelete: Cascade` confirmed in platform.prisma)
+- [x] T084-C [P] [FR-037] Add migration for AdminScope FK CASCADE delete (Migration already applied as part of T035-C Section hierarchy migration)
+- [x] T084-D [P] [FR-037] Write unit tests for RBAC scope inheritance: (1) main section scope grants access to all sub-sections, (2) sub-section scope grants access to that sub-section only, (3) scopes are additive (union), (4) cascading delete removes inherited access
+- [x] T084-E [P] [FR-037] Write integration test: verify admin with main section scope can access all descendant sub-sections and modules, but admin with sub-section scope cannot access parent main section or other sub-sections
 
 **Checkpoint**: RBAC Scope Inheritance complete - hierarchical permissions functional
 

@@ -1,5 +1,5 @@
 import { Role } from '@prisma/client'
-import { adminScopeService } from './admin-scope.ts'
+import { adminScopeService } from './admin-scope'
 
 export interface AccessOptions {
   sectionId?: string
@@ -32,10 +32,32 @@ export const rbacService = {
 
       // If specific section is requested
       if (options.sectionId) {
-        // Check if user has scope for the entire section (moduleId is null)
-        // OR specific module scope within that section
+        // FR-037: Resolve hierarchy for scope inheritance
+        const { prisma } = await import('../database/prisma')
+        const { redis } = await import('../cache/redis')
+        const cacheKey = `section:hierarchy:${options.sectionId}`
+        
+        let parentId: string | null = null
+        const cachedParentId = await redis.get(cacheKey)
+        
+        if (cachedParentId !== null && cachedParentId !== undefined) {
+          parentId = cachedParentId === 'root' ? null : cachedParentId
+        } else {
+          const section = await prisma.section.findUnique({
+            where: { id: options.sectionId },
+            select: { parentId: true }
+          })
+          parentId = section?.parentId || null
+          await redis.setex(cacheKey, 86400, parentId || 'root')
+        }
+
+        // Check if user has scope for the requested section OR its parent main section
         const hasScope = scopes.some((scope) => {
-          if (scope.sectionId !== options.sectionId) return false
+          // Grant access if:
+          // 1. Direct scope on requested section
+          // 2. Scope on parent main section (inheritance)
+          const isTargetSection = scope.sectionId === options.sectionId || (parentId && scope.sectionId === parentId)
+          if (!isTargetSection) return false
           
           // If a specific module is requested, scope must match OR be section-wide
           if (options.moduleId) {
