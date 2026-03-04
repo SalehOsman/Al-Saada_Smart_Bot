@@ -1,13 +1,17 @@
 import process from 'node:process'
 import { serve } from '@hono/node-server'
-import { bot, app } from './bot/index'
+import { app, bot } from './bot/index'
 import { env } from './config/env'
 import logger from './utils/logger'
 import { handleGracefulShutdown } from './utils/shutdown'
 import './workers/notification' // Start the notification worker
+import { startNotificationCleanup } from './cron/notification-cleanup'
 
 async function main() {
   logger.info('Starting Al-Saada Smart Bot...')
+
+  // Start cron jobs
+  startNotificationCleanup()
 
   // Register graceful shutdown handler
   await handleGracefulShutdown(bot)

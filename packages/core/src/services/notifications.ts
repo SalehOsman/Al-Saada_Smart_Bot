@@ -1,7 +1,7 @@
-import { notificationsQueue } from './queue'
-import { prisma } from '../database/prisma'
-import { NotificationType, NotificationJobData } from '../types/notification'
 import logger from '../utils/logger'
+import { prisma } from '../database/prisma'
+import { notificationsQueue } from './queue'
+import type { NotificationJobData, NotificationType } from '../types/notification'
 
 /**
  * Queues a single notification to be sent to a user.
@@ -46,18 +46,18 @@ export async function queueNotification(data: NotificationJobData): Promise<stri
 export async function queueBulkNotifications(items: NotificationJobData[]): Promise<string[]> {
   // For bulk creation with IDs, we use a transaction with multiple creates
   // or generate IDs ourselves. Here we'll use a transaction for safety.
-  
+
   const notifications = await prisma.$transaction(
-    items.map((item) => prisma.notification.create({
+    items.map(item => prisma.notification.create({
       data: {
         targetUserId: item.targetUserId,
         type: item.type,
         params: item.params || {},
       },
-    }))
+    })),
   )
 
-  const ids = notifications.map((n) => n.id)
+  const ids = notifications.map(n => n.id)
 
   // Add jobs to BullMQ in bulk
   await notificationsQueue.addBulk(
@@ -67,15 +67,71 @@ export async function queueBulkNotifications(items: NotificationJobData[]): Prom
       opts: {
         jobId: ids[index],
       },
-    }))
+    })),
   )
 
   // Log summary
   logger.info({
     msg: 'Bulk notifications queued',
     count: items.length,
-    types: [...new Set(items.map((i) => i.type))],
+    types: [...new Set(items.map(i => i.type))],
   })
 
   return ids
+}
+
+/**
+ * Retrieves paginated notification history for a user.
+ */
+export async function getNotificationHistory(
+  userId: bigint,
+  options?: { page?: number; limit?: number; type?: NotificationType }
+) {
+  const page = options?.page || 1
+  const limit = options?.limit || 20
+  const skip = (page - 1) * limit
+
+  const where = {
+    targetUserId: userId,
+    ...(options?.type ? { type: options.type } : {}),
+  }
+
+  const [notifications, total] = await Promise.all([
+    prisma.notification.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+    }),
+    prisma.notification.count({ where }),
+  ])
+
+  return {
+    notifications,
+    total,
+    page,
+    totalPages: Math.ceil(total / limit),
+  }
+}
+
+/**
+ * Marks a specific notification as read.
+ */
+export async function markAsRead(notificationId: string) {
+  return prisma.notification.update({
+    where: { id: notificationId },
+    data: { readAt: new Date() },
+  })
+}
+
+/**
+ * Gets the count of unread notifications for a user.
+ */
+export async function getUnreadCount(userId: bigint) {
+  return prisma.notification.count({
+    where: {
+      targetUserId: userId,
+      readAt: null,
+    },
+  })
 }
