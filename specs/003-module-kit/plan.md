@@ -37,7 +37,7 @@ Decisions made during `/speckit.clarify` session (2026-03-03). These document th
 | Decision | Current Implementation | Future Improvement (Backlog) |
 |----------|----------------------|------------------------------|
 | Redis unavailable mid-flow | Draft middleware catches Redis errors silently (try/catch + Pino log). Conversation continues normally | Add user warning via `module-kit-draft-save-unavailable` i18n key |
-| save() DB failure | Throws error, draft preserved in Redis. User sees `module-kit-save-failed` | Add max 1 automatic retry before throwing. Add `module-kit-save-failed-persistent` for retry failure |
+| save() DB failure | Throws error, draft preserved in Redis. User sees `module-kit-save-failed`. 1 automatic retry before throwing. | Add `module-kit-save-failed-persistent` for retry failure |
 | Conversation inactivity timeout | 15 minutes (spec edge case) — release handler, keep draft, notify via `module-kit-conversation-timeout` | No change needed — timeout implemented per spec edge case |
 | Concurrent module conversations | One active conversation per user (grammY limitation). Starting new module exits current conversation. Draft preserved in Redis | No change needed — current behavior is correct |
 | confirm() with empty data | No validation — passes through | Add developer-facing error guard: throw if data object is empty |
