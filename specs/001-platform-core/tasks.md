@@ -229,6 +229,7 @@
 - [x] T116 [P] [US6] Manual verification: confirm Docker backup/restore works end-to-end — (1) trigger `pg_dump` from within the bot container, verify `.sql` file appears in `/backups` volume, (2) trigger `pg_restore` from the same file, verify data integrity after restore. Document verification steps in `quickstart.md` under a "Backup & Restore" section (FR-036).
 - [x] T109 [P] Write unit tests for settings handlers
 
+
 **Checkpoint**: Settings menu complete - Super Admin configuration functional
 
 ---

@@ -214,6 +214,8 @@ errors-unauthorized = You are not authorized to perform this action.
 
 # US4: Maintenance mode active message
 maintenance-active-message = The system is currently under maintenance. Please try again later.
+maintenance-status-on = ✅ Maintenance mode has been activated successfully. The system is now only accessible to administrators.
+maintenance-status-off = 🛠️ Maintenance mode has been deactivated. The system is now available to all users.
 
 # FR-034: Phone validation
 errors-validation-invalid-phone =
@@ -246,3 +248,97 @@ module-kit-edit-field = ✏️ Edit { $field }
 
 # Clarifications: PENDING user re-attempt
 errors-join-request-already-pending = You already have a join request under review. You cannot submit a new request until the current one is resolved.
+
+# Section Management (US3 - Phase 6)
+sections-menu-title = 📁 Manage Sections
+sections-list-empty = No sections exist yet. You can create a new section.
+section-empty-modules = No active modules in this section.
+button-add-section = ➕ Add Section
+button-add-subsection = ➕ Add Sub-Section
+button-back-to-sections = 🔙 Back to Sections
+section-create-prompt = Send new section data in the following format:
+    Section Name (Arabic) | Section Name (English) | Emoji | Order
+
+subsection-create-prompt = Send new sub-section data under "{ $parentName }":
+    Section Name (Arabic) | Section Name (English) | Emoji
+
+section-create-invalid-format = Invalid format. Please use: Section Name (Arabic) | Section Name (English) | Emoji
+section-created-success = ✅ Section created successfully!
+section-edit-title = ✏️ Edit Section: { $name }
+section-edit-name-prompt = Enter new name for the section (Arabic):
+section-edit-name-en-prompt = Enter new name for the section (English):
+section-edit-icon-prompt = Enter new emoji (single emoji character):
+section-edit-parent-prompt = Select parent section (optional):
+option-no-parent = No Parent Section
+section-edit-order-prompt = Enter new order number:
+section-updated-success = ✅ Section updated successfully!
+section-parent-updated-success = ✅ Parent section updated successfully!
+section-delete-confirm = ⚠️ Are you sure you want to delete "{ $name }"?
+button-confirm-delete = ✅ Yes, Delete
+section-delete-confirm = Do you want to delete this section?
+section-deleted-success = ✅ Section deleted successfully!
+section-enabled-success = ✅ Section enabled successfully!
+section-disabled-success = ✅ Section disabled successfully!
+section-modules-title = 📂 Section Modules: { $sectionName }
+subsections-menu-title = 📂 Sub-Sections of "{ $parentName }"
+errors-section-not-found = The requested section not found.
+errors-validation-section-name = Name must be 2 to 50 characters.
+errors-validation-section-icon = Emoji must be a single emoji character only.
+errors-section-max-depth-exceeded = Cannot create third-level section. Maximum is 2 levels (main section and sub-section).
+
+# Settings Menu (FR-036)
+settings-menu-title = ⚙️ System Settings
+settings-menu-welcome = Welcome to the bot settings control panel.
+
+button-settings-maintenance = 🛠️ Maintenance Mode
+button-settings-language = 🌐 Default Language
+button-settings-notifications = 🔔 Notification Prefs
+button-settings-system-info = ℹ️ System Info
+button-settings-backup = 💾 Backup & Restore
+
+# Default Language
+settings-language-title = 🌐 Default Language for New Users
+settings-language-current = Current language: { $lang }
+settings-language-updated = ✅ Default language updated to: { $lang }
+
+# Notification Preferences
+settings-notifications-title = 🔔 Notification Preferences (Mute/Unmute)
+settings-notifications-updated = ✅ Notification preferences updated.
+
+# System Info
+settings-system-info-title = ℹ️ System Information
+settings-system-info-content =
+    🤖 Bot Version: { $version }
+    ⏱️ Uptime: { $uptime }
+    🌍 Environment: { $env }
+    
+    🔌 Services Status:
+    🐘 PostgreSQL: { $dbStatus }
+    🔴 Redis: { $redisStatus }
+
+# Backup
+settings-backup-title = 💾 Backup Management
+settings-backup-trigger = 📤 Create Backup Now
+settings-backup-history = 📜 Backup History
+settings-backup-restore = 📥 Restore Backup
+settings-backup-created = ✅ Backup created successfully!
+    File: { $filename }
+    Size: { $size }
+settings-backup-creating = ⏳ Creating backup...
+settings-backup-history-empty = No backups found yet.
+settings-backup-restore-confirm = ⚠️ Warning: All current data will be deleted and replaced with backup data. Are you sure?
+    To confirm, please type the following word: { $keyword }
+settings-backup-restore-confirm-keyword = CONFIRM
+settings-backup-restore-success = ✅ Data restored successfully! The bot will restart.
+settings-backup-restore-fail = ❌ Data restore failed or was cancelled.
+
+# Notification Types
+notif-type-join-request-new = New Join Request
+notif-type-join-request-approved = Join Approved
+notif-type-join-request-rejected = Join Rejected
+notif-type-user-deactivated = User Deactivated
+notif-type-maintenance-on = Maintenance On
+notif-type-maintenance-off = Maintenance Off
+
+# Module Management (US3 - Phase 6)
+button-back-to-menu = 🏠 Back to Main Menu

@@ -214,6 +214,8 @@ errors-unauthorized = غير مصرح لك بتنفيذ هذا الإجراء.
 
 # US4: Maintenance mode active message
 maintenance-active-message = النظام في وضع الصيانة حالياً. يرجى المحاولة لاحقاً.
+maintenance-status-on = ✅ تم تفعيل وضع الصيانة بنجاح. النظام الآن متاح للمسؤولين فقط.
+maintenance-status-off = 🛠️ تم إيقاف وضع الصيانة. النظام الآن متاح لجميع المستخدمين.
 
 # FR-034: Phone validation
 errors-validation-invalid-phone =
@@ -246,3 +248,97 @@ module-kit-edit-field = ✏️ تعديل { $field }
 
 # Clarifications: PENDING user re-attempt
 errors-join-request-already-pending = لديك طلب انضمام قيد المراجعة بالفعل. لا يمكنك تقديم طلب جديد حتى يتم الرد على الطلب الحالي.
+
+# Section Management (US3 - Phase 6)
+sections-menu-title = 📁 إدارة الأقسام
+sections-list-empty = لا توجد أقسام بعد. يمكنك إنشاء قسم جديد.
+section-empty-modules = لا توجد وحدات نشطة في هذا القسم.
+button-add-section = ➕ إضافة قسم
+button-add-subsection = ➕ إضافة قسم فرعي
+button-back-to-sections = 🔙 العودة للأقسام
+section-create-prompt = أرسل بيانات القسم الجديد بالتنسيق التالي:
+    اسم القسم (عربي) | اسم القسم (إنجليزي) | أيقونة | ترتيب
+
+subsection-create-prompt = أرسل بيانات القسم الفرعي الجديد تحت "{ $parentName }":
+    اسم القسم (عربي) | اسم القسم (إنجليزي) | أيقونة
+
+section-create-invalid-format = التنسيق غير صحيح. يرجى استخدام: الاسم العربي | الاسم الإنجليزي | الأيقونة
+section-created-success = ✅ تم إنشاء القسم بنجاح!
+section-edit-title = ✏️ تعديل القسم: { $name }
+section-edit-name-prompt = أدخل الاسم الجديد للقسم (عربي):
+section-edit-name-en-prompt = أدخل الاسم الجديد للقسم (إنجليزي):
+section-edit-icon-prompt = أدخل الأيقونة الجديدة (إيموجي واحد):
+section-edit-parent-prompt = اختر القسم الأب (اختياري):
+option-no-parent = بدون قسم أب
+section-edit-order-prompt = أدخل رقم الترتيب الجديد:
+section-updated-success = ✅ تم تحديث القسم بنجاح!
+section-parent-updated-success = ✅ تم تحديث القسم الأب بنجاح!
+section-delete-confirm = ⚠️ هل أنت متأكد من حذف القسم "{ $name }"؟
+button-confirm-delete = ✅ نعم، احذف
+section-delete-confirm = هل تريد حذف هذا القسم؟
+section-deleted-success = ✅ تم حذف القسم بنجاح!
+section-enabled-success = ✅ تم تفعيل القسم بنجاح!
+section-disabled-success = ✅ تم تعطيل القسم بنجاح!
+section-modules-title = 📂 وحدات القسم: { $sectionName }
+subsections-menu-title = 📂 أقسام فرعية لـ "{ $parentName }"
+errors-section-not-found = القسم المطلوب غير موجود.
+errors-validation-section-name = الاسم يجب أن يكون من 2 إلى 50 حرف.
+errors-validation-section-icon = الأيقونة يجب أن تكون إيموجي واحد فقط.
+errors-section-max-depth-exceeded = لا يمكن إنشاء قسم من مستوى ثالث. الحد الأقصى هو مستويين (قسم رئيسي وقسم فرعي).
+
+# Settings Menu (FR-036)
+settings-menu-title = ⚙️ إعدادات النظام
+settings-menu-welcome = مرحباً بك في لوحة تحكم إعدادات البوت.
+
+button-settings-maintenance = 🛠️ وضع الصيانة
+button-settings-language = 🌐 اللغة الافتراضية
+button-settings-notifications = 🔔 تفضيلات الإشعارات
+button-settings-system-info = ℹ️ معلومات النظام
+button-settings-backup = 💾 النسخ الاحتياطي
+
+# Default Language
+settings-language-title = 🌐 اللغة الافتراضية للمستخدمين الجدد
+settings-language-current = اللغة الحالية: { $lang }
+settings-language-updated = ✅ تم تحديث اللغة الافتراضية إلى: { $lang }
+
+# Notification Preferences
+settings-notifications-title = 🔔 تفضيلات الإشعارات (كتم/تفعيل)
+settings-notifications-updated = ✅ تم تحديث تفضيلات الإشعارات.
+
+# System Info
+settings-system-info-title = ℹ️ معلومات النظام
+settings-system-info-content =
+    🤖 نسخة البوت: { $version }
+    ⏱️ مدة التشغيل: { $uptime }
+    🌍 البيئة: { $env }
+    
+    🔌 حالة الخدمات:
+    🐘 PostgreSQL: { $dbStatus }
+    🔴 Redis: { $redisStatus }
+
+# Backup
+settings-backup-title = 💾 إدارة النسخ الاحتياطي
+settings-backup-trigger = 📤 إنشاء نسخة احتياطية الآن
+settings-backup-history = 📜 سجل النسخ الاحتياطية
+settings-backup-restore = 📥 استعادة نسخة احتياطية
+settings-backup-created = ✅ تم إنشاء النسخة الاحتياطية بنجاح!
+    الملف: { $filename }
+    الحجم: { $size }
+settings-backup-creating = ⏳ جاري إنشاء النسخة الاحتياطية...
+settings-backup-history-empty = لا توجد نسخ احتياطية بعد.
+settings-backup-restore-confirm = ⚠️ تحذير: سيتم حذف جميع البيانات الحالية واستبدالها ببيانات النسخة الاحتياطية. هل أنت متأكد؟
+    للتأكيد، يرجى كتابة الكلمة التالية: { $keyword }
+settings-backup-restore-confirm-keyword = تأكيد
+settings-backup-restore-success = ✅ تم استعادة البيانات بنجاح! سيتم إعادة تشغيل البوت.
+settings-backup-restore-fail = ❌ فشل استعادة البيانات أو تم إلغاؤها.
+
+# Notification Types
+notif-type-join-request-new = طلب انضمام جديد
+notif-type-join-request-approved = موافقة على انضمام
+notif-type-join-request-rejected = رفض انضمام
+notif-type-user-deactivated = تعطيل مستخدم
+notif-type-maintenance-on = تفعيل صيانة
+notif-type-maintenance-off = إيقاف صيانة
+
+# Module Management (US3 - Phase 6)
+button-back-to-menu = 🏠 العودة للقائمة الرئيسية

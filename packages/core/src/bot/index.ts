@@ -15,7 +15,15 @@ import { usersHandler, userActionsHandler } from './handlers/users'
 import { approvalsHandler } from './handlers/approvals'
 import { fallbackHandler } from './handlers/fallback'
 import { joinConversation } from './conversations/join'
-import { healthRouter } from '../server/health'
+import { redis } from '../cache/redis'
+import {
+  showMainSectionsMenu,
+  showSectionModules,
+  showSubSectionsMenu,
+  updateNavigationBreadcrumb,
+  handleBackNavigation,
+} from './menus/sections'
+import { sectionsCallbackHandler, sectionCreateTextHandler, editSectionActionHandler, sectionSetParentHandler } from './handlers/sections'
 
 // Create grammy bot instance using BOT_TOKEN from environment
 export const bot = new Bot<BotContext>(env.BOT_TOKEN)
@@ -38,6 +46,10 @@ bot.use(lazySessionMiddleware)
 import { rbacMiddleware } from './middlewares/rbac'
 bot.use(rbacMiddleware)
 
+// Maintenance mode check (FR-023)
+import { maintenanceMiddleware } from './middlewares/maintenance'
+bot.use(maintenanceMiddleware)
+
 // i18n middleware for bilingual support
 bot.use(i18n)
 
@@ -47,14 +59,6 @@ bot.use(draftMiddleware)
 
 // Conversations plugin for multi-step flows
 bot.use(conversations())
-
-// --- Dynamic Module Loading (Layer 2) ---
-import { moduleLoader } from './module-loader'
-// We perform an async load. In a real production app, we might want to block until this is done.
-// For now, we fire it off.
-moduleLoader.loadModules(bot).catch(err => {
-  logger.error('Failed to initialize ModuleLoader:', err)
-})
 
 // Sanitize all incoming text messages (FR-033)
 bot.use(sanitizeMiddleware)
@@ -73,6 +77,20 @@ bot.command('menu', menuHandler)
 // /users command (Super Admin only)
 bot.command('users', usersHandler)
 
+// /sections command (Super Admin only)
+bot.command('sections', async (ctx) => {
+  const { showMainSectionsMenu } = await import('./menus/sections')
+  return showMainSectionsMenu(ctx)
+})
+
+// /maintenance command (Super Admin only)
+import { maintenanceHandler } from './handlers/maintenance'
+bot.command('maintenance', maintenanceHandler)
+
+// /settings command (Super Admin only)
+import { settingsHandler, settingsActionsHandler } from './handlers/settings'
+bot.command('settings', settingsHandler)
+
 // Handle "submit join request" button (shown after cancellation)
 bot.callbackQuery('start_join', async (ctx) => {
   await ctx.answerCallbackQuery()
@@ -84,6 +102,31 @@ bot.callbackQuery(/^user:/, userActionsHandler)
 
 // Join request approval/rejection callback queries
 bot.callbackQuery(/^(approve|reject):/, approvalsHandler)
+
+// Section management callback queries
+bot.callbackQuery(/^section:/, sectionsCallbackHandler)
+
+// Settings callback queries
+bot.callbackQuery(/^settings:/, settingsActionsHandler)
+
+// Section edit actions
+bot.callbackQuery(/^section:edit:/, editSectionActionHandler)
+
+// Section parent selection
+bot.callbackQuery(/^section:set_parent:/, sectionSetParentHandler)
+
+// Section create/update text handler
+bot.on('message:text', async (ctx) => {
+  const { sectionCreateTextHandler } = await import('./handlers/sections')
+  const { settingsBackupRestoreTextHandler } = await import('./handlers/settings')
+  
+  // Try backup restore handler first if there's a pending restore
+  if (ctx.session.pendingRestore) {
+    return settingsBackupRestoreTextHandler(ctx)
+  }
+  
+  await sectionCreateTextHandler(ctx)
+})
 
 // --- Layer 2: Module Entry Point (US5) ---
 import { rbacService } from '../services/rbac'
@@ -103,9 +146,8 @@ bot.callbackQuery(/^mod:(.+)$/, async (ctx) => {
   }
 
   await ctx.answerCallbackQuery()
-  
+
   // 2. Check for existing draft (US3)
-  import { redis } from '../cache/redis'
   const redisKey = `draft:${userId}:${moduleSlug}`
   const draft = await redis.get(redisKey)
 
@@ -134,20 +176,12 @@ bot.callbackQuery(/^dr:(res|frsh):(.+)$/, async (ctx) => {
   const redisKey = `draft:${userId}:${moduleSlug}`
 
   await ctx.answerCallbackQuery()
-  await ctx.editMessageReplyMarkup({ reply_markup: { inline_keyboard: [] } }) // Clear buttons
+  // Clear buttons by editing message with empty keyboard
+  await ctx.editMessageReplyMarkup({ reply_markup: { inline_keyboard: [] } })
 
   if (action === 'frsh') {
-    import { redis } from '../cache/redis'
-    await redis.del(redisKey)
-    ctx.session.currentModule = moduleSlug
-    await ctx.conversation.enter(`${moduleSlug}-add`)
-    return
-  }
-
-  if (action === 'res') {
-    import { redis } from '../cache/redis'
     const draftData = await redis.get(redisKey)
-    
+
     if (!draftData) {
       await ctx.reply(ctx.t('module-kit-draft-expired'))
       ctx.session.currentModule = moduleSlug
@@ -155,22 +189,44 @@ bot.callbackQuery(/^dr:(res|frsh):(.+)$/, async (ctx) => {
       return
     }
 
-    try {
-      const { data, conversations } = JSON.parse(draftData)
-      
-      // Restore session data and conversation state
-      Object.assign(ctx.session, data)
-      // grammY conversations state is in ctx.session.conversations
-      if (conversations) {
-        (ctx.session as any).conversations = conversations
-      }
+    const { data, conversations } = JSON.parse(draftData)
 
+    // Restore session data and conversation state
+    Object.assign(ctx.session, data)
+    // grammY conversations state is in ctx.session.conversations
+    const sessionWithConversations = ctx.session as any
+    if (conversations) {
+      sessionWithConversations.conversations = conversations
+    }
+
+    ctx.session.currentModule = moduleSlug
+    await ctx.conversation.enter(`${moduleSlug}-add`)
+    return
+  }
+
+  if (action === 'res') {
+    const draftData = await redis.get(redisKey)
+
+    if (!draftData) {
+      await ctx.reply(ctx.t('module-kit-draft-expired'))
       ctx.session.currentModule = moduleSlug
       await ctx.conversation.enter(`${moduleSlug}-add`)
-    } catch (err) {
-      logger.error('Failed to restore draft:', err)
-      await ctx.reply(ctx.t('error-generic'))
+      return
     }
+
+    const { data, conversations } = JSON.parse(draftData)
+
+    // Restore session data and conversation state
+    Object.assign(ctx.session, data)
+    // grammY conversations state is in ctx.session.conversations
+    const sessionWithConversations = ctx.session as any
+    if (conversations) {
+      sessionWithConversations.conversations = conversations
+    }
+
+    ctx.session.currentModule = moduleSlug
+    await ctx.conversation.enter(`${moduleSlug}-add`)
+    return
   }
 })
 
@@ -186,16 +242,15 @@ app.route('/', healthRouter)
 // Setup webhook route to receive updates from Telegram
 app.post('/webhook', async (c) => {
   try {
-    // Get the update body from the request
+    // Get update body from request
     const update = await c.req.json()
 
-    // Process the update with the bot
+    // Process update with bot
     await bot.handleUpdate(update)
 
     // Return success response
     return c.json({ ok: true })
-  }
-  catch (error) {
+  } catch (error) {
     logger.error('Error processing webhook:', error)
     return c.json({ ok: false, error: 'Webhook processing failed' }, 500)
   }

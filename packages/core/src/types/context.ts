@@ -11,6 +11,10 @@ export interface SessionData {
   currentModule?: string | null
   currentStep?: string
   lastActivity?: number
+  currentMenu?: string[]  // Navigation breadcrumb stack
+  editSectionQuery?: string  // For section edit tracking
+  createSubSection?: string | null  // For sub-section creation tracking
+  pendingRestore?: string  // For backup restore tracking
   __language_code?: string
 }
 
