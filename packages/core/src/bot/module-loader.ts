@@ -57,7 +57,7 @@ class ModuleLoader {
         const config: ModuleDefinition = imported.default;
 
         if (!config || config.slug !== folder) {
-           throw new Error(`Module slug mismatch or missing default export. Expected "${folder}", got "${config?.slug}"`);
+          throw new Error(`Module slug mismatch or missing default export. Expected "${folder}", got "${config?.slug}"`);
         }
 
         // 1. Register i18n locales if they exist
@@ -173,8 +173,8 @@ class ModuleLoader {
           const title = i18n.t(lang, 'notification-module-load-error-title');
           const body = i18n.t(lang, 'notification-module-load-error-message', { slug, reason });
           const message = `${title}\n\n${body}`;
-          
-          await bot.api.sendMessage(Number(admin.telegramId), message);
+
+          await bot.api.sendMessage(admin.telegramId.toString(), message);
         } catch (err) {
           logger.error(`Failed to send error notification to admin ${admin.telegramId}:`, err);
         }

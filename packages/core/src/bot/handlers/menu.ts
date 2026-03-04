@@ -29,14 +29,8 @@ export async function menuHandler(ctx: BotContext) {
       return ctx.reply(ctx.t('user-inactive'))
     }
 
-    // Log menu access
-    await auditService.log({
-      userId: telegramId,
-      action: 'MENU_ACCESS' as any,
-      targetType: 'User',
-      targetId: user.id,
-      details: { role: user.role }
-    })
+    // Menu access is not one of the 25 defined AuditActions — no audit log here.
+    // Audit logging is reserved for state-changing actions (FR-026).
 
     // Get authorized modules
     const modules = await getAuthorizedModules(user)
@@ -55,7 +49,7 @@ export async function menuHandler(ctx: BotContext) {
  */
 async function getAuthorizedModules(user: MenuUser): Promise<LoadedModule[]> {
   const allModules = moduleLoader.getLoadedModules()
-  
+
   if (user.role === 'SUPER_ADMIN') {
     return allModules
   }
@@ -63,7 +57,7 @@ async function getAuthorizedModules(user: MenuUser): Promise<LoadedModule[]> {
   // Get all section slugs for which the user has scope
   const sectionIds = (user.adminScopes || []).map(s => s.sectionId)
   let scopedSectionSlugs: string[] = []
-  
+
   if (sectionIds.length > 0) {
     const sections = await prisma.section.findMany({
       where: { id: { in: sectionIds } },
@@ -75,7 +69,7 @@ async function getAuthorizedModules(user: MenuUser): Promise<LoadedModule[]> {
   return allModules.filter(m => {
     const permissions = m.config.permissions
     const isRoleAllowed = permissions.view.includes(user.role as Role)
-    
+
     if (!isRoleAllowed) return false
 
     // ADMIN must have scope for the module's section
@@ -92,7 +86,7 @@ async function getAuthorizedModules(user: MenuUser): Promise<LoadedModule[]> {
  */
 async function showDynamicMenu(ctx: BotContext, user: MenuUser, modules: LoadedModule[]) {
   const menuText = ctx.t(`menu-${user.role.toLowerCase()}` as any, { name: user.fullName })
-  
+
   const keyboard: any[][] = []
 
   // 1. Add Role-Specific System Buttons
@@ -110,13 +104,10 @@ async function showDynamicMenu(ctx: BotContext, user: MenuUser, modules: LoadedM
       { text: ctx.t('button-notifications'), callback_data: 'menu-notifications' },
     ])
   } else if (user.role === 'ADMIN') {
+    // ADMIN: Sections (scoped) + Users (scoped) only — no Maintenance/Audit (spec US1)
     keyboard.push([
       { text: ctx.t('button-sections'), callback_data: 'menu-sections' },
       { text: ctx.t('button-users'), callback_data: 'menu-users' },
-    ])
-    keyboard.push([
-      { text: ctx.t('button-maintenance'), callback_data: 'menu-maintenance' },
-      { text: ctx.t('button-audit'), callback_data: 'menu-audit' },
     ])
   } else {
     // EMPLOYEE / VISITOR
@@ -133,7 +124,7 @@ async function showDynamicMenu(ctx: BotContext, user: MenuUser, modules: LoadedM
       const row = []
       const m1 = modules[i]
       row.push({ text: `${m1.config.icon} ${ctx.t(m1.config.name as any)}`, callback_data: `mod:${m1.slug}` })
-      
+
       if (i + 1 < modules.length) {
         const m2 = modules[i + 1]
         row.push({ text: `${m2.config.icon} ${ctx.t(m2.config.name as any)}`, callback_data: `mod:${m2.slug}` })
