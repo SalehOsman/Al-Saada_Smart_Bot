@@ -2,7 +2,7 @@
 
 **Feature Branch**: `002-ai-assistant`
 **Created**: 2026-03-02
-**Status**: Draft
+**Status**: In Progress
 **Input**: User description: "AI Assistant as a full operational partner for business management — data entry, retrieval, reporting, analysis, and proactive suggestions."
 **Architecture Note**: AI Assistant is "Layer 4" in the monorepo package structure (packages/ai-assistant/) and "Phase 4" in the constitutional development phases. **Note**: Feature numbering (002) is the spec sequence. Phase 4 is the constitutional implementation phase. Both are correct and intentional.
 
@@ -272,7 +272,7 @@ Three AI-powered features help developers and Super Admins work with modules mor
 
 - **NFR-001**: System MUST support 50-500 concurrent users within acceptable performance targets
 - **NFR-002**: System MUST handle 1M-10M total records without degradation of query performance (defined as within 5% of baseline performance)
-- **NFR-003**: System MUST support horizontal scaling for stateless services when concurrent users exceed 300
+- **NFR-003**: System MUST support horizontal scaling for stateless services when concurrent users exceed 300. **Note**: Horizontal scaling (300+ users) is an architecture decision for production deployment phase. Phase 1 targets single-instance with Docker auto-restart.
 ### Rate Limiting
 
 - **NFR-004**: System MUST enforce role-based rate limits for AI queries
