@@ -1,4 +1,5 @@
-import type { Middleware, type StorageAdapter, session } from 'grammy'
+import { session } from 'grammy'
+import type { Middleware, StorageAdapter } from 'grammy'
 
 import { AuditAction } from '@prisma/client'
 import { redis } from '../../cache/redis'
@@ -110,7 +111,7 @@ export class ResilientRedisStorage implements StorageAdapter<SessionData> {
         this.reconnectAttempts = 0
         logger.info('Redis connection restored. Resuming Redis sessions.')
       }
-      catch (error) {
+      catch {
         this.reconnectAttempts++
         this.scheduleReconnect()
       }

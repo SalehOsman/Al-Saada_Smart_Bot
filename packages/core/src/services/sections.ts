@@ -343,7 +343,7 @@ export const sectionService = {
     if (section.parentId === null) {
       for (const child of section.children ?? []) {
         if (child.isActive) {
-          allModules.push(...(child.modules?.filter(m => m.isActive) ?? []))
+          allModules.push(...(child.modules?.filter((m: any) => m.isActive) ?? []))
         }
       }
     }

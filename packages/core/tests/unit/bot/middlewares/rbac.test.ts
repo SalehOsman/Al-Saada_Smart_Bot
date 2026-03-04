@@ -4,7 +4,7 @@ import { rbacService } from '../../../../src/services/rbac'
 import { rbacMiddleware } from '../../../../src/bot/middlewares/rbac'
 
 // ─── Mocks ──────────────────────────────────────────────────────────────
-const { mockPrisma, mockAdminScopeService, mockLogger } = vi.hoisted(() => ({
+const { mockPrisma, mockAdminScopeService, mockLogger, mockRedis } = vi.hoisted(() => ({
   mockPrisma: {
     user: { findUnique: vi.fn() },
   },
@@ -12,11 +12,25 @@ const { mockPrisma, mockAdminScopeService, mockLogger } = vi.hoisted(() => ({
     getScopes: vi.fn(),
   },
   mockLogger: { warn: vi.fn(), info: vi.fn(), error: vi.fn() },
+  mockRedis: { get: vi.fn().mockResolvedValue(null), setex: vi.fn() },
 }))
 
 vi.mock('../../../../src/database/prisma', () => ({ prisma: mockPrisma }))
-vi.mock('../../../../src/services/admin-scope', () => ({ adminScopeService: mockAdminScopeService }))
+vi.mock('../../../../src/services/admin-scope', () => ({
+  adminScopeService: mockAdminScopeService,
+}))
 vi.mock('../../../../src/utils/logger', () => ({ default: mockLogger }))
+vi.mock('../../../../src/cache/redis', () => ({ redis: mockRedis }))
+vi.mock('../../../../src/services/sections', () => ({
+  sectionService: { getAncestors: vi.fn().mockResolvedValue([]) },
+}))
+vi.mock('grammy', () => ({ session: vi.fn() }))
+vi.mock('../../../../src/bot/middlewares/session', () => ({
+  defaultSession: vi.fn(() => ({ role: 'VISITOR', userId: undefined, currentMenu: [] })),
+  sessionMiddleware: vi.fn(),
+  ResilientRedisStorage: vi.fn(),
+}))
+vi.mock('../../../../src/services/audit-logs', () => ({ auditService: { log: vi.fn() } }))
 
 describe('RBAC Service & Middleware (T034)', () => {
   beforeEach(() => {
@@ -35,34 +49,32 @@ describe('RBAC Service & Middleware (T034)', () => {
     })
 
     it('should allow ADMIN if scope exists', async () => {
-      mockAdminScopeService.getScopes.mockResolvedValue([
-        { sectionId: 's1', moduleId: null },
-      ])
+      mockAdminScopeService.getScopes.mockResolvedValue([{ sectionId: 's1', moduleId: null }])
       const result = await rbacService.canAccess(1n, Role.ADMIN, { sectionId: 's1' })
       expect(result).toBe(true)
     })
 
     it('should deny ADMIN if scope does not exist', async () => {
-      mockAdminScopeService.getScopes.mockResolvedValue([
-        { sectionId: 's2', moduleId: null },
-      ])
+      mockAdminScopeService.getScopes.mockResolvedValue([{ sectionId: 's2', moduleId: null }])
       const result = await rbacService.canAccess(1n, Role.ADMIN, { sectionId: 's1' })
       expect(result).toBe(false)
     })
 
     it('should allow ADMIN for specific module if section-wide scope exists', async () => {
-      mockAdminScopeService.getScopes.mockResolvedValue([
-        { sectionId: 's1', moduleId: null },
-      ])
-      const result = await rbacService.canAccess(1n, Role.ADMIN, { sectionId: 's1', moduleId: 'm1' })
+      mockAdminScopeService.getScopes.mockResolvedValue([{ sectionId: 's1', moduleId: null }])
+      const result = await rbacService.canAccess(1n, Role.ADMIN, {
+        sectionId: 's1',
+        moduleId: 'm1',
+      })
       expect(result).toBe(true)
     })
 
     it('should allow ADMIN for specific module if module-specific scope exists', async () => {
-      mockAdminScopeService.getScopes.mockResolvedValue([
-        { sectionId: 's1', moduleId: 'm1' },
-      ])
-      const result = await rbacService.canAccess(1n, Role.ADMIN, { sectionId: 's1', moduleId: 'm1' })
+      mockAdminScopeService.getScopes.mockResolvedValue([{ sectionId: 's1', moduleId: 'm1' }])
+      const result = await rbacService.canAccess(1n, Role.ADMIN, {
+        sectionId: 's1',
+        moduleId: 'm1',
+      })
       expect(result).toBe(true)
     })
   })
@@ -81,10 +93,10 @@ describe('RBAC Service & Middleware (T034)', () => {
         from: { id: 123 },
         session: { role: Role.EMPLOYEE },
         reply: vi.fn(),
-        t: vi.fn((k) => k),
+        t: vi.fn(k => k),
       } as any
 
-      await rbacMiddleware(ctx, next)
+      await (rbacMiddleware as any)(ctx, next)
 
       expect(ctx.reply).toHaveBeenCalledWith('errors-account-deactivated')
       expect(next).not.toHaveBeenCalled()
@@ -102,10 +114,10 @@ describe('RBAC Service & Middleware (T034)', () => {
         message: { text: '/users' },
         session: { role: Role.EMPLOYEE },
         reply: vi.fn(),
-        t: vi.fn((k) => k),
+        t: vi.fn(k => k),
       } as any
 
-      await rbacMiddleware(ctx, next)
+      await (rbacMiddleware as any)(ctx, next)
 
       expect(ctx.reply).toHaveBeenCalledWith('errors-unauthorized')
       expect(next).not.toHaveBeenCalled()
@@ -123,10 +135,10 @@ describe('RBAC Service & Middleware (T034)', () => {
         message: { text: '/users' },
         session: { role: Role.SUPER_ADMIN },
         reply: vi.fn(),
-        t: vi.fn((k) => k),
+        t: vi.fn(k => k),
       } as any
 
-      await rbacMiddleware(ctx, next)
+      await (rbacMiddleware as any)(ctx, next)
 
       expect(next).toHaveBeenCalled()
       expect(ctx.reply).not.toHaveBeenCalled()

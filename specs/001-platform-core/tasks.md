@@ -285,11 +285,11 @@
 
 - [x] T056 [P] Implement notification history storage in `packages/core/src/services/notifications.ts`
 - [x] T081 [P] Create notification cleanup cron job: delete notifications older than 90 days (retention policy per FR-032). Schedule: runs daily at 02:00 AM Africa/Cairo timezone using node-cron.
-- [ ] T099 [P] [US2] Integration test: verify SC-009 — send join request, confirm 95%+ of Super Admins receive Telegram notification within 30 seconds (FR-013, SC-009)
+- [x] T099 [P] [US2] Integration test: verify SC-009 — send join request, confirm 95%+ of Super Admins receive Telegram notification within 30 seconds (FR-013, SC-009)
 - [x] T100 [P] Verify SC-008: confirm Docker health checks are configured for all services (PostgreSQL, Redis, Bot) in docker-compose.yml
 - [x] T101 [P] Document uptime monitoring approach: add note in quickstart.md recommending UptimeRobot or similar tool for production deployment
-- [ ] T070 [US1] End-to-end test: complete user journey covering US1 acceptance scenarios: (1) INITIAL_SUPER_ADMIN_ID user sends /start → completes join flow → receives Super Admin welcome, (2) each of the 4 roles (SUPER_ADMIN, ADMIN, EMPLOYEE, VISITOR) sends /start → sees correct role-appropriate menu with no cross-role leakage
-- [ ] T071 [US3] End-to-end test: Super Admin journey (Sections → Modules → Users) including hierarchical navigation (main sections → sub-sections → modules with back buttons)
+- [x] T070 [US1] End-to-end test: complete user journey covering US1 acceptance scenarios: (1) INITIAL_SUPER_ADMIN_ID user sends /start → completes join flow → receives Super Admin welcome, (2) each of the 4 roles (SUPER_ADMIN, ADMIN, EMPLOYEE, VISITOR) sends /start → sees correct role-appropriate menu with no cross-role leakage
+- [x] T071 [US3] End-to-end test: Super Admin journey (Sections → Modules → Users) including hierarchical navigation (main sections → sub-sections → modules with back buttons)
 - [ ] T072 Verify 80% code coverage across all packages
 - [x] T073 Code cleanup, formatting, and final linting
 - [x] T074 Update quickstart.md with actual commands and verification steps
@@ -297,8 +297,8 @@
 - [ ] T114 [P] Execute Zero-Defect Gate verification (all tests pass, no lint errors, specs fully aligned). This is a MANDATORY blocking task before phase advancement.
 - [ ] T075 Final commit and tag v0.1.0. **Note (M1):** The 90/10 rule (90% config, max 10% hook code per module) cannot be verified until Phase 3 (first business module). Add compliance verification to Phase 3 tasks.
 - [ ] T078 [P] [NFR-001/003] Write and execute load test script using k6 to verify bot handles 200 concurrent users and maintains <500ms p95 response time.
-- [ ] T079 [P] [NFR-003] Write integration test to verify Redis fallback behavior (switching to in-memory map when Redis is down and auto-reconnecting).
-- [ ] T080 Verify SC-003: Confirm audit logs capture 100% of 25 defined actions from FR-026 (no gaps)
+- [x] T079 [P] [NFR-003] Write integration test to verify Redis fallback behavior (switching to in-memory map when Redis is down and auto-reconnecting).
+- [x] T080 Verify SC-003: Confirm audit logs capture 100% of 25 defined actions from FR-026 (no gaps)
 - [ ] T093 Verify SC-001: Manual test — first-time bootstrap user completes full flow (name → phone → national ID → confirm → Super Admin welcome) in ≤ 30 seconds
 - [ ] T094 Verify SC-004: Manual test — session state (current section, navigation) persists correctly across bot interactions within a 24-hour window; new session starts after 24hr inactivity
 - [ ] T095 Verify SC-005 + SC-006: Manual test — maintenance mode toggle propagates to all non-Super Admin users within 5 seconds; module discovery completes within 10 seconds of bot startup

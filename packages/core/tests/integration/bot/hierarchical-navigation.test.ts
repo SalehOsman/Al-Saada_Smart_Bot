@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { handleBackNavigation, showMainSectionsMenu, showSectionModules, showSubSectionsMenu } from '../../../src/bot/menus/sections'
-import { moduleService } from '../../../src/services/modules'
+import { moduleLoader } from '../../../src/bot/module-loader'
 
 // ─── Mocks ──────────────────────────────────────────────────────────────
 const { mockPrisma } = vi.hoisted(() => ({
@@ -13,9 +13,9 @@ const { mockPrisma } = vi.hoisted(() => ({
 }))
 
 vi.mock('../../../src/database/prisma', () => ({ prisma: mockPrisma }))
-vi.mock('../../../src/services/modules', () => ({
-  moduleService: {
-    getModulesBySection: vi.fn(),
+vi.mock('../../../src/bot/module-loader', () => ({
+  moduleLoader: {
+    getLoadedModules: vi.fn(),
   },
 }))
 
@@ -87,12 +87,13 @@ describe('hierarchical navigation integration (T040-A)', () => {
     mockPrisma.section.findUnique.mockResolvedValue({
       id: 'main2',
       name: 'Main 2',
+      slug: 'main-2',
       children: [],
       modules: [{ id: 'm1', isActive: true }],
     })
 
-    vi.mocked(moduleService.getModulesBySection).mockResolvedValue([
-      { slug: 'module1', name: 'Module 1', icon: '⚙️' } as any,
+    vi.mocked(moduleLoader.getLoadedModules).mockReturnValue([
+      { slug: 'module1', config: { name: 'Module 1', icon: '⚙️', sectionSlug: 'main-2', orderIndex: 1 } } as any,
     ])
 
     const ctx = {
@@ -105,22 +106,23 @@ describe('hierarchical navigation integration (T040-A)', () => {
 
     const editMarkup = ctx.editMessageText.mock.calls[0][1].reply_markup
     expect(editMarkup.inline_keyboard[0][0].text).toContain('Module 1')
-    expect(editMarkup.inline_keyboard[0][0].callback_data).toBe('module:module1')
+    // sections.ts uses 'mod:slug' (not 'module:slug')
+    expect(editMarkup.inline_keyboard[0][0].callback_data).toBe('mod:module1')
   })
 
   it('(4) clicking sub-section shows its modules + back button', async () => {
-    // Sub-section (has parentId set) with modules, no children
     mockPrisma.section.findUnique.mockResolvedValue({
       id: 'sub1',
       name: 'Sub Section 1',
+      slug: 'sub-1',
       parentId: 'main1',
       children: [],
       modules: [{ id: 'm1', isActive: true }, { id: 'm2', isActive: true }],
     })
 
-    vi.mocked(moduleService.getModulesBySection).mockResolvedValue([
-      { slug: 'mod-a', name: 'Module A', icon: '📊' } as any,
-      { slug: 'mod-b', name: 'Module B', icon: '📋' } as any,
+    vi.mocked(moduleLoader.getLoadedModules).mockReturnValue([
+      { slug: 'mod-a', config: { name: 'Module A', icon: '📊', sectionSlug: 'sub-1', orderIndex: 1 } } as any,
+      { slug: 'mod-b', config: { name: 'Module B', icon: '📋', sectionSlug: 'sub-1', orderIndex: 2 } } as any,
     ])
 
     const ctx = {
@@ -135,10 +137,10 @@ describe('hierarchical navigation integration (T040-A)', () => {
     expect(ctx.editMessageText).toHaveBeenCalled()
 
     const editMarkup = ctx.editMessageText.mock.calls[0][1].reply_markup
-    // Should show 2 modules + back button
+    // 2 modules + back button = 3 rows
     expect(editMarkup.inline_keyboard.length).toBe(3)
-    expect(editMarkup.inline_keyboard[0][0].callback_data).toBe('module:mod-a')
-    expect(editMarkup.inline_keyboard[1][0].callback_data).toBe('module:mod-b')
+    expect(editMarkup.inline_keyboard[0][0].callback_data).toBe('mod:mod-a')
+    expect(editMarkup.inline_keyboard[1][0].callback_data).toBe('mod:mod-b')
     // Last row = back button
     expect(editMarkup.inline_keyboard[2][0].callback_data).toBe('menu:sections')
   })
@@ -166,7 +168,7 @@ describe('hierarchical navigation integration (T040-A)', () => {
       children: [],
       modules: [{ id: 'm1', isActive: true }],
     })
-    vi.mocked(moduleService.getModulesBySection).mockResolvedValue([])
+    vi.mocked(moduleLoader.getLoadedModules).mockReturnValue([])
 
     await handleBackNavigation(ctx)
 

@@ -1,7 +1,8 @@
-import { Role, Status } from '@prisma/client'
+import { AuditAction, Role, Status } from '@prisma/client'
 import { prisma } from '../../database/prisma'
 import { queueNotification } from '../../services/notifications'
 import type { BotContext } from '../../types/context'
+import { auditService } from '../../services/audit-logs'
 import logger from '../../utils/logger'
 
 /**
@@ -114,6 +115,14 @@ export async function approvalsHandler(ctx: BotContext) {
       { action, requestId, userId: joinReq.telegramId.toString(), adminId: adminId.toString() },
       'Join request handled',
     )
+
+    await auditService.log({
+      userId: adminId,
+      action: action === 'approve' ? AuditAction.USER_APPROVE : AuditAction.USER_REJECT,
+      targetType: 'User',
+      targetId: joinReq.telegramId.toString(),
+      details: { requestId },
+    })
   }
   catch (error) {
     logger.error({ err: error, requestId }, 'Error in approvalsHandler')

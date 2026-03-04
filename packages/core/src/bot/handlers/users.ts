@@ -1,9 +1,10 @@
 import { InlineKeyboard } from 'grammy'
-import { Role } from '@prisma/client'
+import { AuditAction, Role } from '@prisma/client'
 import { prisma } from '../../database/prisma'
 import { redis } from '../../cache/redis'
 import { adminScopeService } from '../../services/admin-scope'
 import type { BotContext } from '../../types/context'
+import { auditService } from '../../services/audit-logs'
 import logger from '../../utils/logger'
 
 /**
@@ -62,6 +63,13 @@ export async function userActionsHandler(ctx: BotContext) {
       logger.info({ userId: targetId.toString() }, 'User deactivated, session cleared')
     }
 
+    await auditService.log({
+      userId: BigInt(ctx.from?.id || 0),
+      action: newStatus ? AuditAction.USER_ACTIVATE : AuditAction.USER_DEACTIVATE,
+      targetType: 'User',
+      targetId: targetId.toString(),
+    })
+
     await ctx.answerCallbackQuery(ctx.t('user-status-updated'))
     return showUserDetails(ctx, targetId)
   }
@@ -72,6 +80,15 @@ export async function userActionsHandler(ctx: BotContext) {
       where: { telegramId: targetId },
       data: { role: newRole },
     })
+
+    await auditService.log({
+      userId: BigInt(ctx.from?.id || 0),
+      action: AuditAction.ROLE_CHANGE,
+      targetType: 'User',
+      targetId: targetId.toString(),
+      details: { newRole },
+    })
+
     await ctx.answerCallbackQuery(ctx.t('user-role-updated'))
     return showUserDetails(ctx, targetId)
   }
