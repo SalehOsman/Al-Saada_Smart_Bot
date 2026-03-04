@@ -234,7 +234,7 @@ Three AI-powered features help developers and Super Admins work with modules mor
 
 **AI Modes and Architecture**
 
-- **FR-035**: System MUST support three operating modes: Fast (local only), Smart (local + cloud review), and Training (background improvement). **Training Mode**: Cloud model evaluates a batch of recent local model answers in the background, identifies low-confidence responses, and generates RAG improvement suggestions (better embeddings, chunking, or missing data). Does not affect real-time queries.
+- **FR-035**: System MUST support three operating modes: Fast (local only), Smart (local + cloud review), and Training (background improvement). **Training Mode**: Cloud model evaluates a batch of recent local model answers in the background, identifies low-confidence responses, and generates RAG improvement suggestions (better embeddings, chunking, or missing data). Does not affect real-time queries. Training Mode is read-only, batch processing that runs asynchronously and NEVER interferes with real-time user queries. It only re-indexes documents and improves embeddings in the background.
 - **FR-036**: System MUST use a local model for all queries in Fast Mode
 - **FR-037**: System MUST use a cloud model to review and refine local answers in Smart Mode
 - **FR-038**: System MUST support selection of cloud model provider (Gemini, GPT, Claude)
