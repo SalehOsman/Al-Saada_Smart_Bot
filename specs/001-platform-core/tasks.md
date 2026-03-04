@@ -167,19 +167,19 @@
 
 ### Section Hierarchy Schema Update
 
-- [ ] T035 [P] [US3] Create section CRUD service in `packages/core/src/services/sections.ts` (includes parentId handling, 2-level depth validation, cascade delete logic per FR-018)
-- [ ] T035-A [P] [US3] Update prisma/schema.prisma: add `parentId` field to Section model (self-referential FK to Section, nullable), add `parent` and `children` relations, add constraint check to enforce 2-level depth (referenced section MUST have parentId = null)
-- [ ] T035-B [P] [US3] Create Prisma migration for Section.parentId field and constraint
-- [ ] T035-C [P] [US3] Update AdminScope schema: set sectionId FK to `onDelete: Cascade` (FR-037: when section deleted, its AdminScope records automatically removed)
-- [ ] T036 [P] [US3] Create section management handlers for Super Admin in `packages/core/src/bot/handlers/sections.ts` — includes: (1) deletion constraint: reject delete if section has active modules, show error via i18n key `errors-section-has-active-modules` (FR-018), (2) hierarchy validation: reject creating section with sub-section as parentId (3rd level) via i18n key `errors-section-max-depth-exceeded`, (3) cascade delete: when deleting main section with sub-sections, cascade delete all sub-sections (FR-018), (4) input validation via Zod: section name must be 2-50 characters, icon must be exactly one Unicode emoji character — use Zod regex pattern `/^\p{Emoji}$/u` to validate emoji, reject invalid input with i18n key `errors-validation-section-name` and `errors-validation-section-icon` respectively (FR-018).
-- [ ] T037 [P] [US3] Create hierarchical section menu display in `packages/core/src/bot/menus/sections.ts` — main menu shows ONLY main sections (parentId = null), clicking main section with sub-sections shows sub-section list + back button, clicking standalone main section shows modules directly + back button (FR-019)
-- [ ] T037-A [P] [US3] Implement breadcrumb navigation tracking: store `currentMenu` array in Redis session as navigation stack (e.g., ['sections', 'section-id-123'] for main section, then add 'subsection-id-456' when viewing sub-section). Update FR-028 session contract to document array structure.
-- [ ] T037-B [P] [US3] Implement back button handling at each navigation level: when user clicks back, pop last item from `currentMenu` array and display previous level (FR-019)
-- [ ] T038 [P] [US3] Create "empty section" message logic — reply via i18n key `section-empty-modules` when a section has no active modules. Add key to both `ar.ftl` and `en.ftl`.
-- [ ] T039 [P] [US3] Create section enable/disable toggle handler
-- [ ] T039-A [P] [US3] Implement sub-section creation handler: Super Admin can create sub-section by selecting a main section as parent. Validate parentId exists and is a main section (parentId = null). Save with parentId set to main section ID.
-- [ ] T040 [P] Write integration tests for section CRUD including: (1) create main section, (2) create sub-section under main section, (3) reject 3rd level creation (sub-section as parent), (4) delete standalone empty section (success), (5) delete non-empty section (must fail with i18n error `errors-section-has-active-modules`), (6) delete main section with sub-sections (cascade delete), (7) delete main section blocked if sub-section has active modules
-- [ ] T040-A [P] [US3] Write integration test for hierarchical navigation: (1) main menu shows only main sections, (2) clicking main section with sub-sections shows sub-section list + back button, (3) clicking main section without sub-sections shows modules directly + back button, (4) clicking sub-section shows its modules + back button, (5) breadcrumb tracking via currentMenu array works correctly (FR-019)
+- [x] T035 [P] [US3] Create section CRUD service in `packages/core/src/services/sections.ts` (includes parentId handling, 2-level depth validation, cascade delete logic per FR-018)
+- [x] T035-A [P] [US3] Update prisma/schema.prisma: add `parentId` field to Section model (self-referential FK to Section, nullable), add `parent` and `children` relations, add constraint check to enforce 2-level depth (referenced section MUST have parentId = null)
+- [x] T035-B [P] [US3] Create Prisma migration for Section.parentId field and constraint
+- [x] T035-C [P] [US3] Update AdminScope schema: set sectionId FK to `onDelete: Cascade` (FR-037: when section deleted, its AdminScope records automatically removed)
+- [x] T036 [P] [US3] Create section management handlers for Super Admin in `packages/core/src/bot/handlers/sections.ts` — includes: (1) deletion constraint: reject delete if section has active modules, show error via i18n key `errors-section-has-active-modules` (FR-018), (2) hierarchy validation: reject creating section with sub-section as parentId (3rd level) via i18n key `errors-section-max-depth-exceeded`, (3) cascade delete: when deleting main section with sub-sections, cascade delete all sub-sections (FR-018), (4) input validation via Zod: section name must be 2-50 characters, icon must be exactly one Unicode emoji character — use Zod regex pattern `/^\p{Emoji}$/u` to validate emoji, reject invalid input with i18n key `errors-validation-section-name` and `errors-validation-section-icon` respectively (FR-018).
+- [x] T037 [P] [US3] Create hierarchical section menu display in `packages/core/src/bot/menus/sections.ts` — main menu shows ONLY main sections (parentId = null), clicking main section with sub-sections shows sub-section list + back button, clicking standalone main section shows modules directly + back button (FR-019)
+- [x] T037-A [P] [US3] Implement breadcrumb navigation tracking: store `currentMenu` array in Redis session as navigation stack (e.g., ['sections', 'section-id-123'] for main section, then add 'subsection-id-456' when viewing sub-section). Update FR-028 session contract to document array structure.
+- [x] T037-B [P] [US3] Implement back button handling at each navigation level: when user clicks back, pop last item from `currentMenu` array and display previous level (FR-019)
+- [x] T038 [P] [US3] Create "empty section" message logic — reply via i18n key `section-empty-modules` when a section has no active modules. Add key to both `ar.ftl` and `en.ftl`.
+- [x] T039 [P] [US3] Create section enable/disable toggle handler
+- [x] T039-A [P] [US3] Implement sub-section creation handler: Super Admin can create sub-section by selecting a main section as parent. Validate parentId exists and is a main section (parentId = null). Save with parentId set to main section ID.
+- [x] T040 [P] Write integration tests for section CRUD including: (1) create main section, (2) create sub-section under main section, (3) reject 3rd level creation (sub-section as parent), (4) delete standalone empty section (success), (5) delete non-empty section (must fail with i18n error `errors-section-has-active-modules`), (6) delete main section with sub-sections (cascade delete), (7) delete main section blocked if sub-section has active modules
+- [x] T040-A [P] [US3] Write integration test for hierarchical navigation: (1) main menu shows only main sections, (2) clicking main section with sub-sections shows sub-section list + back button, (3) clicking main section without sub-sections shows modules directly + back button, (4) clicking sub-section shows its modules + back button, (5) breadcrumb tracking via currentMenu array works correctly (FR-019)
 
 ### Module Discovery & Loading
 
@@ -203,12 +203,12 @@
 
 ### Maintenance Implementation
 
-- [ ] T048 [P] [US4] Create maintenance mode middleware in `packages/core/src/bot/middlewares/maintenance.ts`
-- [ ] T049 [P] [US4] Create maintenance toggle command (Super Admin only) — implement as `toggleMaintenance()` utility function in `packages/core/src/services/maintenance.ts`. This function is shared with T104 (Settings > Maintenance Toggle) to avoid duplication (FR-022 + FR-036 alias).
-- [ ] T050 [P] [US4] Create maintenance message for blocked users via i18n key `maintenance-active-message`
-- [ ] T051 [P] Store maintenance status in Redis
-- [ ] T086 [P] Implement Redis pub/sub for maintenance mode propagation (NFR-002)
-- [ ] T052 [P] Write unit test for maintenance middleware
+- [x] T048 [P] [US4] Create maintenance mode middleware in `packages/core/src/bot/middlewares/maintenance.ts`
+- [x] T049 [P] [US4] Create maintenance toggle command (Super Admin only) — implement as `toggleMaintenance()` utility function in `packages/core/src/services/maintenance.ts`. This function is shared with T104 (Settings > Maintenance Toggle) to avoid duplication (FR-022 + FR-036 alias).
+- [x] T050 [P] [US4] Create maintenance message for blocked users via i18n key `maintenance-active-message`
+- [x] T051 [P] Store maintenance status in Redis
+- [x] T086 [P] Implement Redis pub/sub for maintenance mode propagation (NFR-002)
+- [x] T052 [P] Write unit test for maintenance middleware
 
 **Checkpoint**: Maintenance mode complete - system control functional
 
@@ -220,14 +220,14 @@
 
 ### Settings Implementation
 
-- [ ] T104 [P] [US6] Create settings menu handler in `packages/core/src/bot/handlers/settings.ts` — main menu with 5 sub-items (Maintenance Toggle, Default Language, Notification Preferences, System Info, Backup)
-- [ ] T105 [P] [US6] Implement Default Language setting: bot-level default language (AR/EN) for new users. Store in Redis as a persistent key `system:defaultLanguage` (survives restarts via Redis persistence). On bot restart, read this key to restore the setting. Does NOT affect existing users — only applied when creating new User records (User.language field default).
-- [ ] T106 [P] [US6] Implement Notification Preferences: Super Admin can mute/unmute each of the 6 NotificationType values (`JOIN_REQUEST_NEW`, `JOIN_REQUEST_APPROVED`, `JOIN_REQUEST_REJECTED`, `USER_DEACTIVATED`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`). "Delivery settings" in FR-036 means mute/unmute toggle only — no email/SMS (bot-only in Phase 1). Store active types as a Redis set `system:activeNotificationTypes`. Default: all 6 types active.
-- [ ] T107 [P] [US6] Implement System Info Display: read-only view (bot version, uptime, connected services status, environment)
-- [ ] T113 [P] [US6] Configure Docker for backup support (prerequisite for T108): (1) add `backup_data` named volume to `docker-compose.yml` mounted at `/backups` in the bot service, (2) ensure `postgresql-client` is installed in the bot's Dockerfile so `pg_dump`/`pg_restore` binaries are available at runtime.
-- [ ] T108 [P] [US6] Implement Backup (Full Control): trigger DB backup (pg_dump), download, view history, restore. The double-confirmation prompt for restore MUST use i18n key `backup-restore-confirm` (NOT hardcoded text). The confirmation keyword that the user must type MUST be read from i18n key `backup-restore-confirm-keyword` — this allows Arabic/English versions (e.g., "تأكيد" / "CONFIRM") without hardcoded strings (Constitution Principle VII).
-- [ ] T116 [P] [US6] Manual verification: confirm Docker backup/restore works end-to-end — (1) trigger `pg_dump` from within the bot container, verify `.sql` file appears in `/backups` volume, (2) trigger `pg_restore` from the same file, verify data integrity after restore. Document verification steps in `quickstart.md` under a "Backup & Restore" section (FR-036).
-- [ ] T109 [P] Write unit tests for settings handlers
+- [x] T104 [P] [US6] Create settings menu handler in `packages/core/src/bot/handlers/settings.ts` — main menu with 5 sub-items (Maintenance Toggle, Default Language, Notification Preferences, System Info, Backup)
+- [x] T105 [P] [US6] Implement Default Language setting: bot-level default language (AR/EN) for new users. Store in Redis as a persistent key `system:defaultLanguage` (survives restarts via Redis persistence). On bot restart, read this key to restore the setting. Does NOT affect existing users — only applied when creating new User records (User.language field default).
+- [x] T106 [P] [US6] Implement Notification Preferences: Super Admin can mute/unmute each of the 6 NotificationType values (`JOIN_REQUEST_NEW`, `JOIN_REQUEST_APPROVED`, `JOIN_REQUEST_REJECTED`, `USER_DEACTIVATED`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`). "Delivery settings" in FR-036 means mute/unmute toggle only — no email/SMS (bot-only in Phase 1). Store active types as a Redis set `system:activeNotificationTypes`. Default: all 6 types active.
+- [x] T107 [P] [US6] Implement System Info Display: read-only view (bot version, uptime, connected services status, environment)
+- [x] T113 [P] [US6] Configure Docker for backup support (prerequisite for T108): (1) add `backup_data` named volume to `docker-compose.yml` mounted at `/backups` in the bot service, (2) ensure `postgresql-client` is installed in the bot's Dockerfile so `pg_dump`/`pg_restore` binaries are available at runtime.
+- [x] T108 [P] [US6] Implement Backup (Full Control): trigger DB backup (pg_dump), download, view history, restore. The double-confirmation prompt for restore MUST use i18n key `backup-restore-confirm` (NOT hardcoded text). The confirmation keyword that the user must type MUST be read from i18n key `backup-restore-confirm-keyword` — this allows Arabic/English versions (e.g., "تأكيد" / "CONFIRM") without hardcoded strings (Constitution Principle VII).
+- [x] T116 [P] [US6] Manual verification: confirm Docker backup/restore works end-to-end — (1) trigger `pg_dump` from within the bot container, verify `.sql` file appears in `/backups` volume, (2) trigger `pg_restore` from the same file, verify data integrity after restore. Document verification steps in `quickstart.md` under a "Backup & Restore" section (FR-036).
+- [x] T109 [P] Write unit tests for settings handlers
 
 **Checkpoint**: Settings menu complete - Super Admin configuration functional
 
