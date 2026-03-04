@@ -23,6 +23,8 @@ The AI Assistant transforms the platform from a reactive tool to a proactive ope
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
+Prerequisite Verification: Confirm 001-platform-core v0.1.0 tag exists AND 003-module-kit v0.2.0 tag exists before starting any 002-ai-assistant implementation. This satisfies Principle I (Platform-First).
+
 ### Principle Compliance
 
 | Principle | Status | Notes |
