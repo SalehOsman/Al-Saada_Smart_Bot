@@ -5,26 +5,42 @@ import { Hono } from 'hono'
 import { env } from '../config/env'
 import logger from '../utils/logger'
 import type { BotContext } from '../types/context'
+import { redis } from '../cache/redis'
+import { healthRouter } from '../server/health'
+import { rbacService } from '../services/rbac'
 import { i18n } from './i18n'
-import { sessionMiddleware, lazySessionMiddleware } from './middlewares/session'
+import { lazySessionMiddleware, sessionMiddleware } from './middlewares/session'
+import { auditMiddleware } from './middlewares/audit'
 import { sanitizeMiddleware } from './middlewares/sanitize'
 import { errorHandler } from './middlewares/error'
 import { startHandler } from './handlers/start'
 import { menuHandler } from './handlers/menu'
-import { usersHandler, userActionsHandler } from './handlers/users'
+import { userActionsHandler, usersHandler } from './handlers/users'
 import { approvalsHandler } from './handlers/approvals'
 import { fallbackHandler } from './handlers/fallback'
 import { joinConversation } from './conversations/join'
-import { redis } from '../cache/redis'
-import {
-  showMainSectionsMenu,
-  showSectionModules,
-  showSubSectionsMenu,
-  updateNavigationBreadcrumb,
-  handleBackNavigation,
-} from './menus/sections'
-import { sectionsCallbackHandler, sectionCreateTextHandler, editSectionActionHandler, sectionSetParentHandler } from './handlers/sections'
-import { healthRouter } from '../server/health'
+
+import { editSectionActionHandler, sectionSetParentHandler, sectionsCallbackHandler } from './handlers/sections'
+
+// RBAC and user status check (T111, T029)
+import { rbacMiddleware } from './middlewares/rbac'
+
+// Maintenance mode check (FR-023)
+import { maintenanceMiddleware } from './middlewares/maintenance'
+
+// Layer 2: Draft auto-save and command interrupt (T010, T011)
+import { draftMiddleware } from './middleware/draft'
+
+// /maintenance command (Super Admin only)
+import { maintenanceHandler } from './handlers/maintenance'
+
+// /settings command (Super Admin only)
+import { settingsActionsHandler, settingsHandler } from './handlers/settings'
+
+// /audit command (Super Admin only)
+import { auditActionsHandler, auditHandler } from './handlers/audit'
+
+// --- Layer 2: Module Entry Point (US5) ---
 
 // Create grammy bot instance using BOT_TOKEN from environment
 export const bot = new Bot<BotContext>(env.BOT_TOKEN)
@@ -40,22 +56,16 @@ bot.use(hydrate())
 // Session middleware with Redis storage
 bot.use(sessionMiddleware)
 
+// Audit logging helper middleware
+bot.use(auditMiddleware)
+
 // Lazy session tracking (USER_LOGIN audit)
 bot.use(lazySessionMiddleware)
-
-// RBAC and user status check (T111, T029)
-import { rbacMiddleware } from './middlewares/rbac'
 bot.use(rbacMiddleware)
-
-// Maintenance mode check (FR-023)
-import { maintenanceMiddleware } from './middlewares/maintenance'
 bot.use(maintenanceMiddleware)
 
 // i18n middleware for bilingual support
 bot.use(i18n)
-
-// Layer 2: Draft auto-save and command interrupt (T010, T011)
-import { draftMiddleware } from './middleware/draft'
 bot.use(draftMiddleware)
 
 // Conversations plugin for multi-step flows
@@ -83,14 +93,9 @@ bot.command('sections', async (ctx) => {
   const { showMainSectionsMenu } = await import('./menus/sections')
   return showMainSectionsMenu(ctx)
 })
-
-// /maintenance command (Super Admin only)
-import { maintenanceHandler } from './handlers/maintenance'
 bot.command('maintenance', maintenanceHandler)
-
-// /settings command (Super Admin only)
-import { settingsHandler, settingsActionsHandler } from './handlers/settings'
 bot.command('settings', settingsHandler)
+bot.command('audit', auditHandler)
 
 // Handle "submit join request" button (shown after cancellation)
 bot.callbackQuery('start_join', async (ctx) => {
@@ -110,6 +115,9 @@ bot.callbackQuery(/^section:/, sectionsCallbackHandler)
 // Settings callback queries
 bot.callbackQuery(/^settings:/, settingsActionsHandler)
 
+// Audit callback queries
+bot.callbackQuery(/^audit:/, auditActionsHandler)
+
 // Section edit actions
 bot.callbackQuery(/^section:edit:/, editSectionActionHandler)
 
@@ -120,17 +128,14 @@ bot.callbackQuery(/^section:set_parent:/, sectionSetParentHandler)
 bot.on('message:text', async (ctx) => {
   const { sectionCreateTextHandler } = await import('./handlers/sections')
   const { settingsBackupRestoreTextHandler } = await import('./handlers/settings')
-  
+
   // Try backup restore handler first if there's a pending restore
   if (ctx.session.pendingRestore) {
     return settingsBackupRestoreTextHandler(ctx)
   }
-  
+
   await sectionCreateTextHandler(ctx)
 })
-
-// --- Layer 2: Module Entry Point (US5) ---
-import { rbacService } from '../services/rbac'
 bot.callbackQuery(/^mod:(.+)$/, async (ctx) => {
   const moduleSlug = ctx.match[1]
   const userId = BigInt(ctx.from.id)
@@ -141,7 +146,7 @@ bot.callbackQuery(/^mod:(.+)$/, async (ctx) => {
   if (!canCreate) {
     await ctx.answerCallbackQuery({
       text: ctx.t('module-kit-unauthorized-action'),
-      show_alert: true
+      show_alert: true,
     })
     return
   }
@@ -157,9 +162,9 @@ bot.callbackQuery(/^mod:(.+)$/, async (ctx) => {
       reply_markup: {
         inline_keyboard: [[
           { text: ctx.t('module-kit-draft-resume-btn'), callback_data: `dr:res:${moduleSlug}` },
-          { text: ctx.t('module-kit-draft-fresh-btn'), callback_data: `dr:frsh:${moduleSlug}` }
-        ]]
-      }
+          { text: ctx.t('module-kit-draft-fresh-btn'), callback_data: `dr:frsh:${moduleSlug}` },
+        ]],
+      },
     })
     return
   }
@@ -227,7 +232,6 @@ bot.callbackQuery(/^dr:(res|frsh):(.+)$/, async (ctx) => {
 
     ctx.session.currentModule = moduleSlug
     await ctx.conversation.enter(`${moduleSlug}-add`)
-    return
   }
 })
 
@@ -251,7 +255,8 @@ app.post('/webhook', async (c) => {
 
     // Return success response
     return c.json({ ok: true })
-  } catch (error) {
+  }
+  catch (error) {
     logger.error('Error processing webhook:', error)
     return c.json({ ok: false, error: 'Webhook processing failed' }, 500)
   }

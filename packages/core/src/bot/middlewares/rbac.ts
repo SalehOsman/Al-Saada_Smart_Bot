@@ -1,10 +1,10 @@
-import { type Middleware } from 'grammy'
+import type { Middleware } from 'grammy'
 import { Role } from '@prisma/client'
 import { prisma } from '../../database/prisma'
 import { rbacService } from '../../services/rbac'
 import type { BotContext } from '../../types/context'
-import { defaultSession } from './session'
 import logger from '../../utils/logger'
+import { defaultSession } from './session'
 
 /**
  * RBAC and User Status Middleware (T111, T029)
@@ -27,10 +27,10 @@ export const rbacMiddleware: Middleware<BotContext> = async (ctx, next) => {
 
   if (user && !user.isActive) {
     logger.warn({ userId: telegramId.toString() }, 'Blocked inactive user attempt')
-    
+
     // Clear session
     ctx.session = defaultSession()
-    
+
     // Notify user
     await ctx.reply(ctx.t('errors-account-deactivated'))
     return // Halt

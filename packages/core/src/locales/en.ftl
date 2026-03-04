@@ -354,3 +354,16 @@ errors-section-deleted = This section has been deleted. Returning to main menu.
 
 # Module Management (US3 - Phase 6)
 button-back-to-menu = 🏠 Back to Main Menu
+
+# Audit Log (FR-026)
+audit-menu-title = 📋 Audit Log
+audit-button-recent = 📋 Recent Logs
+audit-button-filter-action = 🔍 Filter by Action
+audit-button-filter-user = 👤 Filter by User
+audit-button-stats = 📊 Stats
+audit-log-entry = { $date } — { $action } by { $userId }
+audit-no-logs = No audit logs found.
+audit-stats-total = Total logs: { $count }
+audit-page-info = Page { $page } of { $totalPages }
+button-next-page = Next ⬅️
+button-prev-page = ➡️ Previous

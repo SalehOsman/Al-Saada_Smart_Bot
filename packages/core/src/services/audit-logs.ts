@@ -1,5 +1,5 @@
+import type { AuditAction } from '@prisma/client'
 import { prisma } from '../database/prisma'
-import { AuditAction } from '@prisma/client'
 import logger from '../utils/logger'
 
 export interface AuditLogData {
@@ -41,7 +41,8 @@ export const auditService = {
           details: redactedDetails || {},
         },
       })
-    } catch (error) {
+    }
+    catch (error) {
       // Fail silently for the user but log the error
       logger.error({ err: error, action: data.action, userId: String(data.userId) }, 'Audit logging failed')
     }
@@ -63,12 +64,16 @@ export const auditService = {
     const skip = (page - 1) * limit
 
     const where: any = {}
-    if (options.userId) where.userId = options.userId
-    if (options.action) where.action = options.action
+    if (options.userId)
+      where.userId = options.userId
+    if (options.action)
+      where.action = options.action
     if (options.fromDate || options.toDate) {
       where.createdAt = {}
-      if (options.fromDate) where.createdAt.gte = options.fromDate
-      if (options.toDate) where.createdAt.lte = options.toDate
+      if (options.fromDate)
+        where.createdAt.gte = options.fromDate
+      if (options.toDate)
+        where.createdAt.lte = options.toDate
     }
 
     const [logs, total] = await Promise.all([

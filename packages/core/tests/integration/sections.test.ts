@@ -158,4 +158,31 @@ describe('Section Service Integration (T040)', () => {
       expect(mockPrisma.section.delete).not.toHaveBeenCalled()
     })
   })
+
+  describe('getAncestors', () => {
+    it('(8) should return empty list for main section', async () => {
+      mockPrisma.section.findUnique.mockResolvedValue({ id: 'main-1', parentId: null })
+      const ancestors = await sectionService.getAncestors('main-1')
+      expect(ancestors).toEqual([])
+    })
+
+    it('(9) should return main section ID for sub-section', async () => {
+      mockPrisma.section.findUnique
+        .mockResolvedValueOnce({ id: 'sub-1', parentId: 'main-1' })
+        .mockResolvedValueOnce({ id: 'main-1', parentId: null })
+
+      const ancestors = await sectionService.getAncestors('sub-1')
+      expect(ancestors).toEqual(['main-1'])
+    })
+
+    it('(10) should handle multi-level (even if restricted by create)', async () => {
+      mockPrisma.section.findUnique
+        .mockResolvedValueOnce({ id: 'level3', parentId: 'level2' })
+        .mockResolvedValueOnce({ id: 'level2', parentId: 'level1' })
+        .mockResolvedValueOnce({ id: 'level1', parentId: null })
+
+      const ancestors = await sectionService.getAncestors('level3')
+      expect(ancestors).toEqual(['level2', 'level1'])
+    })
+  })
 })

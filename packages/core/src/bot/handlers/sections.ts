@@ -1,16 +1,15 @@
 import { InlineKeyboard } from 'grammy'
+import { AuditAction } from '@prisma/client'
 import type { BotContext } from '../../types/context'
 import { prisma } from '../../database/prisma'
 import { sectionService } from '../../services/sections'
 import { auditService } from '../../services/audit-logs'
 import logger from '../../utils/logger'
-import { AuditAction } from '@prisma/client'
 import {
+  handleBackNavigation,
   showMainSectionsMenu,
   showSectionModules,
-  showSubSectionsMenu,
   updateNavigationBreadcrumb,
-  handleBackNavigation,
 } from '../menus/sections'
 
 /**
@@ -23,15 +22,16 @@ import {
  */
 export async function sectionsCallbackHandler(ctx: BotContext): Promise<void> {
   const query = ctx.callbackQuery?.data
-  if (!query) return
+  if (!query)
+    return
 
   // Callbacks are formatted as "section:ACTION:ID[:EXTRA]"
   // e.g. "section:view:abc123", "section:add", "section:add:parentId"
   const parts = query.split(':')
-  const _prefix = parts[0]   // always "section"
-  const action = parts[1]    // view, add, edit, delete, etc.
-  const id = parts[2]        // section ID (may be undefined)
-  const extra = parts[3]     // extra param (may be undefined)
+  const _prefix = parts[0] // always "section"
+  const action = parts[1] // view, add, edit, delete, etc.
+  const id = parts[2] // section ID (may be undefined)
+  const extra = parts[3] // extra param (may be undefined)
 
   // Update navigation breadcrumb
   await updateNavigationBreadcrumb(ctx, 'sections')
@@ -102,7 +102,7 @@ async function addSubSectionPrompt(ctx: BotContext, parentSectionId: string): Pr
     }),
     {
       reply_markup: { force_reply: true },
-    }
+    },
   )
 }
 
@@ -145,17 +145,19 @@ async function editSectionPrompt(ctx: BotContext, sectionId: string): Promise<vo
  */
 export async function editSectionActionHandler(ctx: BotContext): Promise<void> {
   const query = ctx.callbackQuery?.data
-  if (!query) return
+  if (!query)
+    return
 
   // Callbacks are formatted as "section:edit:SECTION_ID:FIELD"
   // e.g. "section:edit:abc123:name"
   const parts = query.split(':')
-  const _prefix = parts[0]    // always "section"
-  const action = parts[1]     // always "edit" for this handler
-  const sectionId = parts[2]  // section ID
-  const field = parts[3]      // field name (name, name_en, icon, parent, order)
+  const _prefix = parts[0] // always "section"
+  const action = parts[1] // always "edit" for this handler
+  const sectionId = parts[2] // section ID
+  const field = parts[3] // field name (name, name_en, icon, parent, order)
 
-  if (action !== 'edit') return
+  if (action !== 'edit')
+    return
 
   const section = await prisma.section.findUnique({
     where: { id: sectionId },
@@ -229,13 +231,15 @@ export async function editSectionActionHandler(ctx: BotContext): Promise<void> {
  */
 export async function sectionCreateTextHandler(ctx: BotContext): Promise<void> {
   const text = ctx.message?.text?.trim()
-  if (!text) return
+  if (!text)
+    return
 
   // Only process if user is in section creation mode (force_reply) or editing
   // Skip if no relevant session state is set
   const isCreating = ctx.session.createSubSection !== undefined || ctx.message?.reply_to_message
   const isEditing = ctx.session.editSectionQuery !== undefined
-  if (!isCreating && !isEditing) return
+  if (!isCreating && !isEditing)
+    return
 
   const isSubSection = ctx.session.createSubSection !== undefined
   const parentSectionId = ctx.session.createSubSection || null
@@ -283,7 +287,7 @@ export async function sectionCreateTextHandler(ctx: BotContext): Promise<void> {
     // Validate order (if provided and not sub-section)
     let orderIndex = 0
     if (orderStr && !isSubSection) {
-      const order = parseInt(orderStr, 10)
+      const order = Number.parseInt(orderStr, 10)
       if (isNaN(order)) {
         ctx.reply(ctx.t('errors-validation-invalid-number'))
         return
@@ -323,7 +327,8 @@ export async function sectionCreateTextHandler(ctx: BotContext): Promise<void> {
     // Return to sections menu
     await updateNavigationBreadcrumb(ctx, 'sections')
     await showMainSectionsMenu(ctx)
-  } catch (error: any) {
+  }
+  catch (error: any) {
     logger.error('Error creating section:', error)
 
     if (error.message.includes('3rd level') || error.message.includes('Cannot create')) {
@@ -340,17 +345,19 @@ export async function sectionCreateTextHandler(ctx: BotContext): Promise<void> {
  */
 export async function sectionSetParentHandler(ctx: BotContext): Promise<void> {
   const query = ctx.callbackQuery?.data
-  if (!query) return
+  if (!query)
+    return
 
   // Callbacks are formatted as "section:set_parent:SECTION_ID:PARENT_ID"
   // e.g. "section:set_parent:abc123:def456" or "section:set_parent_none:abc123"
   const parts = query.split(':')
-  const _prefix = parts[0]    // always "section"
-  const action = parts[1]     // "set_parent" or "set_parent_none"
-  const sectionId = parts[2]  // section ID
-  const parentId = parts[3]   // parent section ID (may be undefined)
+  const _prefix = parts[0] // always "section"
+  const action = parts[1] // "set_parent" or "set_parent_none"
+  const sectionId = parts[2] // section ID
+  const parentId = parts[3] // parent section ID (may be undefined)
 
-  if (action !== 'set_parent' && action !== 'set_parent_none') return
+  if (action !== 'set_parent' && action !== 'set_parent_none')
+    return
 
   const section = await prisma.section.findUnique({
     where: { id: sectionId },
@@ -380,7 +387,8 @@ export async function sectionSetParentHandler(ctx: BotContext): Promise<void> {
 
     // Show section details
     editSectionPrompt(ctx, sectionId)
-  } catch (error: any) {
+  }
+  catch (error: any) {
     logger.error('Error updating section parent:', error)
     ctx.answerCallbackQuery(ctx.t('error-generic'))
   }
@@ -439,7 +447,8 @@ async function deleteSection(ctx: BotContext, sectionId: string): Promise<void> 
     // Return to sections menu
     await updateNavigationBreadcrumb(ctx, 'sections')
     showMainSectionsMenu(ctx)
-  } catch (error: any) {
+  }
+  catch (error: any) {
     logger.error('Error deleting section:', error)
 
     if (error.message.includes('active modules')) {

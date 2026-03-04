@@ -13,23 +13,33 @@
 
 ## Setup Instructions
 
-### 1. Clone Repository and Checkout Branch
+### 1. Requirements
+
+- Node.js 20+ (check with `node --version`)
+- Docker & Docker Compose
+- Telegram Bot Token (from [@BotFather](https://t.me/BotFather))
+
+### 2. Quick Start
 
 ```bash
+# Clone the repository
 git clone <repository-url>
 cd _Al-Saada_Smart_Bot
-git checkout 001-platform-core
-```
 
-### 2. Install Dependencies
+# Copy environment template
+cp .env.example .env
 
-```bash
-# Install all monorepo dependencies
+# Start infrastructure services (PostgreSQL, Redis)
+docker-compose up -d
+
+# Install dependencies
 npm install
 
-# Install specific package dependencies
-cd packages/core
-npm install
+# Run database migrations
+npx prisma migrate deploy
+
+# Start the bot
+npm run dev
 ```
 
 ### 3. Environment Configuration
@@ -133,10 +143,14 @@ Bot is running in webhook mode...
    - You automatically become Super Admin
    - Bot shows admin menu
 
-4. **Verify features:**
-   - Check audit logs with `/audit`
-   - Toggle maintenance mode with `/maintenance on|off`
-   - Create sections with section management commands
+4. **Test features:**
+   - Run verification `curl http://localhost:3000/health`. Should return a healthy status if the bot is running properly.
+   - Run `/start` to trigger the bootstrap or standard menu flow.
+   - Run `/sections` to manage section hierarchies (Super Admin only).
+   - Run `/users` to manage and assign scopes to users (Super Admin only).
+   - Run `/maintenance` to toggle the maintenance mode filter (Super Admin only).
+   - Run `/settings` to configure global language, notifications and backup configurations.
+   - Run `/audit` to view system events trailing.
 
 ### 8. Run Tests
 
@@ -163,43 +177,42 @@ npm run build
 npm start
 ```
 
+## Backup & Restore (FR-036)
+
+The bot supports an automated backup system integrated with PostgreSQL via the Settings menu (`/settings`). 
+Docker is configured with a `backup_data` volume mounted at `/backups` so PostgreSQL `pg_dump`/`pg_restore` binaries can easily extract raw databases.
+Through the bot's interface, Super Admins can interactively:
+1. Trigger a manual `.sql` backup on-the-fly.
+2. Download historical backups through Telegram interface.
+3. Automatically restore a selected point-in-time configuration using an interactive keyword challenge confirmation prompt.
+
 ## Production Deployment & Monitoring
 
-### Uptime Monitoring (SC-008)
+### Uptime Monitoring (SC-008, T101)
 
-For production deployment, set up external uptime monitoring to maintain 99.9% uptime as required by SC-008:
+For production deployment health and automatic alerts, external uptime monitoring is strictly recommended to maintain 99.9% application uptime:
 
 **Recommended Tools:**
-- **UptimeRobot** (Free tier): Monitor HTTP/HTTPS endpoints every 5 minutes
-- **Healthchecks.io**: Monitor webhook endpoints with custom intervals
-- **Datadog**: Full APM monitoring with alerts
+- **UptimeRobot** (Free tier): Monitor HTTP/HTTPS endpoints.
+- **Healthchecks.io**: Monitor webhook endpoints natively.
 
 **Configuration:**
-```bash
-# Monitor bot webhook endpoint (from docker-compose.yml healthcheck)
-curl -I http://localhost:3000/health
-
-# Monitor PostgreSQL health
-curl -s http://localhost:5434/ || echo "PostgreSQL down"
-
-# Monitor Redis health
-redis-cli ping || echo "Redis down"
-```
+- It is highly recommended to monitor the `/health` endpoint (`http://localhost:3000/health`) closely at an interval of **every 60 seconds**.
+- Docker `healthcheck` attributes are already statically configured within `docker-compose.yml` for PostgreSQL, Redis, and the main Bot instance ensuring auto-restart propagation capabilities locally.
 
 **Alert Setup:**
-- Notify on consecutive failures (2-3 checks)
-- Include incident response contacts
-- Schedule maintenance windows for updates
-- Test alerts regularly
+- Notify the maintainers on consecutive failures (e.g. 2-3 consecutive health failures)
+- Set up notification channels natively for Discord, Slack, or Email.
 
 ### Common Commands
 
 ### Bot Commands (in Telegram)
 - `/start` - Bootstrap new user or show main menu
-- `/sections` - View and manage sections (Super Admin only)
-- `/maintenance on|off` - Toggle maintenance mode (Super Admin only)
-- `/audit` - View recent audit logs (Super Admin only)
-- `/profile` - View your user profile
+- `/sections` - View and manage sections, and sub-sections (Super Admin only)
+- `/users` - View and manage users and Admin Scopes (Super Admin only)
+- `/maintenance` - Show maintenance mode options control (Super Admin only)
+- `/settings` - Show core platform settings, language defaults, and backups configuration. (Super Admin only)
+- `/audit` - View recent system audit trail logs (Super Admin only)
 
 ### Development Commands
 ```bash

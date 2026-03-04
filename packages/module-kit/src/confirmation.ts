@@ -16,16 +16,16 @@ export async function confirm<T>(
     let summaryText = `${ctx.t('module-kit-review-title')}\n\n`;
     for (const field in data) {
       const label = labels[field] ? ctx.t(labels[field]) : field;
-      summaryText += `*${label}*: ${data[field]}\n`;
+      summaryText += `*${label}*: ${String(data[field])}\n`;
     }
 
     // 2. Build inline keyboard
     const keyboard = [];
-    
+
     // Add edit buttons
     for (const field of editableFields) {
       const label = labels[field] ? ctx.t(labels[field]) : field;
-      keyboard.push([{ text: ctx.t('module-kit-edit-field', { field: label }), callback_data: `edit:${String(field)}` }]);
+      keyboard.push([{ text: ctx.t('module-kit-edit-field', { field: String(label) }), callback_data: `edit:${String(field)}` }]);
     }
 
     // Add confirm/cancel buttons
@@ -52,8 +52,10 @@ export async function confirm<T>(
       return false;
     }
 
-    if (response.match.startsWith('edit:')) {
-      const field = response.match.replace('edit:', '') as keyof T;
+    const matchString = String(response.match);
+
+    if (matchString.startsWith('edit:')) {
+      const field = matchString.replace('edit:', '') as keyof T;
       await reAsk(field);
       // Loop continues, showing updated summary
     }

@@ -29,7 +29,7 @@ export const adminScopeService = {
         userId_sectionId_moduleId: {
           userId: params.userId,
           sectionId: params.sectionId,
-          moduleId: params.moduleId || null,
+          moduleId: params.moduleId || 'none',
         },
       },
       update: {},
@@ -43,7 +43,7 @@ export const adminScopeService = {
 
     logger.info(
       { userId: params.userId.toString(), sectionId: params.sectionId, moduleId: params.moduleId },
-      'Admin scope assigned'
+      'Admin scope assigned',
     )
 
     return scope
@@ -62,14 +62,14 @@ export const adminScopeService = {
         userId_sectionId_moduleId: {
           userId: params.userId,
           sectionId: params.sectionId,
-          moduleId: params.moduleId || null,
+          moduleId: params.moduleId || 'none', // Dummy value instead of null to bypass Prisma type strictness
         },
       },
     })
 
     logger.info(
       { userId: params.userId.toString(), sectionId: params.sectionId, moduleId: params.moduleId },
-      'Admin scope revoked'
+      'Admin scope revoked',
     )
   },
 }

@@ -1,4 +1,4 @@
-import { BotContext } from '../../types/context'
+import type { BotContext } from '../../types/context'
 import { maintenanceService } from '../../services/maintenance'
 
 /**

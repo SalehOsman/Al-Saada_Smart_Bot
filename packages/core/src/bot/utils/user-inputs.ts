@@ -73,7 +73,8 @@ export async function askForArabicName(ctx: BotContext, wait: WaitFn): Promise<s
   const arabicNameRegex = /^[\p{sc=Arabic}\s.,'-]+$/u
   while (true) {
     const text = await wait(ctx.t('join-step-name'))
-    if (text === null) return ''
+    if (text === null)
+      return ''
     if (!text) { await ctx.reply(ctx.t('error-required-field')); continue }
     if (!arabicNameRegex.test(text)) { await ctx.reply(ctx.t('error-invalid-arabic-name')); continue }
     if (text.length < 2) { await ctx.reply(ctx.t('error-name-too-short')); continue }
@@ -100,10 +101,15 @@ export async function askForArabicName(ctx: BotContext, wait: WaitFn): Promise<s
  */
 export function generateNickname(fullName: string): string {
   const COMPOUND_PREFIXES = [
-    '\u0639\u0628\u062f', '\u0639\u0628\u062f\u0647',
-    '\u0623\u0628\u0648', '\u0627\u0628\u0648',
-    '\u0623\u0628\u064a', '\u0627\u0628\u064a',
-    '\u0627\u0628\u0646', '\u0628\u0646\u062a', '\u0622\u0644',
+    '\u0639\u0628\u062F',
+    '\u0639\u0628\u062F\u0647',
+    '\u0623\u0628\u0648',
+    '\u0627\u0628\u0648',
+    '\u0623\u0628\u064A',
+    '\u0627\u0628\u064A',
+    '\u0627\u0628\u0646',
+    '\u0628\u0646\u062A',
+    '\u0622\u0644',
   ]
   const parts = fullName.trim().split(/\s+/)
   const result: string[] = []
@@ -139,7 +145,8 @@ export function generateNickname(fullName: string): string {
 export async function askForPhone(ctx: BotContext, wait: WaitFn): Promise<string> {
   while (true) {
     const raw = await wait(ctx.t('join-step-phone'))
-    if (raw === null) return ''
+    if (raw === null)
+      return ''
     if (!raw) { await ctx.reply(ctx.t('error-required-field')); continue }
     const text = normalizeDigits(raw)
     const validation = egyptianPhoneNumber().safeParse(text)
@@ -169,7 +176,8 @@ export async function askForPhone(ctx: BotContext, wait: WaitFn): Promise<string
 export async function askForNationalId(ctx: BotContext, wait: WaitFn): Promise<NationalIdInfo | null> {
   while (true) {
     const raw = await wait(ctx.t('join-step-national-id'))
-    if (raw === null) return null
+    if (raw === null)
+      return null
     if (!raw) { await ctx.reply(ctx.t('error-required-field')); continue }
     const text = normalizeDigits(raw)
     const validation = egyptianNationalId().safeParse(text)

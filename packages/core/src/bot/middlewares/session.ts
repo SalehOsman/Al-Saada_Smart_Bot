@@ -1,10 +1,11 @@
-import { type StorageAdapter, session, Middleware } from 'grammy'
+import type { Middleware, type StorageAdapter, session } from 'grammy'
+
+import { AuditAction } from '@prisma/client'
 import { redis } from '../../cache/redis'
-import type { SessionData, BotContext } from '../../types/context'
+import type { BotContext, SessionData } from '../../types/context'
 import logger from '../../utils/logger'
 import { prisma } from '../../database/prisma'
 import { auditService } from '../../services/audit-logs'
-import { AuditAction } from '@prisma/client'
 
 // Default session data
 export function defaultSession(): SessionData {
@@ -97,9 +98,10 @@ export class ResilientRedisStorage implements StorageAdapter<SessionData> {
   }
 
   private scheduleReconnect(): void {
-    if (this.reconnectTimeout) return
+    if (this.reconnectTimeout)
+      return
 
-    const backoff = Math.min(1000 * Math.pow(2, this.reconnectAttempts), this.maxBackoff)
+    const backoff = Math.min(1000 * 2 ** this.reconnectAttempts, this.maxBackoff)
     this.reconnectTimeout = setTimeout(async () => {
       this.reconnectTimeout = null
       try {

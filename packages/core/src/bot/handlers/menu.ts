@@ -1,9 +1,9 @@
 import type { Prisma, Role } from '@prisma/client'
 import type { BotContext } from '../../types/context'
 import { prisma } from '../../database/prisma'
-import { auditService } from '../../services/audit-logs'
 import logger from '../../utils/logger'
-import { moduleLoader, LoadedModule } from '../module-loader'
+import type { LoadedModule } from '../module-loader'
+import { moduleLoader } from '../module-loader'
 
 /** User row including adminScopes — matches to findUnique query in menuHandler */
 type MenuUser = Prisma.UserGetPayload<{ include: { adminScopes: true } }>
@@ -37,8 +37,8 @@ export async function menuHandler(ctx: BotContext) {
 
     // Build menu based on role and modules
     await showDynamicMenu(ctx, user, modules)
-
-  } catch (error) {
+  }
+  catch (error) {
     logger.error('Error in menu handler:', error)
     return ctx.reply(ctx.t('error-generic'))
   }
@@ -61,16 +61,17 @@ async function getAuthorizedModules(user: MenuUser): Promise<LoadedModule[]> {
   if (sectionIds.length > 0) {
     const sections = await prisma.section.findMany({
       where: { id: { in: sectionIds } },
-      select: { id: true, slug: true }
+      select: { id: true, slug: true },
     })
     scopedSectionSlugs = sections.map(s => s.slug)
   }
 
-  return allModules.filter(m => {
+  return allModules.filter((m) => {
     const permissions = m.config.permissions
     const isRoleAllowed = permissions.view.includes(user.role as Role)
 
-    if (!isRoleAllowed) return false
+    if (!isRoleAllowed)
+      return false
 
     // ADMIN must have scope for the module's section
     if (user.role === 'ADMIN') {
@@ -106,13 +107,15 @@ async function showDynamicMenu(ctx: BotContext, user: MenuUser, modules: LoadedM
       { text: ctx.t('button-modules'), callback_data: 'menu-modules' },
       { text: ctx.t('button-notifications'), callback_data: 'menu-notifications' },
     ])
-  } else if (user.role === 'ADMIN') {
+  }
+  else if (user.role === 'ADMIN') {
     // ADMIN: Sections (scoped) + Users (scoped) only — no Maintenance/Audit (spec US1)
     keyboard.push([
       { text: ctx.t('button-sections'), callback_data: 'menu-sections' },
       { text: ctx.t('button-users'), callback_data: 'menu-users' },
     ])
-  } else {
+  }
+  else {
     // EMPLOYEE / VISITOR
     keyboard.push([
       { text: ctx.t('button-sections'), callback_data: 'menu-sections' },

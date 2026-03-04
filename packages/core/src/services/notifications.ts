@@ -1,12 +1,12 @@
 import logger from '../utils/logger'
 import { prisma } from '../database/prisma'
-import { notificationsQueue } from './queue'
 import type { NotificationJobData, NotificationType } from '../types/notification'
+import { notificationsQueue } from './queue'
 
 /**
  * Queues a single notification to be sent to a user.
  * Saves the notification to the database and adds a job to BullMQ.
- * 
+ *
  * @param data The notification data including target user, type, and optional parameters.
  * @returns The ID of the created notification record.
  */
@@ -39,7 +39,7 @@ export async function queueNotification(data: NotificationJobData): Promise<stri
 /**
  * Queues multiple notifications in bulk for better efficiency.
  * Saves all records to the database and adds them to the BullMQ queue in one batch.
- * 
+ *
  * @param items Array of notification data objects.
  * @returns Array of IDs for the created notification records.
  */
@@ -85,7 +85,7 @@ export async function queueBulkNotifications(items: NotificationJobData[]): Prom
  */
 export async function getNotificationHistory(
   userId: bigint,
-  options?: { page?: number; limit?: number; type?: NotificationType }
+  options?: { page?: number, limit?: number, type?: NotificationType },
 ) {
   const page = options?.page || 1
   const limit = options?.limit || 20
@@ -120,7 +120,7 @@ export async function getNotificationHistory(
 export async function markAsRead(notificationId: string) {
   return prisma.notification.update({
     where: { id: notificationId },
-    data: { readAt: new Date() },
+    data: { isRead: true },
   })
 }
 
@@ -131,7 +131,7 @@ export async function getUnreadCount(userId: bigint) {
   return prisma.notification.count({
     where: {
       targetUserId: userId,
-      readAt: null,
+      isRead: false,
     },
   })
 }

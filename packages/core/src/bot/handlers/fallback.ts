@@ -1,4 +1,4 @@
-import { BotContext } from '../../types/context'
+import type { BotContext } from '../../types/context'
 
 /**
  * Fallback handler for unsupported message types or unrecognized commands.

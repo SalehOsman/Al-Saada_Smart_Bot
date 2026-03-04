@@ -29,7 +29,8 @@ import logger from '../../utils/logger'
  * formatArabicDate(undefined)               // 'value-unknown'
  */
 export function formatArabicDate(date: Date | undefined | null): string {
-  if (!date) return 'value-unknown'
+  if (!date)
+    return 'value-unknown'
   const d = String(date.getDate()).padStart(2, '0')
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const y = date.getFullYear()
@@ -52,8 +53,10 @@ export function formatArabicDate(date: Date | undefined | null): string {
  * ctx.t(formatGender(undefined)) // from ar.ftl: gender-unknown
  */
 export function formatGender(gender: 'MALE' | 'FEMALE' | undefined | null): string {
-  if (gender === 'MALE') return 'gender-male'
-  if (gender === 'FEMALE') return 'gender-female'
+  if (gender === 'MALE')
+    return 'gender-male'
+  if (gender === 'FEMALE')
+    return 'gender-female'
   return 'gender-unknown'
 }
 

@@ -287,12 +287,12 @@
 - [x] T081 [P] Create notification cleanup cron job: delete notifications older than 90 days (retention policy per FR-032). Schedule: runs daily at 02:00 AM Africa/Cairo timezone using node-cron.
 - [ ] T099 [P] [US2] Integration test: verify SC-009 — send join request, confirm 95%+ of Super Admins receive Telegram notification within 30 seconds (FR-013, SC-009)
 - [x] T100 [P] Verify SC-008: confirm Docker health checks are configured for all services (PostgreSQL, Redis, Bot) in docker-compose.yml
-- [ ] T101 [P] Document uptime monitoring approach: add note in quickstart.md recommending UptimeRobot or similar tool for production deployment
+- [x] T101 [P] Document uptime monitoring approach: add note in quickstart.md recommending UptimeRobot or similar tool for production deployment
 - [ ] T070 [US1] End-to-end test: complete user journey covering US1 acceptance scenarios: (1) INITIAL_SUPER_ADMIN_ID user sends /start → completes join flow → receives Super Admin welcome, (2) each of the 4 roles (SUPER_ADMIN, ADMIN, EMPLOYEE, VISITOR) sends /start → sees correct role-appropriate menu with no cross-role leakage
 - [ ] T071 [US3] End-to-end test: Super Admin journey (Sections → Modules → Users) including hierarchical navigation (main sections → sub-sections → modules with back buttons)
 - [ ] T072 Verify 80% code coverage across all packages
-- [ ] T073 Code cleanup, formatting, and final linting
-- [ ] T074 Update quickstart.md with actual commands and verification steps
+- [x] T073 Code cleanup, formatting, and final linting
+- [x] T074 Update quickstart.md with actual commands and verification steps
 - [ ] T098 [P] Verify Platform-First Gate: confirm `modules/` directory contains ZERO implemented module files. Run: `find modules/ -name '*.ts' | grep -v '.gitkeep'` — must return empty output. Document result in commit message.
 - [ ] T114 [P] Execute Zero-Defect Gate verification (all tests pass, no lint errors, specs fully aligned). This is a MANDATORY blocking task before phase advancement.
 - [ ] T075 Final commit and tag v0.1.0. **Note (M1):** The 90/10 rule (90% config, max 10% hook code per module) cannot be verified until Phase 3 (first business module). Add compliance verification to Phase 3 tasks.

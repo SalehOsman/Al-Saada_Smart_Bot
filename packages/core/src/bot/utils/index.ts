@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file index.ts
  * @module bot/utils
  *

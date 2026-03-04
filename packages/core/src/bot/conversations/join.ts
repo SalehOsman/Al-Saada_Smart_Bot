@@ -24,15 +24,15 @@ import { joinRequestService } from '../../services/join-requests'
 import {
   createMessageTracker,
   deleteTrackedMessages,
-  waitForTextOrCancel,
-  waitForSkippable,
-  waitForConfirm,
   sendCancelled,
+  waitForConfirm,
+  waitForSkippable,
+  waitForTextOrCancel,
 } from '../utils/conversation'
 import {
   askForArabicName,
-  askForPhone,
   askForNationalId,
+  askForPhone,
   generateNickname,
 } from '../utils/user-inputs'
 import {
@@ -74,7 +74,8 @@ export async function joinConversation(
 
     // ── Step 2: Nickname (optional) ──────────────────────────────────────
     const nickResult = await waitForSkippable(
-      conversation, ctx,
+      conversation,
+      ctx,
       ctx.t('join-step-nickname'),
       ctx.t('button-skip-nickname'),
       { tracker, skipData: 'skip_nickname' },

@@ -1,19 +1,20 @@
+import { Role, Status } from '@prisma/client'
 import { prisma } from '../../database/prisma'
 import { queueNotification } from '../../services/notifications'
-import { NotificationType } from '../../types/notification'
 import type { BotContext } from '../../types/context'
 import logger from '../../utils/logger'
-import { Role, Status } from '@prisma/client'
 
 /**
  * Handle join request approval/rejection callback queries (US2, T033, T102)
  */
 export async function approvalsHandler(ctx: BotContext) {
   const query = ctx.callbackQuery?.data
-  if (!query) return
+  if (!query)
+    return
 
   const [action, requestId] = query.split(':')
-  if (action !== 'approve' && action !== 'reject') return
+  if (action !== 'approve' && action !== 'reject')
+    return
 
   const adminId = BigInt(ctx.from?.id || 0)
 
@@ -24,7 +25,7 @@ export async function approvalsHandler(ctx: BotContext) {
         where: { id: requestId },
       })
 
-      if (!request || request.status !== Status.PENDING) {
+      if (!request || !('status' in request) || request.status !== Status.PENDING) {
         return { error: 'already-handled' }
       }
 
@@ -79,10 +80,13 @@ export async function approvalsHandler(ctx: BotContext) {
       return ctx.editMessageText(ctx.t('errors-join-request-already-handled'))
     }
 
+    // Since we passed the error check, result is the JoinRequest object
+    const joinReq = result as { telegramId: bigint, fullName: string }
+
     // On success: notify user
     if (action === 'approve') {
       await queueNotification({
-        targetUserId: result.telegramId,
+        targetUserId: joinReq.telegramId,
         type: 'JOIN_REQUEST_APPROVED',
         params: {
           role: ctx.t('role-employee'),
@@ -91,11 +95,11 @@ export async function approvalsHandler(ctx: BotContext) {
         },
       })
       await ctx.answerCallbackQuery(ctx.t('join-request-approved-success'))
-      await ctx.editMessageText(ctx.t('join-request-approved-msg', { name: result.fullName }))
+      await ctx.editMessageText(ctx.t('join-request-approved-msg', { name: joinReq.fullName }))
     }
     else {
       await queueNotification({
-        targetUserId: result.telegramId,
+        targetUserId: joinReq.telegramId,
         type: 'JOIN_REQUEST_REJECTED',
         params: {
           rejectedBy: ctx.from?.first_name || ctx.t('value-unknown'),
@@ -103,12 +107,12 @@ export async function approvalsHandler(ctx: BotContext) {
         },
       })
       await ctx.answerCallbackQuery(ctx.t('join-request-rejected-success'))
-      await ctx.editMessageText(ctx.t('join-request-rejected-msg', { name: result.fullName }))
+      await ctx.editMessageText(ctx.t('join-request-rejected-msg', { name: joinReq.fullName }))
     }
 
     logger.info(
-      { action, requestId, userId: result.telegramId.toString(), adminId: adminId.toString() },
-      'Join request handled'
+      { action, requestId, userId: joinReq.telegramId.toString(), adminId: adminId.toString() },
+      'Join request handled',
     )
   }
   catch (error) {

@@ -35,7 +35,8 @@ export async function usersHandler(ctx: BotContext) {
  */
 export async function userActionsHandler(ctx: BotContext) {
   const query = ctx.callbackQuery?.data
-  if (!query) return
+  if (!query)
+    return
 
   const [_, action, targetIdStr, extra] = query.split(':')
   const targetId = BigInt(targetIdStr)
@@ -46,7 +47,8 @@ export async function userActionsHandler(ctx: BotContext) {
 
   if (action === 'toggle') {
     const user = await prisma.user.findUnique({ where: { telegramId: targetId } })
-    if (!user) return ctx.answerCallbackQuery(ctx.t('errors-user-not-found'))
+    if (!user)
+      return ctx.answerCallbackQuery(ctx.t('errors-user-not-found'))
 
     const newStatus = !user.isActive
     await prisma.user.update({
@@ -105,14 +107,15 @@ async function showUserDetails(ctx: BotContext, telegramId: bigint) {
     where: { telegramId },
   })
 
-  if (!user) return ctx.reply(ctx.t('errors-user-not-found'))
+  if (!user)
+    return ctx.reply(ctx.t('errors-user-not-found'))
 
   const keyboard = new InlineKeyboard()
-  
+
   // Toggle Active
   keyboard.text(
     user.isActive ? ctx.t('button-deactivate') : ctx.t('button-activate'),
-    `user:toggle:${telegramId}`
+    `user:toggle:${telegramId}`,
   )
   keyboard.row()
 
@@ -145,7 +148,8 @@ async function showUserDetails(ctx: BotContext, telegramId: bigint) {
 
 async function showUserScopes(ctx: BotContext, telegramId: bigint) {
   const user = await prisma.user.findUnique({ where: { telegramId } })
-  if (!user) return ctx.answerCallbackQuery(ctx.t('errors-user-not-found'))
+  if (!user)
+    return ctx.answerCallbackQuery(ctx.t('errors-user-not-found'))
 
   const currentScopes = await adminScopeService.getScopes(telegramId)
   const allSections = await prisma.section.findMany({ where: { isActive: true } })

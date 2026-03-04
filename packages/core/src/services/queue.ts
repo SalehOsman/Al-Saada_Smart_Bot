@@ -1,5 +1,4 @@
 import { Queue } from 'bullmq'
-import { env } from '../config/env'
 import logger from '../utils/logger'
 import { redis } from '../cache/redis'
 

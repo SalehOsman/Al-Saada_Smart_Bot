@@ -16,7 +16,7 @@ export interface CreateJoinRequestParams {
 
 export type CreateOrBootstrapResult =
   | { type: 'bootstrap' }
-  | { type: 'join-request'; requestId: string }
+  | { type: 'join-request', requestId: string }
 
 export const joinRequestService = {
   /**

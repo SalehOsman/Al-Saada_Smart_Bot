@@ -40,7 +40,7 @@ export const settingsService = {
         'JOIN_REQUEST_REJECTED',
         'USER_DEACTIVATED',
         'MAINTENANCE_ON',
-        'MAINTENANCE_OFF'
+        'MAINTENANCE_OFF',
       ]
     }
     return types
@@ -54,7 +54,8 @@ export const settingsService = {
     if (isActive) {
       await redis.srem(ACTIVE_NOTIFICATIONS_KEY, type)
       return false
-    } else {
+    }
+    else {
       await redis.sadd(ACTIVE_NOTIFICATIONS_KEY, type)
       return true
     }
@@ -75,13 +76,15 @@ export const settingsService = {
 
     try {
       await prisma.$queryRaw`SELECT 1`
-    } catch (e) {
+    }
+    catch (e) {
       dbStatus = 'DOWN'
     }
 
     try {
       await redis.ping()
-    } catch (e) {
+    }
+    catch (e) {
       redisStatus = 'DOWN'
     }
 
@@ -96,7 +99,7 @@ export const settingsService = {
       uptime,
       env: env.NODE_ENV || 'development',
       dbStatus,
-      redisStatus
+      redisStatus,
     }
-  }
+  },
 }

@@ -1,7 +1,7 @@
-import { redis } from '../cache/redis'
-import { auditService } from './audit-logs.ts'
 import { AuditAction } from '@prisma/client'
+import { redis } from '../cache/redis'
 import logger from '../utils/logger'
+import { auditService } from './audit-logs'
 
 const MAINTENANCE_KEY = 'system:maintenance:status'
 const MAINTENANCE_PUB_SUB_CHANNEL = 'system:maintenance:updates'
@@ -27,20 +27,20 @@ export const maintenanceService = {
   async setMaintenanceMode(enabled: boolean, userId: bigint): Promise<void> {
     const status = enabled ? 'on' : 'off'
     await redis.set(MAINTENANCE_KEY, status)
-    
+
     // Propagate change (NFR-002)
     await redis.publish(MAINTENANCE_PUB_SUB_CHANNEL, status)
-    
+
     // Audit the action (FR-026)
     await auditService.log({
       userId,
       action: enabled ? AuditAction.MAINTENANCE_ON : AuditAction.MAINTENANCE_OFF,
       targetType: 'SYSTEM',
       details: {
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     })
-    
+
     logger.info(`Maintenance mode turned ${status} by user ${userId}`)
   },
 
@@ -66,5 +66,5 @@ export const maintenanceService = {
         callback(message === 'on')
       }
     })
-  }
+  },
 }

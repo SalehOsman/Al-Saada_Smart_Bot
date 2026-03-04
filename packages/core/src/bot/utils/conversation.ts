@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file conversation.ts
  * @module bot/utils/conversation
  *
@@ -89,7 +89,8 @@ export async function deleteTrackedMessages(
   tracker: MessageTracker,
 ): Promise<void> {
   const chatId = ctx.chat?.id
-  if (!chatId || tracker.ids.length === 0) return
+  if (!chatId || tracker.ids.length === 0)
+    return
   await Promise.allSettled(
     tracker.ids.map(id => ctx.api.deleteMessage(chatId, id).catch(() => {})),
   )
@@ -121,7 +122,8 @@ export async function waitForTextOrCancel(
       ],
     },
   })
-  if (options.tracker) trackMessage(options.tracker, sent.message_id)
+  if (options.tracker)
+    trackMessage(options.tracker, sent.message_id)
 
   const response = await conversation.wait()
 
@@ -160,7 +162,8 @@ export async function waitForSkippable(
       ]],
     },
   })
-  if (options.tracker) trackMessage(options.tracker, sent.message_id)
+  if (options.tracker)
+    trackMessage(options.tracker, sent.message_id)
 
   const response = await conversation.wait()
 
@@ -202,7 +205,8 @@ export async function waitForConfirm(
       ]],
     },
   })
-  if (options.tracker) trackMessage(options.tracker, sent.message_id)
+  if (options.tracker)
+    trackMessage(options.tracker, sent.message_id)
 
   const response = await conversation.waitForCallbackQuery([confirmData, cancelData])
   await response.answerCallbackQuery()

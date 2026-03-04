@@ -1,6 +1,6 @@
-import { NextFunction } from 'grammy'
+import type { NextFunction } from 'grammy'
 import { sanitizeHtml } from '@al-saada/validators'
-import { BotContext } from '../../types/context'
+import type { BotContext } from '../../types/context'
 
 /**
  * Middleware that sanitizes all incoming text messages to prevent XSS.
@@ -10,6 +10,6 @@ export async function sanitizeMiddleware(ctx: BotContext, next: NextFunction) {
   if (ctx.message?.text) {
     ctx.message.text = sanitizeHtml(ctx.message.text)
   }
-  
+
   await next()
 }

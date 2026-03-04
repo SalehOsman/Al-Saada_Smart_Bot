@@ -1,5 +1,5 @@
 import { InlineKeyboard } from 'grammy'
-import { BotContext } from '../../types/context'
+import type { BotContext } from '../../types/context'
 import { settingsService } from '../../services/settings'
 import { backupService } from '../../services/backup'
 import { maintenanceService } from '../../services/maintenance'
@@ -29,7 +29,8 @@ export async function settingsHandler(ctx: BotContext) {
  */
 export async function settingsActionsHandler(ctx: BotContext) {
   const data = ctx.callbackQuery?.data
-  if (!data) return
+  if (!data)
+    return
 
   const userId = BigInt(ctx.from!.id)
 
@@ -48,8 +49,8 @@ export async function settingsActionsHandler(ctx: BotContext) {
       .text(ctx.t('button-back-to-sections'), 'settings:main')
 
     await ctx.editMessageText(
-      ctx.t('settings-language-title') + '\n' + ctx.t('settings-language-current', { lang: currentLang }),
-      { reply_markup: keyboard }
+      `${ctx.t('settings-language-title')}\n${ctx.t('settings-language-current', { lang: currentLang })}`,
+      { reply_markup: keyboard },
     )
     return
   }
@@ -68,11 +69,11 @@ export async function settingsActionsHandler(ctx: BotContext) {
       uptime: info.uptime,
       env: info.env,
       dbStatus: info.dbStatus,
-      redisStatus: info.redisStatus
+      redisStatus: info.redisStatus,
     })
 
     const keyboard = new InlineKeyboard().text(ctx.t('button-back-to-sections'), 'settings:main')
-    await ctx.editMessageText(ctx.t('settings-system-info-title') + '\n\n' + content, { reply_markup: keyboard })
+    await ctx.editMessageText(`${ctx.t('settings-system-info-title')}\n\n${content}`, { reply_markup: keyboard })
     return
   }
 
@@ -116,7 +117,7 @@ export async function settingsActionsHandler(ctx: BotContext) {
 
     const keyword = ctx.t('settings-backup-restore-confirm-keyword')
     await ctx.reply(ctx.t('settings-backup-restore-confirm', { keyword }), {
-      reply_markup: { force_reply: true }
+      reply_markup: { force_reply: true },
     })
     await ctx.answerCallbackQuery()
     return
@@ -130,16 +131,16 @@ export async function settingsActionsHandler(ctx: BotContext) {
       'JOIN_REQUEST_REJECTED',
       'USER_DEACTIVATED',
       'MAINTENANCE_ON',
-      'MAINTENANCE_OFF'
+      'MAINTENANCE_OFF',
     ]
 
     const typeToI18nKey: Record<string, string> = {
-      'JOIN_REQUEST_NEW': 'notif-type-join-request-new',
-      'JOIN_REQUEST_APPROVED': 'notif-type-join-request-approved',
-      'JOIN_REQUEST_REJECTED': 'notif-type-join-request-rejected',
-      'USER_DEACTIVATED': 'notif-type-user-deactivated',
-      'MAINTENANCE_ON': 'notif-type-maintenance-on',
-      'MAINTENANCE_OFF': 'notif-type-maintenance-off',
+      JOIN_REQUEST_NEW: 'notif-type-join-request-new',
+      JOIN_REQUEST_APPROVED: 'notif-type-join-request-approved',
+      JOIN_REQUEST_REJECTED: 'notif-type-join-request-rejected',
+      USER_DEACTIVATED: 'notif-type-user-deactivated',
+      MAINTENANCE_ON: 'notif-type-maintenance-on',
+      MAINTENANCE_OFF: 'notif-type-maintenance-off',
     }
 
     const keyboard = new InlineKeyboard()
@@ -173,7 +174,8 @@ export async function settingsActionsHandler(ctx: BotContext) {
  * Handle backup restore confirmation from text input.
  */
 export async function settingsBackupRestoreTextHandler(ctx: BotContext) {
-  if (!ctx.session.pendingRestore || !ctx.message?.text) return
+  if (!ctx.session.pendingRestore || !ctx.message?.text)
+    return
 
   const filename = ctx.session.pendingRestore
   const input = ctx.message.text.trim()
@@ -187,12 +189,14 @@ export async function settingsBackupRestoreTextHandler(ctx: BotContext) {
       await ctx.reply(ctx.t('settings-backup-restore-success'))
       // In a real environment, you might want to restart the process here or clear sessions
       ctx.session.pendingRestore = undefined
-    } catch (error) {
+    }
+    catch (error) {
       logger.error('Restore failed:', error)
       await ctx.reply(ctx.t('settings-backup-restore-fail'))
       ctx.session.pendingRestore = undefined
     }
-  } else {
+  }
+  else {
     await ctx.reply(ctx.t('settings-backup-restore-fail'))
     ctx.session.pendingRestore = undefined
   }

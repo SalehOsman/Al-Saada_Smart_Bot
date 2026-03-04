@@ -8,6 +8,27 @@ export interface AccessOptions {
 
 export const rbacService = {
   /**
+   * Resolve section hierarchy (all ancestor IDs) with caching
+   * Per FR-037
+   */
+  async getSectionAncestry(sectionId: string): Promise<string[]> {
+    const { redis } = await import('../cache/redis')
+    const { sectionService } = await import('./sections')
+
+    const cacheKey = `section:ancestry:${sectionId}`
+    const cached = await redis.get(cacheKey)
+
+    if (cached) {
+      return JSON.parse(cached)
+    }
+
+    const ancestors = await sectionService.getAncestors(sectionId)
+    await redis.setex(cacheKey, 86400, JSON.stringify(ancestors))
+
+    return ancestors
+  },
+
+  /**
    * Check if a user with a given role can access a resource
    * SUPER_ADMIN: full access
    * ADMIN: access if scope exists in adminScopeService
@@ -20,7 +41,7 @@ export const rbacService = {
       return true
     }
 
-    // 2. If no specific resource (section/module) is requested, 
+    // 2. If no specific resource (section/module) is requested,
     // basic access depends on the role (all except VISITOR usually)
     if (!options?.sectionId && !options?.moduleId) {
       return role !== Role.VISITOR
@@ -32,41 +53,21 @@ export const rbacService = {
 
       // If specific section is requested
       if (options.sectionId) {
-        // FR-037: Resolve hierarchy for scope inheritance
-        const { prisma } = await import('../database/prisma')
-        const { redis } = await import('../cache/redis')
-        const cacheKey = `section:hierarchy:${options.sectionId}`
-        
-        let parentId: string | null = null
-        const cachedParentId = await redis.get(cacheKey)
-        
-        if (cachedParentId !== null && cachedParentId !== undefined) {
-          parentId = cachedParentId === 'root' ? null : cachedParentId
-        } else {
-          const section = await prisma.section.findUnique({
-            where: { id: options.sectionId },
-            select: { parentId: true }
-          })
-          parentId = section?.parentId || null
-          await redis.setex(cacheKey, 86400, parentId || 'root')
-        }
+        const ancestors = await this.getSectionAncestry(options.sectionId)
+        const ancestry = [options.sectionId, ...ancestors]
 
-        // Check if user has scope for the requested section OR its parent main section
+        // Check if user has scope for the requested section OR any of its ancestors
         const hasScope = scopes.some((scope) => {
-          // Grant access if:
-          // 1. Direct scope on requested section
-          // 2. Scope on parent main section (inheritance)
-          const isTargetSection = scope.sectionId === options.sectionId || (parentId && scope.sectionId === parentId)
-          if (!isTargetSection) return false
-          
+          const isMatch = ancestry.includes(scope.sectionId)
+          if (!isMatch)
+            return false
+
           // If a specific module is requested, scope must match OR be section-wide
           if (options.moduleId) {
             return scope.moduleId === options.moduleId || scope.moduleId === null
           }
 
           // If only section is requested, must have a section-wide scope (moduleId is null)
-          // or at least one module scope in that section? 
-          // (Usually canAccess(section) for management means full section access)
           return scope.moduleId === null
         })
 
@@ -80,15 +81,8 @@ export const rbacService = {
     }
 
     // 4. EMPLOYEE access
-    // Employees can access sections/modules but usually this is for content consumption.
-    // canAccess(sectionId) in RBAC middleware context often implies management.
-    // For now, we follow the "default to standard role checks" instruction.
     if (role === Role.EMPLOYEE) {
-      // Employees can view but not manage. 
-      // If options are provided, we assume it's checking for "management/administrative" access
-      // and thus return false, unless the system allows employees to 'access' them in a read-only way.
-      // Based on the prompt: "For ADMIN, allow if scope exists... Else default to standard role checks."
-      return false 
+      return false
     }
 
     return false
@@ -101,33 +95,41 @@ export const rbacService = {
     userId: bigint,
     role: Role,
     moduleSlug: string,
-    action: 'view' | 'create' | 'edit' | 'delete'
+    action: 'view' | 'create' | 'edit' | 'delete',
   ): Promise<boolean> {
     const { moduleLoader } = await import('../bot/module-loader')
     const loadedModule = moduleLoader.getModule(moduleSlug)
-    if (!loadedModule) return false
+    if (!loadedModule)
+      return false
 
     const permissions = loadedModule.config.permissions
     const allowedRoles = permissions[action] || []
 
-    if (!allowedRoles.includes(role)) return false
+    if (!allowedRoles.includes(role))
+      return false
 
-    // ADMIN must have matching scope
+    // ADMIN must have matching scope (with full hierarchy inheritance)
     if (role === Role.ADMIN) {
       const { prisma } = await import('../database/prisma')
       const section = await prisma.section.findUnique({
         where: { slug: loadedModule.config.sectionSlug },
-        select: { id: true }
+        select: { id: true },
       })
-      if (!section) return false
+      if (!section)
+        return false
+
+      const ancestors = await this.getSectionAncestry(section.id)
+      const ancestry = [section.id, ...ancestors]
 
       const scopes = await adminScopeService.getScopes(userId)
-      return scopes.some(s => 
-        s.sectionId === section.id && 
-        (s.moduleId === null || s.moduleId === moduleSlug)
-      )
+      return scopes.some((s) => {
+        const isMatch = ancestry.includes(s.sectionId)
+        if (!isMatch)
+          return false
+        return s.moduleId === null || s.moduleId === moduleSlug
+      })
     }
 
     return true
-  }
+  },
 }

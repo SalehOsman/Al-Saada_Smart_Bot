@@ -124,7 +124,7 @@ export const sectionService = {
 
     logger.info(
       { sectionId: section.id, slug: section.slug, createdBy: params.createdBy.toString() },
-      'Section created'
+      'Section created',
     )
 
     return section
@@ -139,9 +139,9 @@ export const sectionService = {
     if (params.parentId !== undefined) {
       const parentSection = params.parentId
         ? await prisma.section.findUnique({
-            where: { id: params.parentId },
-            select: { parentId: true },
-          })
+          where: { id: params.parentId },
+          select: { parentId: true },
+        })
         : null
 
       if (params.parentId && !parentSection) {
@@ -182,7 +182,7 @@ export const sectionService = {
 
     logger.info(
       { sectionId: section.id, slug: section.slug },
-      'Section updated'
+      'Section updated',
     )
 
     return section
@@ -248,7 +248,7 @@ export const sectionService = {
 
     logger.info(
       { sectionId: id, isActive },
-      `Section ${isActive ? 'enabled' : 'disabled'}`
+      `Section ${isActive ? 'enabled' : 'disabled'}`,
     )
 
     return section
@@ -294,6 +294,34 @@ export const sectionService = {
     }
 
     return false
+  },
+
+  /**
+   * Get all ancestor IDs for a given section
+   */
+  async getAncestors(sectionId: string): Promise<string[]> {
+    const ancestors: string[] = []
+    let currentId = sectionId
+
+    const maxDepth = 10
+    let depth = 0
+
+    while (depth < maxDepth) {
+      const section = await prisma.section.findUnique({
+        where: { id: currentId },
+        select: { parentId: true },
+      })
+
+      if (!section || !section.parentId) {
+        break
+      }
+
+      ancestors.push(section.parentId)
+      currentId = section.parentId
+      depth++
+    }
+
+    return ancestors
   },
 
   /**

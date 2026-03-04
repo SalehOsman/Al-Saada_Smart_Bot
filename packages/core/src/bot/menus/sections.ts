@@ -1,8 +1,7 @@
-import type { Prisma, Section } from '@prisma/client'
 import type { BotContext } from '../../types/context'
 import { prisma } from '../../database/prisma'
 import logger from '../../utils/logger'
-import { moduleService } from '../../services/modules'
+import { moduleLoader } from '../module-loader'
 
 /**
  * Section menu display utilities
@@ -47,7 +46,8 @@ export async function showMainSectionsMenu(ctx: BotContext): Promise<void> {
           callback_data: `section:view:${section.id}`,
         },
       ])
-    } else if (hasModules) {
+    }
+    else if (hasModules) {
       // Standalone main section with modules
       keyboard.push([
         {
@@ -176,16 +176,21 @@ export async function showSectionModules(ctx: BotContext, sectionId: string): Pr
     return
   }
 
-  // Display modules using registered module configs
-  const registeredModules = await moduleService.getModulesBySection(section.id)
+  // Display modules using moduleLoader (single source of truth for loaded modules)
+  const allLoadedModules = moduleLoader.getLoadedModules()
+  const sectionModules = allLoadedModules.filter((m) => {
+    // Match by section: check if the module's sectionSlug maps to this section
+    return m.config.sectionSlug === section.slug
+  }).sort((a, b) => (a.config.orderIndex ?? 0) - (b.config.orderIndex ?? 0))
+
   const keyboard: any[][] = []
 
-  if (registeredModules.length > 0) {
-    for (const module of registeredModules) {
+  if (sectionModules.length > 0) {
+    for (const mod of sectionModules) {
       keyboard.push([
         {
-          text: `${module.icon} ${ctx.t(module.name as any)}`,
-          callback_data: `module:${module.slug}`,
+          text: `${mod.config.icon} ${ctx.t(mod.config.name as any)}`,
+          callback_data: `mod:${mod.slug}`,
         },
       ])
     }
@@ -236,7 +241,8 @@ export async function updateNavigationBreadcrumb(
   const newMenu = [...currentMenu]
   if (targetId) {
     newMenu.push({ level, id: targetId })
-  } else {
+  }
+  else {
     newMenu.push({ level, id: 'menu:main' })
   }
 
