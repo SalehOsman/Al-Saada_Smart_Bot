@@ -2,7 +2,7 @@
 
 **Feature Branch**: `001-platform-core`
 **Created**: 2026-02-17
-**Status**: Draft
+**Status**: In Progress
 **Input**: User description: "Build the Platform Core (Layer 1) for Al-Saada Smart Bot — a Telegram bot platform for Egyptian business management."
 
 ## Definitions
