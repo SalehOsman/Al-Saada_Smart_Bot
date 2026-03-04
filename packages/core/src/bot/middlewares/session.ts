@@ -19,42 +19,107 @@ export function defaultSession(): SessionData {
   }
 }
 
-// Redis-backed storage adapter for grammY sessions
-const redisStorage: StorageAdapter<SessionData> = {
+/**
+ * In-memory storage adapter for grammY sessions (fallback for Redis).
+ */
+export class InMemoryStorage implements StorageAdapter<SessionData> {
+  private storage = new Map<string, string>()
+
   async read(key: string): Promise<SessionData | undefined> {
-    try {
-      const value = await redis.get(`session:${key}`)
-      return value ? JSON.parse(value) : undefined
-    }
-    catch (error) {
-      logger.error({ err: error, key }, 'Error reading session')
-      return undefined
-    }
-  },
+    const value = this.storage.get(key)
+    return value ? JSON.parse(value) : undefined
+  }
 
   async write(key: string, value: SessionData): Promise<void> {
-    try {
-      await redis.setex(`session:${key}`, 86400, JSON.stringify(value)) // 24h TTL
-    }
-    catch (error) {
-      logger.error({ err: error, key }, 'Error writing session')
-    }
-  },
+    this.storage.set(key, JSON.stringify(value))
+  }
 
   async delete(key: string): Promise<void> {
-    try {
-      await redis.del(`session:${key}`)
-    }
-    catch (error) {
-      logger.error({ err: error, key }, 'Error deleting session')
-    }
-  },
+    this.storage.delete(key)
+  }
 }
 
-// Create session middleware
+/**
+ * Resilient Redis storage adapter with in-memory fallback and auto-reconnection.
+ */
+export class ResilientRedisStorage implements StorageAdapter<SessionData> {
+  private inMemoryStorage = new InMemoryStorage()
+  private isRedisAvailable = true
+  private reconnectAttempts = 0
+  private maxBackoff = 30000
+  private reconnectTimeout: NodeJS.Timeout | null = null
+
+  async read(key: string): Promise<SessionData | undefined> {
+    if (this.isRedisAvailable) {
+      try {
+        const value = await redis.get(`session:${key}`)
+        return value ? JSON.parse(value) : undefined
+      }
+      catch (error) {
+        this.handleRedisError(error, 'read', key)
+      }
+    }
+    return this.inMemoryStorage.read(key)
+  }
+
+  async write(key: string, value: SessionData): Promise<void> {
+    if (this.isRedisAvailable) {
+      try {
+        await redis.setex(`session:${key}`, 86400, JSON.stringify(value)) // 24h TTL
+        return
+      }
+      catch (error) {
+        this.handleRedisError(error, 'write', key)
+      }
+    }
+    await this.inMemoryStorage.write(key, value)
+  }
+
+  async delete(key: string): Promise<void> {
+    if (this.isRedisAvailable) {
+      try {
+        await redis.del(`session:${key}`)
+        return
+      }
+      catch (error) {
+        this.handleRedisError(error, 'delete', key)
+      }
+    }
+    await this.inMemoryStorage.delete(key)
+  }
+
+  private handleRedisError(error: any, operation: string, key: string): void {
+    if (this.isRedisAvailable) {
+      this.isRedisAvailable = false
+      logger.fatal({ err: error, operation, key }, 'CRITICAL: Redis connection lost. Falling back to in-memory sessions.')
+      this.scheduleReconnect()
+    }
+  }
+
+  private scheduleReconnect(): void {
+    if (this.reconnectTimeout) return
+
+    const backoff = Math.min(1000 * Math.pow(2, this.reconnectAttempts), this.maxBackoff)
+    this.reconnectTimeout = setTimeout(async () => {
+      this.reconnectTimeout = null
+      try {
+        await redis.ping()
+        this.isRedisAvailable = true
+        this.reconnectAttempts = 0
+        logger.info('Redis connection restored. Resuming Redis sessions.')
+      }
+      catch (error) {
+        this.reconnectAttempts++
+        this.scheduleReconnect()
+      }
+    }, backoff)
+  }
+}
+
+// Create session middleware using resilient storage
 export const sessionMiddleware = session({
   initial: defaultSession,
-  storage: redisStorage,
+  storage: new ResilientRedisStorage(),
 })
 
 /**

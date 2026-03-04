@@ -265,13 +265,13 @@
 
 ### Session Management
 
-- [ ] T065 [P] [US5] Create Redis session service with 24-hour TTL
-- [ ] T087 [P] [US5] Implement Redis fallback to in-memory sessions: if Redis is unavailable, fall back to an in-memory Map for the current request session. Log CRITICAL warning via Pino. On every subsequent request, attempt Redis reconnection with exponential backoff (1s → 2s → 4s). Resume Redis sessions automatically once connection is restored.
-- [ ] T066 [P] [US5] Create session middleware (load/save) in `packages/core/src/bot/middlewares/session.ts`. On new session creation (no existing session found), initialize `locale` from `User.language` field (DB lookup by telegramId). If user not found in DB (e.g., first-ever request before bootstrap), default `locale` to `'ar'`.
-- [ ] T067 [P] [US5] Store navigation state as `currentMenu` array (navigation breadcrumb stack) in Redis session — aligns with FR-028 session contract. Example: `['sections', 'section-id-123']`. Do NOT use separate currentSection/currentModule fields.
-- [ ] T067-A [P] [US5] Implement orphaned session handling: when a main section is deleted while a user is viewing its sub-section, return user to main menu with message via i18n key `errors-section-deleted` (spec Edge Case)
-- [ ] T068 [P] [US5] Handle session expiry gracefully — when a session expires after 24h inactivity, clear session state and redirect user to /start flow. No i18n message needed (user simply restarts); log expiry via Pino at debug level.
-- [ ] T069 [P] Write unit tests for session service
+- [x] T065 [P] [US5] Create Redis session service with 24-hour TTL
+- [x] T087 [P] [US5] Implement Redis fallback to in-memory sessions: if Redis is unavailable, fall back to an in-memory Map for the current request session. Log CRITICAL warning via Pino. On every subsequent request, attempt Redis reconnection with exponential backoff (1s → 2s → 4s). Resume Redis sessions automatically once connection is restored.
+- [x] T066 [P] [US5] Create session middleware (load/save) in `packages/core/src/bot/middlewares/session.ts`. On new session creation (no existing session found), initialize `locale` from `User.language` field (DB lookup by telegramId). If user not found in DB (e.g., first-ever request before bootstrap), default `locale` to `'ar'`.
+- [x] T067 [P] [US5] Store navigation state as `currentMenu` array (navigation breadcrumb stack) in Redis session — aligns with FR-028 session contract. Example: `['sections', 'section-id-123']`. Do NOT use separate currentSection/currentModule fields.
+- [x] T067-A [P] [US5] Implement orphaned session handling: when a main section is deleted while a user is viewing its sub-section, return user to main menu with message via i18n key `errors-section-deleted` (spec Edge Case)
+- [x] T068 [P] [US5] Handle session expiry gracefully — when a session expires after 24h inactivity, clear session state and redirect user to /start flow. No i18n message needed (user simply restarts); log expiry via Pino at debug level.
+- [x] T069 [P] Write unit tests for session service
 
 **Checkpoint**: Audit & Session system complete
 
