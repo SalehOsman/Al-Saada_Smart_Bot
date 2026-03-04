@@ -249,6 +249,23 @@ export interface AdminNotificationPayload {
 export async function notifyAdmins(payload: AdminNotificationPayload): Promise<void>
 ```
 
+### UI & Navigation (`reply.ts`)
+
+Standardizes how the bot transitions between menus and states to avoid message stacking in the user's chat history.
+
+#### `replyOrEdit()`
+Dynamically decides whether to edit the existing message (if triggered by an inline button callback) or send a new message (if triggered by a text command like `/start`).
+```typescript
+export async function replyOrEdit(
+  ctx: BotContext,
+  text: string,
+  replyMarkup?: InlineKeyboard,
+): Promise<void>
+```
+
+#### Global Back Navigation
+The platform enforces a strict UX guideline: no dead-ends. All sub-menus must eventually provide an escape hatch back to the main menu. This is globally handled in `packages/core/src/bot/index.ts` by intercepting the `menu:main` callback string and routing it to the root `menuHandler`.
+
 ---
 
 ## Middleware
@@ -314,7 +331,7 @@ The universal entry point for all users interacting with the bot.
 ### Menu System
 `packages/core/src/bot/handlers/menu.ts`
 
-Dynamically renders the `ReplyKeyboardMarkup` based on the user's explicit role and permissions. It evaluates `ctx.user.role`.
+Dynamically renders an `InlineKeyboard` based on the user's explicit role and permissions. It evaluates `ctx.user.role`. The bot relies exclusively on inline keypads combined with `replyOrEdit` to provide a clean, app-like navigation experience without polluting the chat history.
 
 - **SUPER_ADMIN Menu:**
   Sees all operational buttons, including system-wide "Join Requests" approval queues and "Platform Settings".

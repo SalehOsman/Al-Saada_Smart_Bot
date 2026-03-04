@@ -59,6 +59,7 @@ describe('confirm() helper', () => {
   const mockCtx = {
     t: vi.fn((key: string) => key),
     reply: vi.fn(),
+    editMessageText: vi.fn(), // Used by replyOrEdit for inline UI transitions
   } as any
 
   const mockConversation = {

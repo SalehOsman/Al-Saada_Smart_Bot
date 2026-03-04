@@ -38,12 +38,12 @@ Core messages, errors, and unauthenticated experiences.
 | `menu-admin` | Main menu header (Params: `$name`). |
 | `menu-employee` | Main menu header (Params: `$name`). |
 | `menu-visitor` | Main menu header (Params: `$name`). |
-| `button-sections` | Keyboard menu label. |
-| `button-users` | Keyboard menu label. |
-| `button-maintenance` | Keyboard menu label. |
-| `button-audit` | Keyboard menu label. |
-| `button-modules` | Keyboard menu label. |
-| `button-notifications` | Keyboard menu label. |
+| `button-sections` | Inline keyboard menu label. |
+| `button-users` | Inline keyboard menu label. |
+| `button-maintenance` | Inline keyboard menu label. |
+| `button-audit` | Inline keyboard menu label. |
+| `button-modules` | Inline keyboard menu label. |
+| `button-notifications` | Inline keyboard menu label. |
 | `button-submit-join-request` | Initial registration kickoff button. |
 | `button-confirm` | Shared Confirm. |
 | `button-cancel` | Shared Cancel. |
