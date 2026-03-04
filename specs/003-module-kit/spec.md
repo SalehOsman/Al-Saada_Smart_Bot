@@ -2,7 +2,7 @@
 
 **Feature Branch**: `003-module-kit`  
 **Created**: 2026-03-01  
-**Status**: Draft  
+**Status**: In Progress  
 **Input**: User description: "Module Kit replaces the previously planned Flow Engine..."
 
 ## Clarifications
