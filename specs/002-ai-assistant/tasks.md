@@ -64,6 +64,7 @@
 ### Base Services
 
 - [ ] T020 Implement LLMClientService in packages/ai-assistant/src/services/llm-client.service.ts (Vercel AI SDK + Ollama integration)
+- [ ] T020B Configure Docker Compose with Ollama and pgvector services (spec NFR infrastructure) — add ollama service container with volume persistence for model storage, add pgvector service container with PostgreSQL + pgvector extension, configure network and environment variables. This supports local model inference and vector similarity search required for RAG functionality.
 - [ ] T021 [P] Implement EmbeddingService in packages/ai-assistant/src/services/embedding.service.ts (nomic-embed-text via Ollama)
 - [ ] T022 [P] Implement PrivacyService in packages/ai-assistant/src/services/privacy.service.ts (PII redaction layer)
 - [ ] T023 Implement AuditLoggerMiddleware in packages/ai-assistant/src/middleware/audit-logger.middleware.ts
