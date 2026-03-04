@@ -6,10 +6,10 @@
 
 **A smart, ready-made platform for recording and managing daily business operations for Egyptian companies via Telegram**
 
-[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)]()
 [![Node.js](https://img.shields.io/badge/Node.js-≥20-green.svg)]()
-[![Tests](https://img.shields.io/badge/tests-112%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-in%20development-yellow.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-green.svg)]()
 
 [عربي](#ما-هو-بوت-السعادة) · [English](#what-is-al-saada-bot)
@@ -134,7 +134,7 @@ npm run module:remove
 | Cache | Redis 7 + ioredis |
 | i18n | @grammyjs/i18n (Fluent .ftl) |
 | Logging | Pino |
-| Testing | Vitest (112 اختبار) |
+| Testing | Vitest (في التطوير) |
 | Infrastructure | Docker Compose |
 
 ---
@@ -211,8 +211,12 @@ al-saada-smart-bot/
 |---------|-------|---------|--------|
 | **Phase 1** | نواة المنصة (Bot, RBAC, Sections, Audit) | v0.1.0 | ✅ مكتمل |
 | **Phase 2** | Module Kit (Helpers, Drafts, CLI) | v0.2.0 | ✅ مكتمل |
-| **Phase 3** | موديولات تجريبية (HR, Operations) | v0.3.0 | ⏳ قادم |
-| **Phase 4** | مساعد ذكاء اصطناعي تشغيلي | v1.0.0 | ⏳ قادم |
+| **Phase 3** | Production Readiness (Sentry, CI/CD, Backups) | v0.3.0 | ⏳ قادم |
+| **Phase 4** | مساعد ذكاء اصطناعي تشغيلي | v0.4.0 | ⏳ قادم |
+| **Phase 5** | لوحة القيادة الذكية (Dashboard MVP) | v0.5.0 | ⏳ قادم |
+| **Phase 6** | ميزات متقدمة (Advanced Features) | v1.0.0 | ⏳ قادم |
+
+📋 **للتفاصيل الكاملة:** راجع [`docs/project/roadmap.md`](docs/project/roadmap.md)
 
 ### Phase 4 — المساعد الذكي (قادم)
 
@@ -234,7 +238,7 @@ al-saada-smart-bot/
 
 يتبع المشروع منهجية **[SpecKit](https://github.com/github/spec-kit)** للتطوير المدفوع بالمواصفات:
 
-1. 📜 **الدستور** — المرجع الأعلى لكل القرارات ([v2.1.0](.specify/memory/constitution.md))
+1. 📜 **الدستور** — المرجع الأعلى لكل القرارات ([v2.3.0](.specify/memory/constitution.md))
 2. 📋 **المواصفات** — تعريف دقيق لكل ميزة
 3. 📐 **الخطة** — قرارات تقنية وهيكلية
 4. ✅ **المهام** — تفصيل خطوة بخطوة
@@ -360,7 +364,7 @@ npm run module:remove
 | Cache | Redis 7 + ioredis |
 | i18n | @grammyjs/i18n (Fluent .ftl) |
 | Logging | Pino |
-| Testing | Vitest (112 tests) |
+| Testing | Vitest (in development) |
 | Infrastructure | Docker Compose |
 
 ---
@@ -393,8 +397,12 @@ npm run module:remove
 |-------|-------------|---------|--------|
 | **Phase 1** | Platform Core (Bot, RBAC, Sections, Audit) | v0.1.0 | ✅ Complete |
 | **Phase 2** | Module Kit (Helpers, Drafts, CLI) | v0.2.0 | ✅ Complete |
-| **Phase 3** | Trial Modules (HR, Operations) | v0.3.0 | ⏳ Coming |
-| **Phase 4** | AI Operational Assistant | v1.0.0 | ⏳ Coming |
+| **Phase 3** | Production Readiness (Sentry, CI/CD, Backups) | v0.3.0 | ⏳ Coming |
+| **Phase 4** | AI Operational Assistant | v0.4.0 | ⏳ Coming |
+| **Phase 5** | Smart Admin Dashboard (MVP) | v0.5.0 | ⏳ Coming |
+| **Phase 6** | Advanced Features | v1.0.0 | ⏳ Coming |
+
+📋 **Full Details:** See [`docs/project/roadmap.md`](docs/project/roadmap.md)
 
 ### Phase 4 — AI Assistant (Coming)
 
@@ -416,7 +424,7 @@ A multi-modal operational assistant trained on company data:
 
 This project follows **[SpecKit](https://github.com/github/spec-kit)** for specification-driven development:
 
-1. 📜 **Constitution** — Supreme reference for all decisions ([v2.1.0](.specify/memory/constitution.md))
+1. 📜 **Constitution** — Supreme reference for all decisions ([v2.3.0](.specify/memory/constitution.md))
 2. 📋 **Specification** — Precise feature definition
 3. 📐 **Plan** — Technical and structural decisions
 4. ✅ **Tasks** — Step-by-step breakdown

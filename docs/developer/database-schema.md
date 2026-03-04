@@ -1,6 +1,6 @@
 # Database Schema Reference
 
-**Last Updated:** 2026-03-03
+**Last Updated:** 2026-03-04
 
 This document details the exact structure of the Al-Saada Smart Bot PostgreSQL database, sourced from the `prisma/schema` directory. It uses Prisma Client and the `prismaSchemaFolder` preview feature for organization.
 
@@ -17,6 +17,7 @@ erDiagram
     User ||--o{ AdminScope : "has/grants"
     Section ||--o{ Module : "contains"
     Section ||--o{ AdminScope : "scoped to"
+    Section ||--o{ Section : "parent/child"
     Module ||--o{ AdminScope : "scoped to"
 
     User {
@@ -25,27 +26,76 @@ erDiagram
         String role
         String phone UK
         String nationalId UK
+        String fullName
+        String nickname
+        String telegramUsername
+        Boolean isActive
+        String language
+        DateTime lastActiveAt
+        DateTime createdAt
+        DateTime updatedAt
     }
     JoinRequest {
         String id PK
-        BigInt telegramId
+        BigInt telegramId FK
+        String fullName
+        String nickname
+        String phone
+        String nationalId
         String status
+        BigInt reviewedBy FK
+        DateTime reviewedAt
+        DateTime createdAt
     }
     Section {
         String id PK
         String slug UK
+        String name
+        String nameEn
+        String icon
+        String parentId FK
         Boolean isActive
+        Int orderIndex
+        DateTime createdAt
+        DateTime updatedAt
+        BigInt createdBy FK
     }
     Module {
         String id PK
         String slug UK
+        String name
+        String nameEn
         String sectionId FK
+        String icon
+        Boolean isActive
+        Int orderIndex
+        String configPath
+        DateTime createdAt
+    }
+    AuditLog {
+        String id PK
+        BigInt userId FK
+        String action
+        String targetType
+        String targetId
+        Json details
+        DateTime createdAt
+    }
+    Notification {
+        String id PK
+        BigInt targetUserId FK
+        String type
+        Json params
+        Boolean isRead
+        DateTime createdAt
     }
     AdminScope {
         String id PK
         BigInt userId FK
         String sectionId FK
         String moduleId FK
+        DateTime createdAt
+        BigInt createdBy FK
     }
 ```
 
@@ -77,7 +127,7 @@ erDiagram
 | `USER_DEACTIVATED` |
 | `MAINTENANCE_ON` |
 | `MAINTENANCE_OFF` |
-| `MODULE_OPERATION` |
+| `MODULE_OPERATION` **NEW** |
 
 ### `AuditAction`
 | Value | Value | Value |
@@ -87,10 +137,11 @@ erDiagram
 | `USER_LOGOUT` | `SECTION_DELETE` | `PERMISSION_CHANGE` |
 | `ROLE_CHANGE` | `SECTION_ENABLE` | `ADMIN_SCOPE_ASSIGN` |
 | `USER_APPROVE` | `SECTION_DISABLE` | `ADMIN_SCOPE_REVOKE` |
-| `USER_REJECT` | `MODULE_REGISTER` | `BACKUP_TRIGGER` |
-| `USER_ACTIVATE` | `MODULE_UNREGISTER` | `BACKUP_RESTORE` |
-| `USER_DEACTIVATE` | `MODULE_ENABLE` | `MODULE_CREATE` |
-| `JOIN_REQUEST_SUBMIT` | `MODULE_DISABLE` | `MODULE_UPDATE` \| `MODULE_DELETE` |
+| `USER_REJECT` | `MODULE_REGISTER` | `BACKUP_TRIGGER` **NEW** |
+| `USER_ACTIVATE` | `MODULE_UNREGISTER` | `BACKUP_RESTORE` **NEW** |
+| `USER_DEACTIVATE` | `MODULE_ENABLE` | `MODULE_CREATE` **NEW** |
+| `JOIN_REQUEST_SUBMIT` | `MODULE_DISABLE` | `MODULE_UPDATE` **NEW** |
+| | | `MODULE_DELETE` **NEW** |
 
 ---
 
@@ -149,20 +200,22 @@ Holds pending registration requests for `VISITOR`s attempting to upgrade their r
 ---
 
 ### `Section` (Table: `sections`)
-Dynamic containers/departments holding multiple modules.
+Dynamic containers/departments holding multiple modules with hierarchical support.
 
 #### Indexes
 - `@@index([isActive])`
 - `@@index([orderIndex])`
+- `@@index([parentId])` **NEW: Added in Migration 20260304031327**
 
 #### Fields
 | Field | Type | Attributes | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | `String` | `@id`, `@default(cuid())` | Primary Key |
-| `slug` | `String` | `@unique` | Internal text identifier |
+| `slug` | `String` | `@unique` **NEW** | Internal text identifier |
 | `name` | `String` | | Arabic section name |
 | `nameEn` | `String` | | English section name |
 | `icon` | `String` | | Emoji representation |
+| `parentId` | `String?` | `@map("parent_id")` **NEW** | Self-referential FK for hierarchical sections |
 | `isActive` | `Boolean` | `@default(true)`, `@map("is_active")` | Viewable status |
 | `orderIndex` | `Int` | `@default(0)`, `@map("order_index")` | Positioning in lists |
 | `createdAt` | `DateTime` | `@default(now())`, `@map("created_at")` | Creation timestamp |
@@ -171,8 +224,17 @@ Dynamic containers/departments holding multiple modules.
 
 #### Relationships
 - `User` (`creator` via `createdBy` to `User.telegramId`)
+- `Section` (`parent` via `parentId` to `Section.id`) **NEW: Hierarchical parent**
+- `Section[]` (`children` via `Section.parentId`) **NEW: Hierarchical children**
 - `Module` (`modules` via `Section.id`)
-- `AdminScope` (`adminScopes` via `Section.id`)
+- `AdminScope` (`adminScopes` via `Section.id` with `onDelete: Cascade`)
+
+#### Section Hierarchy Features
+- **Parent-Child Relationships:** Sections can have sub-sections via `parentId`
+- **Self-Referential:** A section can reference another section as its parent
+- **Nullable Parent:** Top-level sections have `parentId = null`
+- **Cascade Delete:** When a section is deleted, related AdminScopes are also deleted
+- **Hierarchical Navigation:** Supports nested menu structures in the bot
 
 ---
 
@@ -188,7 +250,7 @@ Configurations of dynamically discovered feature extensions.
 | Field | Type | Attributes | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | `String` | `@id`, `@default(cuid())` | Primary Key |
-| `slug` | `String` | `@unique` | Directory matched slug |
+| `slug` | `String` | `@unique` **NEW** | Directory matched slug identifier |
 | `name` | `String` | | Arabic module name |
 | `nameEn` | `String` | | English module name |
 | `sectionId` | `String` | `@map("section_id")` | Parent section |
@@ -272,6 +334,41 @@ Granular permission overrides mapping `ADMIN` users to specific Sections or inde
 
 #### Relationships
 - `User` (`user` via `userId` to `User.telegramId` marked `AdminScopeUser`)
-- `Section` (`section` via `sectionId` to `Section.id`)
+- `Section` (`section` via `sectionId` to `Section.id` with `onDelete: Cascade`) **UPDATED**
 - `Module` (`module` via `moduleId` to `Module.id`)
 - `User` (`creator` via `createdBy` to `User.telegramId` marked `AdminScopeCreator`)
+
+---
+
+## 3. Recent Schema Changes
+
+### Migration: `20260304031327_section_hierarchy`
+**Date:** 2026-03-04
+
+#### Changes Made:
+1. **Section Hierarchy Support:**
+   - Added `parentId` field to `Section` model for hierarchical relationships
+   - Added `@@index([parentId])` for performance
+   - Added self-referential foreign key constraint
+
+2. **Slug Fields:**
+   - Added `slug` field to both `Section` and `Module` models
+   - Added unique constraints on both slug fields
+   - Enables URL-friendly identifiers
+
+3. **Enhanced Audit Actions:**
+   - Added `BACKUP_TRIGGER` and `BACKUP_RESTORE` for backup operations
+   - Added `MODULE_CREATE`, `MODULE_UPDATE`, `MODULE_DELETE` for module lifecycle
+
+4. **New Notification Type:**
+   - Added `MODULE_OPERATION` for module-related notifications
+
+5. **AdminScope Cascade Delete:**
+   - Updated foreign key constraint to cascade delete AdminScopes when Section is deleted
+   - Ensures data consistency in hierarchical structures
+
+#### Database Impact:
+- Supports nested section structures (e.g., "HR" → "Recruitment" → "Interviews")
+- Enables breadcrumb navigation in bot interface
+- Improves data integrity with cascade deletes
+- Better module organization and discovery
