@@ -41,6 +41,8 @@ services:
     ports:
       - '${PORT:-3000}:3000'
     env_file: .env
+    volumes:
+      - backup_data:/app/backups
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,3 +59,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  backup_data:

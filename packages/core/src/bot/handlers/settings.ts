@@ -111,7 +111,7 @@ export async function settingsActionsHandler(ctx: BotContext) {
   }
 
   if (data.startsWith('settings:backup:restore:')) {
-    const filename = data.split(':')[3]
+    const filename = data.replace('settings:backup:restore:', '')
     ctx.session.pendingRestore = filename
 
     const keyword = ctx.t('settings-backup-restore-confirm-keyword')

@@ -11,7 +11,7 @@ export interface SessionData {
   currentModule?: string | null
   currentStep?: string
   lastActivity?: number
-  currentMenu?: string[]  // Navigation breadcrumb stack
+  currentMenu?: Array<{ level: string; id: string }>  // Navigation breadcrumb stack (FR-028)
   editSectionQuery?: string  // For section edit tracking
   createSubSection?: string | null  // For sub-section creation tracking
   pendingRestore?: string  // For backup restore tracking

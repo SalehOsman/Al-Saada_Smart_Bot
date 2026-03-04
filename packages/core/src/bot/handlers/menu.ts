@@ -5,7 +5,7 @@ import { auditService } from '../../services/audit-logs'
 import logger from '../../utils/logger'
 import { moduleLoader, LoadedModule } from '../module-loader'
 
-/** User row including adminScopes — matches the findUnique query in menuHandler */
+/** User row including adminScopes — matches to findUnique query in menuHandler */
 type MenuUser = Prisma.UserGetPayload<{ include: { adminScopes: true } }>
 
 /**
@@ -54,7 +54,7 @@ async function getAuthorizedModules(user: MenuUser): Promise<LoadedModule[]> {
     return allModules
   }
 
-  // Get all section slugs for which the user has scope
+  // Get all section slugs for which user has scope
   const sectionIds = (user.adminScopes || []).map(s => s.sectionId)
   let scopedSectionSlugs: string[] = []
 
@@ -100,6 +100,9 @@ async function showDynamicMenu(ctx: BotContext, user: MenuUser, modules: LoadedM
       { text: ctx.t('button-audit'), callback_data: 'menu-audit' },
     ])
     keyboard.push([
+      { text: ctx.t('button-settings'), callback_data: 'menu-settings' },
+    ])
+    keyboard.push([
       { text: ctx.t('button-modules'), callback_data: 'menu-modules' },
       { text: ctx.t('button-notifications'), callback_data: 'menu-notifications' },
     ])
@@ -129,6 +132,7 @@ async function showDynamicMenu(ctx: BotContext, user: MenuUser, modules: LoadedM
         const m2 = modules[i + 1]
         row.push({ text: `${m2.config.icon} ${ctx.t(m2.config.name as any)}`, callback_data: `mod:${m2.slug}` })
       }
+
       keyboard.push(row)
     }
   }

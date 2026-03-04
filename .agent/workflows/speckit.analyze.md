@@ -64,6 +64,38 @@ Load only the minimal necessary context from each artifact:
 
 - Load `.specify/memory/constitution.md` for principle validation
 
+### 2.5. Load Codebase Context (False-Positive Prevention)
+
+This step prevents false positives by verifying documentation claims against the actual filesystem. **Do NOT skip this step.**
+
+**2.5.1 Extract Referenced Paths**
+
+Scan all task descriptions in `tasks.md` for file path patterns (e.g., `packages/*/src/**/*.ts`, `modules/*/config.ts`). Build a list of all referenced paths.
+
+**2.5.2 Verify File Existence**
+
+For each referenced path, use `find_by_name` or `list_dir` to check if the file or directory exists in the repository. Record results in a **Codebase Evidence Map**:
+
+```
+{ filePath → { exists: boolean, taskIds: string[], isMarkedComplete: boolean } }
+```
+
+**2.5.3 Scan Test Files**
+
+Find all `*.test.ts` and `*.spec.ts` files in the project using `find_by_name`. Map each test file to the component/feature it tests (by filename convention, e.g., `sanitize.test.ts` → sanitization, `phone.test.ts` → phone validation).
+
+**2.5.4 Task Completion Cross-Check**
+
+For tasks marked `[x]` (completed):
+- Verify their referenced files exist. If files are missing → flag as **real issue** (task marked done but code missing).
+
+For tasks marked `[ ]` (incomplete):
+- Check if referenced files already exist (possibly implemented by another feature or task). If files exist → note as **potential missed completion**.
+
+**2.5.5 Cross-Feature File Ownership**
+
+If analyzing multiple features, check if a file referenced in Feature A's tasks was created by Feature B's tasks (cross-feature implementation). Record these cross-references to avoid false "missing implementation" reports.
+
 ### 3. Build Semantic Models
 
 Create internal representations (do not include raw artifacts in output):
@@ -92,6 +124,7 @@ Focus on high-signal findings. Limit to 50 findings total; aggregate remainder i
 - Requirements with verbs but missing object or measurable outcome
 - User stories missing acceptance criteria alignment
 - Tasks referencing files or components not defined in spec/plan
+- **⚠️ Codebase Check**: Before flagging "no task exists for X", consult the Codebase Evidence Map. If a file implementing X already exists, do NOT report as underspecification. Instead, note it as a potential documentation gap (task may need to be marked `[x]`).
 
 #### D. Constitution Alignment
 
@@ -103,6 +136,7 @@ Focus on high-signal findings. Limit to 50 findings total; aggregate remainder i
 - Requirements with zero associated tasks
 - Tasks with no mapped requirement/story
 - Non-functional requirements not reflected in tasks (e.g., performance, security)
+- **⚠️ Codebase Check**: Before flagging "no test task for X", check the test file scan from Step 2.5.3. If `*.test.ts` files already cover X, do NOT report as a coverage gap. Mark as `Code Verified = ✅` in the report.
 
 #### F. Inconsistency
 
@@ -110,6 +144,15 @@ Focus on high-signal findings. Limit to 50 findings total; aggregate remainder i
 - Data entities referenced in plan but absent in spec (or vice versa)
 - Task ordering contradictions (e.g., integration tasks before foundational setup tasks without dependency note)
 - Conflicting requirements (e.g., one requires Next.js while other specifies Vue)
+- **⚠️ Codebase Check**: Before flagging "file not found in spec", verify if the file exists in another feature's scope (cross-feature implementation from Step 2.5.5). If so, note the cross-reference rather than reporting an inconsistency.
+
+#### G. Code-Documentation Sync (NEW)
+
+Using the Codebase Evidence Map from Step 2.5, detect:
+
+- **Phantom completions**: Tasks marked `[x]` where referenced files do NOT exist in the filesystem → report as HIGH severity
+- **Missed completions**: Tasks marked `[ ]` where referenced files already exist (implemented by another feature or undocumented work) → report as MEDIUM severity with recommendation to update task status
+- **Orphaned code**: Source files in `src/` that are not referenced by ANY task → report as LOW severity informational
 
 ### 5. Severity Assignment
 
@@ -126,11 +169,18 @@ Output a Markdown report (no file writes) with the following structure:
 
 ## Specification Analysis Report
 
-| ID | Category | Severity | Location(s) | Summary | Recommendation |
-|----|----------|----------|-------------|---------|----------------|
-| A1 | Duplication | HIGH | spec.md:L120-134 | Two similar requirements ... | Merge phrasing; keep clearer version |
+| ID | Category | Severity | Location(s) | Code Verified? | Summary | Recommendation |
+|----|----------|----------|-------------|----------------|---------|----------------|
+| A1 | Duplication | HIGH | spec.md:L120-134 | ⚠️ | Two similar requirements ... | Merge phrasing; keep clearer version |
 
 (Add one row per finding; generate stable IDs prefixed by category initial.)
+
+**Code Verified? column values:**
+- `✅` = Finding confirmed by codebase verification (file/test checked and issue is real)
+- `⚠️` = Could not verify against codebase (no file path referenced, documentation-only issue)
+- `❌` = Finding contradicted by codebase (file/test exists — potential false positive, investigate before acting)
+
+**IMPORTANT**: Findings marked `❌` should be reported but with reduced severity and a note explaining the contradiction. The user should investigate before applying any remediation.
 
 **Coverage Summary Table:**
 

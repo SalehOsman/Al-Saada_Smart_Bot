@@ -24,7 +24,6 @@ import {
   handleBackNavigation,
 } from './menus/sections'
 import { sectionsCallbackHandler, sectionCreateTextHandler, editSectionActionHandler, sectionSetParentHandler } from './handlers/sections'
-import { healthRouter } from '../server/health'
 
 // Create grammy bot instance using BOT_TOKEN from environment
 export const bot = new Bot<BotContext>(env.BOT_TOKEN)
@@ -46,10 +45,6 @@ bot.use(lazySessionMiddleware)
 // RBAC and user status check (T111, T029)
 import { rbacMiddleware } from './middlewares/rbac'
 bot.use(rbacMiddleware)
-
-// Maintenance mode check (FR-023)
-import { maintenanceMiddleware } from './middlewares/maintenance'
-bot.use(maintenanceMiddleware)
 
 // i18n middleware for bilingual support
 bot.use(i18n)
@@ -84,14 +79,6 @@ bot.command('sections', async (ctx) => {
   return showMainSectionsMenu(ctx)
 })
 
-// /maintenance command (Super Admin only)
-import { maintenanceHandler } from './handlers/maintenance'
-bot.command('maintenance', maintenanceHandler)
-
-// /settings command (Super Admin only)
-import { settingsHandler, settingsActionsHandler } from './handlers/settings'
-bot.command('settings', settingsHandler)
-
 // Handle "submit join request" button (shown after cancellation)
 bot.callbackQuery('start_join', async (ctx) => {
   await ctx.answerCallbackQuery()
@@ -107,9 +94,6 @@ bot.callbackQuery(/^(approve|reject):/, approvalsHandler)
 // Section management callback queries
 bot.callbackQuery(/^section:/, sectionsCallbackHandler)
 
-// Settings callback queries
-bot.callbackQuery(/^settings:/, settingsActionsHandler)
-
 // Section edit actions
 bot.callbackQuery(/^section:edit:/, editSectionActionHandler)
 
@@ -119,13 +103,6 @@ bot.callbackQuery(/^section:set_parent:/, sectionSetParentHandler)
 // Section create/update text handler
 bot.on('message:text', async (ctx) => {
   const { sectionCreateTextHandler } = await import('./handlers/sections')
-  const { settingsBackupRestoreTextHandler } = await import('./handlers/settings')
-  
-  // Try backup restore handler first if there's a pending restore
-  if (ctx.session.pendingRestore) {
-    return settingsBackupRestoreTextHandler(ctx)
-  }
-  
   await sectionCreateTextHandler(ctx)
 })
 
@@ -177,29 +154,10 @@ bot.callbackQuery(/^dr:(res|frsh):(.+)$/, async (ctx) => {
   const redisKey = `draft:${userId}:${moduleSlug}`
 
   await ctx.answerCallbackQuery()
-  // Clear buttons by editing message with empty keyboard
-  await ctx.editMessageReplyMarkup({ reply_markup: { inline_keyboard: [] } })
+  await ctx.editMessageReplyMarkup({ reply_markup: { inline_keyboard: [] } }) // Clear buttons
 
   if (action === 'frsh') {
-    const draftData = await redis.get(redisKey)
-
-    if (!draftData) {
-      await ctx.reply(ctx.t('module-kit-draft-expired'))
-      ctx.session.currentModule = moduleSlug
-      await ctx.conversation.enter(`${moduleSlug}-add`)
-      return
-    }
-
-    const { data, conversations } = JSON.parse(draftData)
-
-    // Restore session data and conversation state
-    Object.assign(ctx.session, data)
-    // grammY conversations state is in ctx.session.conversations
-    const sessionWithConversations = ctx.session as any
-    if (conversations) {
-      sessionWithConversations.conversations = conversations
-    }
-
+    await redis.del(redisKey)
     ctx.session.currentModule = moduleSlug
     await ctx.conversation.enter(`${moduleSlug}-add`)
     return
@@ -215,19 +173,22 @@ bot.callbackQuery(/^dr:(res|frsh):(.+)$/, async (ctx) => {
       return
     }
 
-    const { data, conversations } = JSON.parse(draftData)
+    try {
+      const { data, conversations } = JSON.parse(draftData)
 
-    // Restore session data and conversation state
-    Object.assign(ctx.session, data)
-    // grammY conversations state is in ctx.session.conversations
-    const sessionWithConversations = ctx.session as any
-    if (conversations) {
-      sessionWithConversations.conversations = conversations
+      // Restore session data and conversation state
+      Object.assign(ctx.session, data)
+      // grammY conversations state is in ctx.session.conversations
+      if (conversations) {
+        (ctx.session as any).conversations = conversations
+      }
+
+      ctx.session.currentModule = moduleSlug
+      await ctx.conversation.enter(`${moduleSlug}-add`)
+    } catch (err: {
+      logger.error('Failed to restore draft:', err)
+      await ctx.reply(ctx.t('error-generic'))
     }
-
-    ctx.session.currentModule = moduleSlug
-    await ctx.conversation.enter(`${moduleSlug}-add`)
-    return
   }
 })
 
@@ -243,10 +204,10 @@ app.route('/', healthRouter)
 // Setup webhook route to receive updates from Telegram
 app.post('/webhook', async (c) => {
   try {
-    // Get update body from request
+    // Get the update body from request
     const update = await c.req.json()
 
-    // Process update with bot
+    // Process the update with the bot
     await bot.handleUpdate(update)
 
     // Return success response

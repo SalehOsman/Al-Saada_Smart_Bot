@@ -53,6 +53,7 @@ model Section {
   name       String // Arabic name
   nameEn     String // English name
   icon       String // Emoji (e.g., "📁", "💼")
+  parentId   String?  @map("parent_id") // Self-referential FK - nullable for main sections; when set, defines sub-section
   isActive   Boolean  @default(true) @map("is_active")
   orderIndex Int      @default(0) @map("order_index")
   createdAt  DateTime @default(now()) @map("created_at")
@@ -60,12 +61,15 @@ model Section {
   createdBy  BigInt?  @map("created_by")
 
   // Relationships
-  creator User?    @relation("SectionCreator", fields: [createdBy], references: [telegramId])
+  creator User?      @relation("SectionCreator", fields: [createdBy], references: [telegramId])
+  parent  Section?    @relation("SectionHierarchy", fields: [parentId], references: [id])
+  children Section[]   @relation("SectionHierarchy")
   modules Module[]
   adminScopes AdminScope[]
 
   @@index([isActive])
   @@index([orderIndex])
+  @@index([parentId])
   @@map("sections")
 }
 
@@ -140,7 +144,7 @@ model AdminScope {
 
   // Relationships
   user    User    @relation("AdminScopeUser", fields: [userId], references: [telegramId])
-  section Section @relation(fields: [sectionId], references: [id])
+  section Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   module  Module? @relation(fields: [moduleId], references: [id])
   creator User    @relation("AdminScopeCreator", fields: [createdBy], references: [telegramId])
 

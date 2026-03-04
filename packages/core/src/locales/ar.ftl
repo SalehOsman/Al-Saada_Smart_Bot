@@ -340,5 +340,17 @@ notif-type-user-deactivated = تعطيل مستخدم
 notif-type-maintenance-on = تفعيل صيانة
 notif-type-maintenance-off = إيقاف صيانة
 
+# Section Edit Buttons (US3 - Phase 6)
+button-edit-name = ✏️ تعديل الاسم (عربي)
+button-edit-name-en = ✏️ تعديل الاسم (إنجليزي)
+button-edit-icon = 🎨 تعديل الأيقونة
+button-edit-parent = 📂 تغيير القسم الأب
+button-edit-order = 🔢 تعديل الترتيب
+button-back = 🔙 رجوع
+button-settings = ⚙️ الإعدادات
+error-invalid-action = هذا الإجراء غير صالح.
+errors-validation-invalid-number = الرقم المدخل غير صحيح. يرجى إدخال رقم صحيح.
+errors-section-deleted = تم حذف هذا القسم. سيتم إعادتك للقائمة الرئيسية.
+
 # Module Management (US3 - Phase 6)
 button-back-to-menu = 🏠 العودة للقائمة الرئيسية
