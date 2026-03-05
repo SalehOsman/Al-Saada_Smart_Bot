@@ -14,7 +14,7 @@ vi.mock('../../../../src/database/prisma', () => ({
   },
 }))
 vi.mock('../../../../src/utils/logger', () => ({
-  default: { info: vi.fn(), error: vi.fn(), warn: vi.fn() },
+  default: { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
 }))
 const mockPrisma = prisma as any
 const mockLogger = logger as any
@@ -75,16 +75,16 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
       expect(call[0]).toContain('Welcome Super Admin Super Admin')
       expect(call[1]?.reply_markup?.inline_keyboard).toHaveLength(4)
       expect(call[1]?.reply_markup?.inline_keyboard[0]).toContainEqual(
-        expect.objectContaining({ text: 'Sections', callback_data: 'menu-sections' }),
+        expect.objectContaining({ text: '🗂️ Sections', callback_data: 'menu-sections' }),
       )
       expect(call[1]?.reply_markup?.inline_keyboard[0]).toContainEqual(
-        expect.objectContaining({ text: 'Users', callback_data: 'menu-users' }),
+        expect.objectContaining({ text: '👥 Users', callback_data: 'menu-users' }),
       )
       expect(call[1]?.reply_markup?.inline_keyboard[3]).toContainEqual(
-        expect.objectContaining({ text: 'Modules', callback_data: 'menu-modules' }),
+        expect.objectContaining({ text: '📦 Modules', callback_data: 'menu-modules' }),
       )
       expect(call[1]?.reply_markup?.inline_keyboard[3]).toContainEqual(
-        expect.objectContaining({ text: 'Notifications', callback_data: 'menu-notifications' }),
+        expect.objectContaining({ text: '🔔 Notifications', callback_data: 'menu-notifications' }),
       )
     })
 

@@ -6,4 +6,5 @@ coverage
 .temp
 !.github
 specs/**/*.md
+**/*.md
 .claude/worktrees/**

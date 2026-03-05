@@ -16,8 +16,8 @@ const { mockPrisma, mockModuleLoader } = vi.hoisted(() => ({
 
 vi.mock('../src/database/prisma.js', () => ({ prisma: mockPrisma }))
 vi.mock('../src/bot/module-loader.js', () => ({ moduleLoader: mockModuleLoader }))
-vi.mock('../src/utils/logger.js', () => ({
-  default: { info: vi.fn(), error: vi.fn(), warn: vi.fn() },
+vi.mock('../../src/utils/logger', () => ({
+  default: { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
 }))
 
 describe('menu Visibility (US5)', () => {

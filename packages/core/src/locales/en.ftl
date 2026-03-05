@@ -215,6 +215,10 @@ errors-section-has-active-modules = This section cannot be deleted because it ha
 # FR-016: Unauthenticated access
 errors-unauthorized = You are not authorized to perform this action.
 
+# Super Admin Role Protection
+errors-cannot-change-own-role = You cannot change your own role.
+errors-cannot-demote-last-super-admin = You cannot demote the last Super Admin in the system.
+
 # US4: Maintenance mode active message
 maintenance-active-message = The system is currently under maintenance. Please try again later.
 maintenance-status-on = ✅ Maintenance mode has been activated successfully. The system is now only accessible to administrators.
@@ -244,6 +248,10 @@ module-kit-draft-fresh-btn = ✨ Start Fresh
 module-kit-draft-expired = ⚠️ Sorry, the draft has expired. Starting fresh.
 module-kit-max-retries-exceeded = ⚠️ Maximum retry attempts exceeded. Process cancelled.
 module-kit-unauthorized-action = 🚫 Sorry, you don't have permission to perform this action.
+
+# Profile View Additions
+confirmation-deactivate-user = ⚠️ Are you sure you want to deactivate this user's account?
+user-scopes-title = 🔑 Admin Scopes: { $name }
 module-kit-confirm-btn = ✅ Confirm
 module-kit-cancel-btn = ❌ Cancel
 module-kit-review-title = 📝 *Review Your Data*
@@ -380,8 +388,56 @@ user-details = 👤 User Details
 status-active = 🟢 Active
 status-inactive = 🔴 Inactive
 button-back-to-list = 🔙 Back to List
+role-super_admin = 👑 Super Admin
 role-admin = 🛡️ Admin
 role-employee = 💼 Employee
 role-visitor = 👤 Visitor
 button-deactivate = 🔴 Deactivate Account
 button-activate = 🟢 Activate Account
+
+button-activate-short = Activate
+button-deactivate-short = Deactivate
+
+# Short Button Variants (Mobile-Optimized, Max 20 chars)
+button-confirm-short = Confirm
+button-cancel-short = Cancel
+button-back-short = Back
+button-next-short = Next
+button-submit-short = Submit
+button-approve-short = Approve
+button-reject-short = Reject
+button-delete-short = Delete
+button-edit-short = Edit
+button-view-short = View
+button-yes-short = Yes
+button-no-short = No
+button-my-profile-short = Profile
+
+# User Profile View
+profile-title = My Profile
+profile-full-name = Full Name
+profile-nickname = Nickname
+profile-nickname-not-set = Not set
+profile-phone = Phone Number
+profile-national-id = National ID
+profile-role = Role
+profile-language = Language
+profile-status = Account Status
+profile-status-active = Active
+profile-status-inactive = Inactive
+profile-join-date = Join Date
+profile-last-active = Last Active
+profile-edit-button = Edit Profile
+profile-display =
+    👤 My Profile
+    ────────────────
+    👤 Full Name    : { $fullName }
+    🏷️ Nickname     : { $nickname }
+    📱 Phone        : { $phone }
+    🪪 National ID  : { $nationalId }
+    🛡️ Role         : { $role }
+    🌐 Language      : { $language }
+    🟢 Status       : { $status }
+    📅 Join Date    : { $joinDate }
+    🕐 Last Active   : { $lastActive }
+    ────────────────

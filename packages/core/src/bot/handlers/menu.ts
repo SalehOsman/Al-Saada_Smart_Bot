@@ -103,13 +103,19 @@ async function showDynamicMenu(ctx: BotContext, user: MenuUser, modules: LoadedM
       ? ctx.t('button-maintenance-off')
       : ctx.t('button-maintenance-on')
 
-    keyboard.push([{ text: `🗂️ ${ctx.t('button-sections')}`, callback_data: 'menu-sections' }])
-    keyboard.push([{ text: `👥 ${ctx.t('button-users')}`, callback_data: 'menu-users' }])
-    keyboard.push([{ text: `🔧 ${maintenanceLabel}`, callback_data: 'menu-maintenance' }])
-    keyboard.push([{ text: `📋 ${ctx.t('button-audit')}`, callback_data: 'menu-audit' }])
+    keyboard.push([
+      { text: `🗂️ ${ctx.t('button-sections')}`, callback_data: 'menu-sections' },
+      { text: `👥 ${ctx.t('button-users')}`, callback_data: 'menu-users' },
+    ])
+    keyboard.push([
+      { text: `🔧 ${maintenanceLabel}`, callback_data: 'menu-maintenance' },
+      { text: `📋 ${ctx.t('button-audit')}`, callback_data: 'menu-audit' },
+    ])
     keyboard.push([{ text: ctx.t('button-settings'), callback_data: 'menu-settings' }])
-    keyboard.push([{ text: `📦 ${ctx.t('button-modules')}`, callback_data: 'menu-modules' }])
-    keyboard.push([{ text: `🔔 ${ctx.t('button-notifications')}`, callback_data: 'menu-notifications' }])
+    keyboard.push([
+      { text: `📦 ${ctx.t('button-modules')}`, callback_data: 'menu-modules' },
+      { text: `🔔 ${ctx.t('button-notifications')}`, callback_data: 'menu-notifications' },
+    ])
   }
   else if (user.role === 'ADMIN') {
     // ADMIN: Sections (scoped) + Users (scoped) only — no Maintenance/Audit (spec US1)

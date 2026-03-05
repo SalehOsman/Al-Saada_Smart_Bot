@@ -41,7 +41,7 @@ export async function validate<T>(
         return formatter ? formatter(text) : text
       }
     }
-    catch (error) {
+    catch {
       // Validator threw, treat as invalid
     }
 

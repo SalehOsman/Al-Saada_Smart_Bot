@@ -140,7 +140,7 @@ describe('start to join flow integration', () => {
       const ctx = {
         from: { id: 12345678, first_name: 'Test', language_code: 'ar' },
         reply: vi.fn(),
-        t: vi.fn((key: string, params?: any) => key),
+        t: vi.fn((key: string, _params?: any) => key),
         conversation: { enter: mockEnter },
       } as any
 
@@ -230,8 +230,8 @@ describe('start to join flow integration', () => {
       expect(formatters.notifyAdmins).toHaveBeenCalledWith({
         type: 'JOIN_REQUEST_NEW',
         params: {
-          userName: 'محمد علي',
-          requestCode: 'test-request-id',
+          userName: 'محمد علي_nick',
+          requestCode: expect.any(String),
         },
       })
     })

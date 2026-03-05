@@ -159,5 +159,20 @@ export const lazySessionMiddleware: Middleware<BotContext> = async (ctx, next) =
     }
   }
 
+  // Always update lastActiveAt for known users upon interaction
+  if (ctx.from?.id && ctx.session.userId) {
+    try {
+      await prisma.user.update({
+        where: { telegramId: BigInt(ctx.from.id) },
+        data: { lastActiveAt: new Date() },
+        select: { telegramId: true }, // Minimal select for performance
+      })
+    }
+    catch (e) {
+      // Ignore errors if the user doesn't actually exist in the DB yet (e.g., during join flow)
+      logger.debug({ err: e }, 'Failed to update lastActiveAt')
+    }
+  }
+
   await next()
 }

@@ -3,17 +3,16 @@ import { startHandler } from '../../src/bot/handlers/start'
 import { menuHandler } from '../../src/bot/handlers/menu'
 
 // ─── Mocks ──────────────────────────────────────────────────────────────
-const { mockPrisma, mockMenuHandler } = vi.hoisted(() => ({
+const { mockPrisma } = vi.hoisted(() => ({
   mockPrisma: {
     user: { findUnique: vi.fn(), count: vi.fn(), create: vi.fn(), update: vi.fn() },
     joinRequest: { findFirst: vi.fn() },
     section: { findMany: vi.fn().mockResolvedValue([]) },
   },
-  mockMenuHandler: vi.fn(),
 }))
 
 vi.mock('../../src/database/prisma', () => ({ prisma: mockPrisma }))
-vi.mock('../../src/utils/logger', () => ({ default: { info: vi.fn(), error: vi.fn(), warn: vi.fn() } }))
+vi.mock('../../src/utils/logger', () => ({ default: { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() } }))
 
 // We need to mock moduleLoader for menuHandler
 vi.mock('../../src/bot/module-loader', () => ({

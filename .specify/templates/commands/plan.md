@@ -42,6 +42,7 @@ Verify the feature aligns with the Al-Saada Smart Bot constitution:
 - Security & Privacy standards
 - Simplicity principles
 - Monorepo structure compliance
+- Observability (Sentry opt-in, PII filtering, self-hosted option, Telegram alerts)
 
 ### Phase 3: Project Structure Planning
 

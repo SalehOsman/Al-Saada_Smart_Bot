@@ -1,7 +1,7 @@
 # UX Improvements — Implementation Guide
 
-**Reference:** UX-Audit-Report.md  
-**Date:** 2026-03-04  
+**Reference:** UX-Audit-Report.md
+**Date:** 2026-03-04
 **Status:** Implementation Ready
 
 ---
@@ -69,7 +69,7 @@ async function showUserProfile(ctx: BotContext, telegramId: bigint) {
   }
 
   // Mask sensitive data
-  const maskedNationalId = user.nationalId 
+  const maskedNationalId = user.nationalId
     ? `${user.nationalId.substring(0, 4)}${'*'.repeat(10)}`
     : ctx.t('value-unknown')
 
@@ -81,7 +81,7 @@ async function showUserProfile(ctx: BotContext, telegramId: bigint) {
     role: ctx.t(`role-${user.role.toLowerCase()}`),
     status: user.isActive ? ctx.t('status-active') : ctx.t('status-inactive'),
     createdAt: user.createdAt.toLocaleDateString('ar-EG'),
-    lastActive: user.lastActiveAt 
+    lastActive: user.lastActiveAt
       ? user.lastActiveAt.toLocaleDateString('ar-EG')
       : ctx.t('value-never'),
     auditCount: user._count.auditLogs,
@@ -115,13 +115,13 @@ user-profile-full =
     🏷️ الشهرة: { $nickname }
     📱 الهاتف: { $phone }
     🪪 الرقم القومي: { $nationalId }
-    
+
     👔 الدور: { $role }
     🔘 الحالة: { $status }
-    
+
     📅 تاريخ التسجيل: { $createdAt }
     ⏰ آخر نشاط: { $lastActive }
-    
+
     📊 الإحصائيات:
     • { $auditCount } عملية مسجلة
     • { $scopesCount } صلاحية إدارية
@@ -165,8 +165,8 @@ if (action === 'toggle_confirm') {
     return ctx.answerCallbackQuery(ctx.t('errors-user-not-found'))
   }
 
-  const confirmKey = user.isActive 
-    ? 'user-deactivate-confirm' 
+  const confirmKey = user.isActive
+    ? 'user-deactivate-confirm'
     : 'user-activate-confirm'
 
   const keyboard = new InlineKeyboard()
@@ -214,9 +214,9 @@ if (action === 'toggle_execute') {
 ```fluent
 user-deactivate-confirm =
     ⚠️ *تأكيد إيقاف الحساب*
-    
+
     هل تريد إيقاف حساب *{ $name }*؟
-    
+
     سيتم:
     • تسجيل خروجه فوراً
     • منعه من الدخول للنظام
@@ -224,9 +224,9 @@ user-deactivate-confirm =
 
 user-activate-confirm =
     ✅ *تأكيد تفعيل الحساب*
-    
+
     هل تريد تفعيل حساب *{ $name }*؟
-    
+
     سيتمكن من:
     • تسجيل الدخول للنظام
     • الوصول لصلاحياته
@@ -299,17 +299,17 @@ export function addBackButton(
       callback = 'menu:main'
       label = ctx.t('button-back-to-menu')
       break
-    
+
     case 'list':
       callback = ctx.session.lastList || 'menu:main'
       label = ctx.t('button-back-to-list')
       break
-    
+
     case 'parent':
       callback = ctx.session.lastScreen || 'menu:main'
       label = ctx.t('button-back')
       break
-    
+
     case 'custom':
       callback = options.customCallback || 'menu:main'
       label = options.customLabel || ctx.t('button-back')
@@ -342,12 +342,12 @@ import { addBackButton, saveNavigationState } from '../utils/navigation'
 
 async function showUserDetails(ctx: BotContext, telegramId: bigint) {
   saveNavigationState(ctx, `user:view:${telegramId}`, 'users:list')
-  
+
   const keyboard = new InlineKeyboard()
   // ... add other buttons
-  
+
   addBackButton(keyboard, ctx, { destination: 'list' })
-  
+
   return ctx.editMessageText(text, { reply_markup: keyboard })
 }
 ```
@@ -387,7 +387,7 @@ async function askName(conversation, ctx) {
 // In bot/index.ts
 bot.callbackQuery(/^cancel:/, async (ctx) => {
   const [_, flow] = ctx.callbackQuery.data.split(':')
-  
+
   await ctx.answerCallbackQuery()
   await ctx.conversation.exit(flow)
   await ctx.reply(ctx.t(`${flow}-cancelled`))
@@ -418,7 +418,7 @@ export async function usersHandler(ctx: BotContext, page = 1) {
   const totalPages = Math.ceil(total / limit)
 
   const keyboard = new InlineKeyboard()
-  
+
   // Add search button at top
   keyboard.text(ctx.t('button-search-user'), 'users:search')
   keyboard.row()
@@ -520,5 +520,5 @@ user-search-results = 🔍 نتائج البحث ({ $count }):
 
 ---
 
-**Status:** ✅ Ready for Implementation  
+**Status:** ✅ Ready for Implementation
 **Next:** Review with project owner → Create tasks → Implement

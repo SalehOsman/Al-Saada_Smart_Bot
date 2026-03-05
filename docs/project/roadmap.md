@@ -1,8 +1,8 @@
 # Al-Saada Smart Bot — Development Roadmap
 
-**Version:** 1.0.0  
-**Last Updated:** 2026-03-04  
-**Status:** Active  
+**Version:** 1.0.0
+**Last Updated:** 2026-03-04
+**Status:** Active
 **Document Owner:** Technical Advisor
 
 ---
@@ -68,9 +68,9 @@ Layer 3 (Modules):        ░░░░░░░░░░░░░░░░░░
 
 ## Phase 3: Production Readiness
 
-**Duration:** 2-3 weeks  
-**Priority:** 🔴 CRITICAL  
-**Status:** Next  
+**Duration:** 2-3 weeks
+**Priority:** 🔴 CRITICAL
+**Status:** Next
 **Blocking:** Cannot deploy to production without this phase
 
 ### Objectives
@@ -146,16 +146,16 @@ npm install @grammyjs/auto-retry @grammyjs/ratelimiter
 
 **Configuration:**
 ```typescript
-bot.api.config.use(autoRetry());
+bot.api.config.use(autoRetry())
 
 bot.use(limit({
-  timeFrame: 2000,  // 2 seconds
-  limit: 3,         // 3 requests max
+  timeFrame: 2000, // 2 seconds
+  limit: 3, // 3 requests max
   storageClient: redisClient,
   onLimitExceeded: async (ctx) => {
-    await ctx.reply(ctx.t('rate-limit-exceeded'));
+    await ctx.reply(ctx.t('rate-limit-exceeded'))
   },
-}));
+}))
 ```
 
 **i18n Keys:**
@@ -188,25 +188,25 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '20'
-      
+
       - name: Install dependencies
         run: npm install
-      
+
       - name: Lint
         run: npm run lint
-      
+
       - name: Type check
         run: npm run typecheck
-      
+
       - name: Generate Prisma Client
         run: npm run db:generate
-      
+
       - name: GitNexus Analysis
         run: npx gitnexus analyze
-      
+
       - name: Run tests
         run: npm run test
-      
+
       - name: Check migrations
         run: npx prisma migrate diff --exit-code
 ```
@@ -276,9 +276,9 @@ jobs:
 
 ## Phase 4: AI Assistant
 
-**Duration:** 4-6 weeks  
-**Priority:** 🟠 HIGH  
-**Status:** Planned  
+**Duration:** 4-6 weeks
+**Priority:** 🟠 HIGH
+**Status:** Planned
 **Dependencies:** Phase 3 complete
 
 ### Objectives
@@ -350,9 +350,9 @@ User: "ما هي رواتب الإدارة؟"
 
 ## Phase 5: Dashboard MVP
 
-**Duration:** 6-8 weeks  
-**Priority:** 🟠 HIGH  
-**Status:** Planned  
+**Duration:** 6-8 weeks
+**Priority:** 🟠 HIGH
+**Status:** Planned
 **Dependencies:** Phase 4 complete
 
 ### Objectives
@@ -515,9 +515,9 @@ npm run dashboard:setup
 
 ## Phase 6: Advanced Features
 
-**Duration:** 4-6 weeks  
-**Priority:** 🟡 MEDIUM  
-**Status:** Planned  
+**Duration:** 4-6 weeks
+**Priority:** 🟡 MEDIUM
+**Status:** Planned
 **Dependencies:** Phase 5 MVP validated by users
 
 ### Objectives

@@ -6,9 +6,11 @@ import { PrismaClient } from '@prisma/client'
 import 'dotenv/config'
 
 async function main() {
+  // eslint-disable-next-line node/prefer-global/process
   const slugArg = process.argv[2]
 
   // Support for non-interactive mode via arguments (Issue D1 / Testing)
+  // eslint-disable-next-line node/prefer-global/process
   const isNonInteractive = process.argv.includes('--non-interactive')
 
   let slug = slugArg
@@ -20,7 +22,7 @@ async function main() {
         message: 'Enter module slug (lowercase, hyphen-separated):',
         default: slugArg,
         validate: (input) => {
-          if (/^[a-z0-9]+(-[a-z0-9]+)*$/.test(input))
+          if (/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(input))
             return true
           return 'Invalid slug format. Must be lowercase, hyphen-separated (e.g., "fuel-entry").'
         },
@@ -28,14 +30,17 @@ async function main() {
     ])
     slug = response.slug
   }
-  else if (!slug || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) {
+  else if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
     console.error('Error: Slug must be provided and valid in non-interactive mode.')
+    // eslint-disable-next-line node/prefer-global/process
     process.exit(1)
   }
 
+  // eslint-disable-next-line node/prefer-global/process
   const moduleDir = path.join(process.cwd(), 'modules', slug)
   if (fs.existsSync(moduleDir)) {
     console.error(`Error: Module directory already exists at ${moduleDir}`)
+    // eslint-disable-next-line node/prefer-global/process
     process.exit(1)
   }
 
@@ -45,11 +50,17 @@ async function main() {
     let name, nameEn, sectionSlug, icon, includeEdit, includeHooks
 
     if (isNonInteractive) {
+      // eslint-disable-next-line node/prefer-global/process
       name = process.argv.find(a => a.startsWith('--name='))?.split('=')[1] || `${slug}-name`
+      // eslint-disable-next-line node/prefer-global/process
       nameEn = process.argv.find(a => a.startsWith('--nameEn='))?.split('=')[1] || `${slug}-name-en`
+      // eslint-disable-next-line node/prefer-global/process
       sectionSlug = process.argv.find(a => a.startsWith('--sectionSlug='))?.split('=')[1] || 'operations'
+      // eslint-disable-next-line node/prefer-global/process
       icon = process.argv.find(a => a.startsWith('--icon='))?.split('=')[1] || '📦'
+      // eslint-disable-next-line node/prefer-global/process
       includeEdit = process.argv.includes('--includeEdit')
+      // eslint-disable-next-line node/prefer-global/process
       includeHooks = process.argv.includes('--includeHooks')
     }
     else {
@@ -77,7 +88,7 @@ async function main() {
                 return true
               return `Section "${input}" not found in database. Please ensure the section exists first.`
             }
-            catch (err) {
+            catch {
               console.warn(`\n⚠️ Warning: Database connection failed. Skipping validation for sectionSlug: "${input}".`)
               return true // Allow continuation even if DB is unreachable (Issue F1)
             }
@@ -220,6 +231,7 @@ describe('${slug} flow', () => {
     fs.writeFileSync(path.join(moduleDir, 'package.json'), packageJsonTemplate)
 
     // Copy schema to prisma/schema/modules/
+    // eslint-disable-next-line node/prefer-global/process
     const targetSchemaPath = path.join(process.cwd(), 'prisma', 'schema', 'modules', `${slug}.prisma`)
     fs.copyFileSync(path.join(moduleDir, 'schema.prisma'), targetSchemaPath)
 

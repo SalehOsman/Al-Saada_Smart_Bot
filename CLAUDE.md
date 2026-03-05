@@ -1,10 +1,12 @@
-# _Al-Saada_Smart_Bot Development Guidelines
+﻿# _Al-Saada_Smart_Bot Development Guidelines
 
 Auto-generated from all feature plans. Last updated: 2026-03-02
 
 ## Active Technologies
 - [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION] (001-section-hierarchy)
 - [if applicable, e.g., PostgreSQL, CoreData, files or N/A] (001-section-hierarchy)
+- TypeScript 5.x (strict mode) - Node.js ≥20 + grammY 1.x, @grammyjs/conversations, @grammyjs/hydrate, @grammyjs/ratelimiter, @grammyjs/auto-retry, @sentry/node, Prisma, Pino (005-production-readiness)
+- PostgreSQL 16 (005-production-readiness)
 
 - TypeScript 5.x (Node.js ≥20) + Vercel AI SDK + Ollama SDK + pgvector (002-ai-assistant)
 - grammY 1.x + @grammyjs/conversations + @grammyjs/hydrate + Hono (Core)
@@ -49,10 +51,10 @@ pnpm prisma migrate dev
 - 80%+ test coverage required
 
 ## Recent Changes
+- 005-production-readiness: Added TypeScript 5.x (strict mode) - Node.js ≥20 + grammY 1.x, @grammyjs/conversations, @grammyjs/hydrate, @grammyjs/ratelimiter, @grammyjs/auto-retry, @sentry/node, Prisma, Pino
+- 001-fix-pii-masking: Added [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
 - 001-section-hierarchy: Added [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
 
-- 002-ai-assistant: Added TypeScript 5.x + Vercel AI SDK + Ollama SDK + pgvector (AI Layer 4)
-- 003-module-kit: Added Module Kit architecture with conversation helpers
 
 <!-- MANUAL ADDITIONS START -->
 ## AI Assistant (Layer 4) - 002-ai-assistant
