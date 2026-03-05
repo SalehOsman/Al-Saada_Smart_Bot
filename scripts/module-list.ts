@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 async function main() {
+  // eslint-disable-next-line node/prefer-global/process
   const modulesDir = path.join(process.cwd(), 'modules')
 
   if (!fs.existsSync(modulesDir)) {

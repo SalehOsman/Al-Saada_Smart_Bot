@@ -52,7 +52,9 @@
       "Bash(git restore:*)",
       "Bash(git clean:*)",
       "Bash(git status:*)",
-      "Bash(powershell.exe -File \".specify/scripts/powershell/check-prerequisites.ps1\" -Json -RequireTasks -IncludeTasks)"
+      "Bash(powershell.exe -File \".specify/scripts/powershell/check-prerequisites.ps1\" -Json -RequireTasks -IncludeTasks)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \".specify/scripts/powershell/create-new-feature.ps1\" -Json -Number 5 -ShortName \"production-readiness\" \"Create Feature 005: Production Readiness. Include: Sentry Integration \\(opt-in via DSN, PII filtering via beforeSend, Telegram alerts to SUPER_ADMIN\\), Rate Limiting & Auto-Retry \\(using @grammyjs/ratelimiter and @grammyjs/auto-retry\\), CI/CD Pipeline \\(GitHub Actions with lint, test, prisma generate, and GitNexus analysis\\), and Automated Backups \\(Daily local pg_dump, encrypted\\). Exclude: Google Drive backups \\(optional plugin for future\\).\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \".specify/scripts/powershell/check-prerequisites.ps1\" -Json)"
     ]
   }
 }

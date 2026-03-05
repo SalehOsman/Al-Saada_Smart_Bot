@@ -4,6 +4,7 @@ import { config } from 'dotenv'
 config({ path: '.env.test' })
 
 // Mock global variables if needed
+// eslint-disable-next-line no-restricted-globals
 global.console = {
   ...console,
   // Uncomment to reduce console noise during tests
@@ -13,6 +14,7 @@ global.console = {
 }
 
 // Set test environment
+// eslint-disable-next-line node/prefer-global/process
 process.env.NODE_ENV = 'test'
 
 // Mock any other global variables your tests might need

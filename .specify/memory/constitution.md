@@ -1,11 +1,13 @@
 <!--
 Sync Impact Report:
-- Version change: 2.2.1 → 2.3.0 (MINOR: Added methodology.md as binding reference)
+- Version change: 2.3.0 → 2.4.0 (MINOR: Added Principle XI: Observability)
 - Modified principles: None
-- Added sections: Governance > Compliance Rules > Methodology Adherence
+- Added sections: Core Principles > XI. Observability
 - Removed sections: None
-- Modified sections: Amendment History, Version Metadata
-- Templates requiring updates: None
+- Modified sections: Amendment History, Version Metadata, Table of Contents
+- Templates requiring updates:
+  - .specify/templates/commands/plan.md (add Observability to Constitution Alignment)
+  - README.md (update constitution version reference)
 - No deferred placeholders
 -->
 
@@ -223,6 +225,9 @@ No phase or task may proceed until all issues from the current phase are fully r
 
 **Violation:** Advancing to any new step with unresolved issues is an explicit constitutional breach requiring immediate rollback and full remediation before continuing.
 
+### XI. Observability
+Sentry MUST be opt-in via SENTRY_DSN environment variable. PII MUST be filtered via beforeSend hook before sending to Sentry. Self-hosted Sentry option MUST be supported for sensitive deployments. Error alerts MUST be sent to SUPER_ADMIN via Telegram.
+
 ## Technology Stack
 
 ### Core
@@ -381,5 +386,6 @@ The project uses multiple AI tools as executors:
 | 2.2.0 | 2026-03-03 | Added Development Infrastructure section with GitNexus and executor tools, introducing the Blast Radius Rule. |
 | 2.2.1 | 2026-03-03 | Clarified that GitNexus must not be added as a workspace package under packages/. |
 | 2.3.0 | 2026-03-03 | Added methodology.md as binding reference in Governance > Compliance Rules. |
+| 2.4.0 | 2026-03-05 | Added Principle XI: Observability — Sentry opt-in via SENTRY_DSN, PII filtering via beforeSend, self-hosted option, Telegram alerts to SUPER_ADMIN. |
 
-**Version**: 2.3.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-03-03
+**Version**: 2.4.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-03-05

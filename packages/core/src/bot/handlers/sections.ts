@@ -31,7 +31,7 @@ export async function sectionsCallbackHandler(ctx: BotContext): Promise<void> {
   const _prefix = parts[0] // always "section"
   const action = parts[1] // view, add, edit, delete, etc.
   const id = parts[2] // section ID (may be undefined)
-  const extra = parts[3] // extra param (may be undefined)
+  const _extra = parts[3] // extra param (may be undefined)
 
   // Update navigation breadcrumb
   await updateNavigationBreadcrumb(ctx, 'sections')
@@ -291,7 +291,7 @@ export async function sectionCreateTextHandler(ctx: BotContext): Promise<void> {
     let orderIndex = 0
     if (orderStr && !isSubSection) {
       const order = Number.parseInt(orderStr, 10)
-      if (isNaN(order)) {
+      if (Number.isNaN(order)) {
         ctx.reply(ctx.t('errors-validation-invalid-number'))
         return
       }

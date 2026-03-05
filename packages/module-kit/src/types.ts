@@ -81,7 +81,7 @@ export interface ConfirmOptions<T> {
   reAsk: (field: keyof T) => Promise<void>
 }
 
-export interface SaveOptions<T> {
+export interface SaveOptions {
   /** The module's unique slug */
   moduleSlug: string
 

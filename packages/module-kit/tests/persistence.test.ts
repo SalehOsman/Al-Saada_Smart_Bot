@@ -22,7 +22,7 @@ vi.mock('@core/services/notifications', () => ({ queueNotification: mockQueueNot
 vi.mock('@core/cache/redis', () => ({ redis: mockRedis }))
 vi.mock('@core/bot/module-loader', () => ({
   moduleLoader: {
-    getModule: vi.fn(slug => ({
+    getModule: vi.fn(_slug => ({
       config: { sectionSlug: 'operations' },
     })),
   },

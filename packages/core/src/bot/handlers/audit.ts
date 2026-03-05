@@ -50,6 +50,8 @@ export async function auditActionsHandler(ctx: BotContext) {
       .text(ctx.t('audit-button-filter-user'), 'audit:filter_user')
       .row()
       .text(ctx.t('audit-button-stats'), 'audit:stats')
+      .row()
+      .text(ctx.t('button-back-to-menu'), 'menu:main')
 
     await ctx.editMessageText(ctx.t('audit-menu-title'), { reply_markup: keyboard })
   }
@@ -121,6 +123,7 @@ async function showAuditLogs(ctx: BotContext, page: number, filters: { action?: 
   }
 
   keyboard.row().text(ctx.t('button-back'), 'audit:main')
+  keyboard.row().text(ctx.t('button-back-to-menu'), 'menu:main')
 
   await ctx.editMessageText(message, { reply_markup: keyboard })
 }
@@ -141,7 +144,8 @@ async function showActionFilter(ctx: BotContext) {
     keyboard.row()
   }
 
-  keyboard.text(ctx.t('button-back'), 'audit:main')
+  keyboard.row().text(ctx.t('button-back'), 'audit:main')
+  keyboard.row().text(ctx.t('button-back-to-menu'), 'menu:main')
 
   await ctx.editMessageText(ctx.t('audit-button-filter-action'), { reply_markup: keyboard })
 }
@@ -170,7 +174,8 @@ async function showUserFilter(ctx: BotContext) {
     const label = log.user?.nickname ?? log.user?.fullName ?? log.userId.toString()
     keyboard.text(label, `audit:user:${log.userId}`).row()
   }
-  keyboard.text(ctx.t('button-back'), 'audit:main')
+  keyboard.row().text(ctx.t('button-back'), 'audit:main')
+  keyboard.row().text(ctx.t('button-back-to-menu'), 'menu:main')
 
   await ctx.editMessageText(ctx.t('audit-button-filter-user'), { reply_markup: keyboard })
 }
@@ -182,6 +187,9 @@ async function showAuditStats(ctx: BotContext) {
   const count = await auditService.getAuditLogCount()
   const message = ctx.t('audit-stats-total', { count })
 
-  const keyboard = new InlineKeyboard().text(ctx.t('button-back'), 'audit:main')
+  const keyboard = new InlineKeyboard()
+    .text(ctx.t('button-back'), 'audit:main')
+    .row()
+    .text(ctx.t('button-back-to-menu'), 'menu:main')
   await ctx.editMessageText(message, { reply_markup: keyboard })
 }

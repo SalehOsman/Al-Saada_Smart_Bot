@@ -238,7 +238,7 @@ al-saada-smart-bot/
 
 يتبع المشروع منهجية **[SpecKit](https://github.com/github/spec-kit)** للتطوير المدفوع بالمواصفات:
 
-1. 📜 **الدستور** — المرجع الأعلى لكل القرارات ([v2.3.0](.specify/memory/constitution.md))
+1. 📜 **الدستور** — المرجع الأعلى لكل القرارات ([v2.4.0](.specify/memory/constitution.md))
 2. 📋 **المواصفات** — تعريف دقيق لكل ميزة
 3. 📐 **الخطة** — قرارات تقنية وهيكلية
 4. ✅ **المهام** — تفصيل خطوة بخطوة
@@ -424,7 +424,7 @@ A multi-modal operational assistant trained on company data:
 
 This project follows **[SpecKit](https://github.com/github/spec-kit)** for specification-driven development:
 
-1. 📜 **Constitution** — Supreme reference for all decisions ([v2.3.0](.specify/memory/constitution.md))
+1. 📜 **Constitution** — Supreme reference for all decisions ([v2.4.0](.specify/memory/constitution.md))
 2. 📋 **Specification** — Precise feature definition
 3. 📐 **Plan** — Technical and structural decisions
 4. ✅ **Tasks** — Step-by-step breakdown

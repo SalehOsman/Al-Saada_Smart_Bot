@@ -16,9 +16,9 @@ describe('sanitizeHtml', () => {
 
   it('should return empty string for null/undefined/empty input', () => {
     expect(sanitizeHtml('')).toBe('')
-    // @ts-ignore
+    // @ts-expect-error deliberately passing null
     expect(sanitizeHtml(null)).toBe('')
-    // @ts-ignore
+    // @ts-expect-error deliberately passing undefined
     expect(sanitizeHtml(undefined)).toBe('')
   })
 })

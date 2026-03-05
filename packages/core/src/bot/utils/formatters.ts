@@ -37,6 +37,25 @@ export function formatArabicDate(date: Date | undefined | null): string {
   return `${d}/${m}/${y}`
 }
 
+/**
+ * Formats a Date as DD/MM/YYYY HH:MM.
+ * Returns the i18n key 'value-unknown' if date is missing.
+ *
+ * @example
+ * formatArabicDateTime(new Date('1980-09-01T14:30:00'))  // '01/09/1980 14:30'
+ * formatArabicDateTime(undefined)                        // 'value-unknown'
+ */
+export function formatArabicDateTime(date: Date | undefined | null): string {
+  if (!date)
+    return 'value-unknown'
+  const d = String(date.getDate()).padStart(2, '0')
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const y = date.getFullYear()
+  const hs = String(date.getHours()).padStart(2, '0')
+  const ms = String(date.getMinutes()).padStart(2, '0')
+  return `${d}/${m}/${y} ${hs}:${ms}`
+}
+
 // ---------------------------------------------------------------------------
 // Gender Formatter
 // ---------------------------------------------------------------------------
@@ -92,4 +111,25 @@ export async function notifyAdmins(payload: AdminNotificationPayload): Promise<v
   await queueBulkNotifications(jobs)
 
   logger.info(`notifyAdmins: Queued '${payload.type}' for ${admins.length} admin(s)`)
+}
+
+// ---------------------------------------------------------------------------
+// Text Truncation
+// ---------------------------------------------------------------------------
+
+/**
+ * Truncates text to a maximum length and appends an ellipsis if truncated.
+ * Designed for mobile-friendly button text constraints (max 20 chars).
+ *
+ * @example
+ * truncateText('very long section name here', 20) // 'very long section...'
+ */
+export function truncateText(text: string | undefined | null, maxLength = 20): string {
+  if (!text) {
+    return ''
+  }
+  if (text.length <= maxLength) {
+    return text
+  }
+  return `${text.slice(0, maxLength - 3)}...`
 }

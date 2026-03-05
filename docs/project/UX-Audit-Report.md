@@ -1,8 +1,8 @@
 # UX Audit Report — Al-Saada Smart Bot
 
-**Date:** 2026-03-04  
-**Auditor:** Technical Advisor  
-**Scope:** Complete user experience review based on actual codebase  
+**Date:** 2026-03-04
+**Auditor:** Technical Advisor
+**Scope:** Complete user experience review based on actual codebase
 **Status:** Draft for Review
 
 ---
@@ -34,7 +34,7 @@ This report identifies **23 UX issues** across 5 categories based on actual code
 
 ### Issue 1.1: Missing Back Button in User Details
 
-**Priority:** 🔴 CRITICAL  
+**Priority:** 🔴 CRITICAL
 **Location:** `packages/core/src/bot/handlers/users.ts` (line 115)
 
 **Current Behavior:**
@@ -50,7 +50,7 @@ keyboard.text(ctx.t('button-back-to-list'), 'users:list')
 
 ### Issue 1.2: Missing Back Button in Section Details
 
-**Priority:** 🔴 CRITICAL  
+**Priority:** 🔴 CRITICAL
 **Location:** `packages/core/src/bot/handlers/sections.ts`
 
 **Current Behavior:**
@@ -63,7 +63,7 @@ keyboard.text(ctx.t('button-back-to-list'), 'users:list')
 
 ### Issue 1.3: No "Back to Menu" from Sections List
 
-**Priority:** 🟠 HIGH  
+**Priority:** 🟠 HIGH
 **Location:** `packages/core/src/bot/menus/sections.ts`
 
 **Current Behavior:**
@@ -83,7 +83,7 @@ keyboard.text(ctx.t('button-back-to-menu'), 'menu:main')
 
 ### Issue 1.4: Inconsistent Navigation Pattern
 
-**Priority:** 🟠 HIGH  
+**Priority:** 🟠 HIGH
 **Location:** Multiple handlers
 
 **Current Behavior:**
@@ -115,7 +115,7 @@ export function addBackButton(
 
 ### Issue 2.1: Long Button Text Truncated
 
-**Priority:** 🔴 CRITICAL  
+**Priority:** 🔴 CRITICAL
 **Location:** `packages/core/src/locales/ar.ftl`
 
 **Current Issues:**
@@ -143,14 +143,14 @@ button-settings-short = ⚙️ الإعدادات
 
 ### Issue 2.2: Emoji Overuse in Buttons
 
-**Priority:** 🟡 MEDIUM  
+**Priority:** 🟡 MEDIUM
 **Location:** Multiple files
 
 **Current Behavior:**
 ```typescript
-keyboard.push([{ 
-  text: `🗂️ ${ctx.t('button-sections')}`, 
-  callback_data: 'menu-sections' 
+keyboard.push([{
+  text: `🗂️ ${ctx.t('button-sections')}`,
+  callback_data: 'menu-sections'
 }])
 ```
 
@@ -159,9 +159,9 @@ keyboard.push([{
 **Proposed Fix:**
 ```typescript
 // Remove emoji from code, keep only in i18n
-keyboard.push([{ 
+keyboard.push([{
   text: ctx.t('button-sections'), // i18n already has emoji
-  callback_data: 'menu-sections' 
+  callback_data: 'menu-sections'
 }])
 ```
 
@@ -169,7 +169,7 @@ keyboard.push([{
 
 ### Issue 2.3: Button Layout Not Optimized for Mobile
 
-**Priority:** 🟠 HIGH  
+**Priority:** 🟠 HIGH
 **Location:** `packages/core/src/bot/handlers/menu.ts` (line 90)
 
 **Current Behavior:**
@@ -190,7 +190,7 @@ for (let i = 0; i < modules.length; i += 2) {
 **Proposed Fix:**
 ```typescript
 // Make configurable based on button text length
-const maxButtonsPerRow = (text: string) => {
+function maxButtonsPerRow(text: string) {
   return text.length > 15 ? 1 : 2
 }
 ```
@@ -201,7 +201,7 @@ const maxButtonsPerRow = (text: string) => {
 
 ### Issue 3.1: No User Profile View
 
-**Priority:** 🔴 CRITICAL  
+**Priority:** 🔴 CRITICAL
 **Location:** `packages/core/src/bot/handlers/users.ts` (line 115)
 
 **Current Behavior:**
@@ -254,7 +254,7 @@ value-never = لم يسجل دخول بعد
 
 ### Issue 3.2: No "View All User Data" Button
 
-**Priority:** 🟠 HIGH  
+**Priority:** 🟠 HIGH
 **Location:** `packages/core/src/bot/handlers/users.ts`
 
 **Current Behavior:**
@@ -286,7 +286,7 @@ async function showUserProfile(ctx: BotContext, telegramId: bigint) {
       joinRequest: true
     }
   })
-  
+
   // Show comprehensive profile with all database fields
   // Including: join request history, admin scopes, audit trail
 }
@@ -296,7 +296,7 @@ async function showUserProfile(ctx: BotContext, telegramId: bigint) {
 
 ### Issue 3.3: No User Search Function
 
-**Priority:** 🟡 MEDIUM  
+**Priority:** 🟡 MEDIUM
 **Location:** `packages/core/src/bot/handlers/users.ts` (line 17)
 
 **Current Behavior:**
@@ -331,7 +331,7 @@ if (page < totalPages) {
 
 ### Issue 4.1: No Cancel Button During Join Request
 
-**Priority:** 🟠 HIGH  
+**Priority:** 🟠 HIGH
 **Location:** `packages/core/src/bot/conversations/join.ts`
 
 **Current Behavior:**
@@ -357,7 +357,7 @@ await ctx.reply(ctx.t('join-step-name'), {
 
 ### Issue 4.2: No Progress Indicator
 
-**Priority:** 🟡 MEDIUM  
+**Priority:** 🟡 MEDIUM
 **Location:** Join conversation
 
 **Current Behavior:**
@@ -372,7 +372,7 @@ await ctx.reply(ctx.t('join-step-name'), {
 join-step-name =
     📝 *الخطوة 1 من 4*
     ▓▓▓░░░░░░░░░ 25%
-    
+
     من فضلك أدخل اسمك الكامل...
 ```
 
@@ -380,7 +380,7 @@ join-step-name =
 
 ### Issue 4.3: No "Resume Draft" Confirmation
 
-**Priority:** 🟠 HIGH  
+**Priority:** 🟠 HIGH
 **Location:** Module Kit draft middleware
 
 **Current Behavior:**
@@ -396,7 +396,7 @@ if (draftExists) {
   const keyboard = new InlineKeyboard()
     .text(ctx.t('module-kit-draft-resume-btn'), 'draft:resume')
     .text(ctx.t('module-kit-draft-fresh-btn'), 'draft:fresh')
-  
+
   await ctx.reply(ctx.t('module-kit-draft-found'), {
     reply_markup: keyboard
   })
@@ -411,7 +411,7 @@ if (draftExists) {
 
 ### Issue 5.1: Menu Overload for Super Admin
 
-**Priority:** 🟡 MEDIUM  
+**Priority:** 🟡 MEDIUM
 **Location:** `packages/core/src/bot/handlers/menu.ts` (line 50)
 
 **Current Behavior:**
@@ -437,7 +437,7 @@ Group into categories:
 
 ### Issue 5.2: No Help Text in Empty States
 
-**Priority:** 🟢 LOW  
+**Priority:** 🟢 LOW
 **Location:** Multiple handlers
 
 **Current Behavior:**
@@ -449,7 +449,7 @@ users-list-empty = لا يوجد مستخدمين لعرضهم.
 ```fluent
 users-list-empty =
     📭 لا يوجد مستخدمين بعد
-    
+
     💡 نصيحة: يمكن للمستخدمين التسجيل عبر /start
     أو يمكنك دعوتهم مباشرة من قائمة الإعدادات.
 ```
@@ -458,7 +458,7 @@ users-list-empty =
 
 ### Issue 5.3: No Confirmation for Destructive Actions
 
-**Priority:** 🔴 CRITICAL  
+**Priority:** 🔴 CRITICAL
 **Location:** `packages/core/src/bot/handlers/users.ts` (line 50)
 
 **Current Behavior:**
@@ -479,7 +479,7 @@ if (action === 'toggle_confirm') {
   const keyboard = new InlineKeyboard()
     .text(ctx.t('button-confirm'), `user:toggle_execute:${targetId}`)
     .text(ctx.t('button-cancel'), `user:view:${targetId}`)
-  
+
   return ctx.editMessageText(
     ctx.t('user-deactivate-confirm', { name: user.fullName }),
     { reply_markup: keyboard }
@@ -623,5 +623,5 @@ sections-list-empty-help = [see Issue 5.2]
 
 ---
 
-**Document Status:** ✅ Ready for Review  
+**Document Status:** ✅ Ready for Review
 **Last Updated:** 2026-03-04

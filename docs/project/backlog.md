@@ -1,6 +1,6 @@
 # Improvement Backlog
 
-**Last Updated**: 2026-03-04  
+**Last Updated**: 2026-03-04
 **Status**: Reviewed and validated against actual codebase
 
 ---
@@ -86,5 +86,5 @@ button-start-fresh = 🆕 Start Fresh
 
 ## 🔄 Next Review
 
-**Scheduled:** After Phase 5 (Dashboard MVP) completion  
+**Scheduled:** After Phase 5 (Dashboard MVP) completion
 **Focus:** Re-evaluate if these improvements are still needed based on user feedback

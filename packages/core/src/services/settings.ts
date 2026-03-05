@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { redis } from '../cache/redis'
 import logger from '../utils/logger'
 import { prisma } from '../database/prisma'
@@ -77,14 +78,14 @@ export const settingsService = {
     try {
       await prisma.$queryRaw`SELECT 1`
     }
-    catch (e) {
+    catch {
       dbStatus = 'DOWN'
     }
 
     try {
       await redis.ping()
     }
-    catch (e) {
+    catch {
       redisStatus = 'DOWN'
     }
 

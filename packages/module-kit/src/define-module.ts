@@ -36,7 +36,7 @@ export function defineModule(config: ModuleDefinition): ModuleDefinition {
     throw new Error('Module definition is missing required field: "addEntryPoint"')
 
   // 2. Validate slug format (lowercase, hyphen-separated, no trailing hyphen)
-  const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/
+  const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
   if (!slugRegex.test(slug)) {
     throw new Error(`Invalid slug format: "${slug}". Must be lowercase, hyphen-separated (e.g., "fuel-entry").`)
   }
