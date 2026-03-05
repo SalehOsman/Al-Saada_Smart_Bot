@@ -43,7 +43,16 @@
       "Bash(npx prisma generate:*)",
       "Bash(npx prisma db push:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(powershell.exe -File \".specify/scripts/powershell/create-new-feature.ps1\" -Json -Number 1 -ShortName \"critical-ux-fixes\" \"Update specs/001-platform-core/spec.md to include Phase 1 Critical UX Fixes. Add explicit functional requirements for: 1. A comprehensive User Profile view with all details \\(including masked National ID\\). 2. Mandatory confirmation dialogs before executing destructive actions \\(e.g., toggle active status\\). 3. Mobile-optimized short button texts for all navigation and action buttons \\(i18n-Only compliant\\). Please integrate these seamlessly into the existing User Management User Stories.\")",
+      "Bash(powershell.exe -File \".specify/scripts/powershell/create-new-feature.ps1\" -Json -Number 1 -ShortName \"fix-pii-masking\" \"Update specs/001-platform-core/spec.md to fix a constitutional RBAC inconsistency in the UX Fixes. Modify User Story P1 \\(Comprehensive User Profile View\\) and functional requirement FR-002. Change the requirement from \"\"masked National ID\"\" to displays to \"\"UNMASKED National ID \\(and all other details fully unmasked\\)\"\". Ensure the specification explicitly states: \"\"PII masking applies ONLY to Audit Logs per Constitution Principle VI. In the User Profile View, authorized admins and Super Admins MUST see the complete, original National ID and Phone Number.\"\" Update any success criteria \\(SC\\) or checklist items that mention masking in the UI to reflect this correction. Commit message: \"\"docs\\(spec\\): correct PII masking rule for admin profile view\"\"\")",
+      "Bash(powershell.exe -File \".specify/scripts/powershell/setup-plan.ps1\" -Json)",
+      "Bash(powershell.exe -File \".specify/scripts/powershell/update-agent-context.ps1\" -AgentType claude)",
+      "Bash(powershell.exe -File \".specify/scripts/powershell/check-prerequisites.ps1\" -Json)",
+      "Bash(git restore:*)",
+      "Bash(git clean:*)",
+      "Bash(git status:*)",
+      "Bash(powershell.exe -File \".specify/scripts/powershell/check-prerequisites.ps1\" -Json -RequireTasks -IncludeTasks)"
     ]
   }
 }
