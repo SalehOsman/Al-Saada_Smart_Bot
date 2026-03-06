@@ -20,7 +20,12 @@ const { mockRedis, mockPrisma, mockAuditService, mockLogger } = vi.hoisted(() =>
     error: vi.fn(),
     fatal: vi.fn(),
     info: vi.fn(),
+    debug: vi.fn(),
   },
+}))
+
+vi.mock('grammy', () => ({
+  session: vi.fn((_opts: any) => async (_ctx: any, next: any) => next()),
 }))
 
 vi.mock('../src/cache/redis', () => ({ redis: mockRedis }))
