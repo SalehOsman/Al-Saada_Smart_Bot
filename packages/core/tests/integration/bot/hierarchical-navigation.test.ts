@@ -87,13 +87,17 @@ describe('hierarchical navigation integration (T040-A)', () => {
     mockPrisma.section.findUnique.mockResolvedValue({
       id: 'main2',
       name: 'Main 2',
-      slug: 'main-2',
+      slug: 'main2-slug',
       children: [],
       modules: [{ id: 'm1', isActive: true }],
     })
 
     vi.mocked(moduleLoader.getLoadedModules).mockReturnValue([
-      { slug: 'module1', config: { name: 'Module 1', icon: '⚙️', sectionSlug: 'main-2', orderIndex: 1 } } as any,
+      {
+        slug: 'module1',
+        config: { name: 'Module 1', icon: '⚙️', sectionSlug: 'main2-slug', orderIndex: 1 },
+        status: 'loaded',
+      } as any,
     ])
 
     const ctx = {
@@ -106,7 +110,6 @@ describe('hierarchical navigation integration (T040-A)', () => {
 
     const editMarkup = ctx.editMessageText.mock.calls[0][1].reply_markup
     expect(editMarkup.inline_keyboard[0][0].text).toContain('Module 1')
-    // sections.ts uses 'mod:slug' (not 'module:slug')
     expect(editMarkup.inline_keyboard[0][0].callback_data).toBe('mod:module1')
   })
 
@@ -114,15 +117,23 @@ describe('hierarchical navigation integration (T040-A)', () => {
     mockPrisma.section.findUnique.mockResolvedValue({
       id: 'sub1',
       name: 'Sub Section 1',
-      slug: 'sub-1',
+      slug: 'sub1-slug',
       parentId: 'main1',
       children: [],
       modules: [{ id: 'm1', isActive: true }, { id: 'm2', isActive: true }],
     })
 
     vi.mocked(moduleLoader.getLoadedModules).mockReturnValue([
-      { slug: 'mod-a', config: { name: 'Module A', icon: '📊', sectionSlug: 'sub-1', orderIndex: 1 } } as any,
-      { slug: 'mod-b', config: { name: 'Module B', icon: '📋', sectionSlug: 'sub-1', orderIndex: 2 } } as any,
+      {
+        slug: 'mod-a',
+        config: { name: 'Module A', icon: '📊', sectionSlug: 'sub1-slug', orderIndex: 1 },
+        status: 'loaded',
+      } as any,
+      {
+        slug: 'mod-b',
+        config: { name: 'Module B', icon: '📋', sectionSlug: 'sub1-slug', orderIndex: 2 },
+        status: 'loaded',
+      } as any,
     ])
 
     const ctx = {

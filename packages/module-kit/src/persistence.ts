@@ -10,9 +10,9 @@ import { maskPII } from './pii-masker.js'
 /**
  * Encapsulated persistence with automatic auditing and notifications.
  */
-export async function save<T>(
+export async function save(
   ctx: BotContext,
-  options: SaveOptions<T>,
+  options: SaveOptions,
 ): Promise<void> {
   const { moduleSlug, action, audit } = options
   const userId = ctx.from?.id

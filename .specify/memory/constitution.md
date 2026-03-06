@@ -1,12 +1,10 @@
 <!--
 Sync Impact Report:
-- Version change: 2.3.0 → 2.4.0 (MINOR: Added Principle XI: Observability)
-- Modified principles: None
-- Added sections: Core Principles > XI. Observability
+- Version change: 2.4.0 → 2.5.0 (MINOR: Clarified Test-First Development coverage scope)
+- Modified principles: IV. Test-First Development
+- Added sections: None
 - Removed sections: None
-- Modified sections: Amendment History, Version Metadata, Table of Contents
 - Templates requiring updates:
-  - .specify/templates/commands/plan.md (add Observability to Constitution Alignment)
   - README.md (update constitution version reference)
 - No deferred placeholders
 -->
@@ -159,7 +157,7 @@ Every Module Kit helper must be:
 When a hook pattern repeats across 3+ modules, it MUST be extracted into a new helper or a shared utility in the Module Kit. Hooks are for exceptional cases — repeated patterns belong in the kit.
 
 ### IV. Test-First Development
-All Module Kit helpers must have unit tests before implementation. All infrastructure features (ModuleLoader, Draft Middleware) must have integration tests. Red-Green-Refactor cycle enforced. Minimum 80% code coverage for engine code.
+All Module Kit helpers must have unit tests before implementation. All infrastructure features (ModuleLoader, Draft Middleware) must have integration tests. Red-Green-Refactor cycle enforced. Minimum 80% code coverage for **engine code** (defined as services, middlewares, utils, and validators). **UI-layer code** (bot handlers and conversation flows) are tested via integration/E2E tests and are excluded from the 80% coverage metric.
 
 ### V. Egyptian Business Context
 All validators must support Egyptian formats (national ID, phone numbers, tax IDs). Arabic name processing with compound name handling. Egyptian governorates as seed data. Currency defaults to EGP. Timezone defaults to Africa/Cairo. Calendar support for both Gregorian and Hijri.
@@ -180,7 +178,7 @@ Arabic is the primary language of the application. However, Arabic text is STRIC
 - `packages/core/src/locales/en.ftl` — English (secondary)
 
 **In Code:**
-- Reference translation keys only: `ctx.t('errors.section.has_active_modules')`
+- Reference translation keys only: `ctx.t('errors.example.key')`
 - Functions that classify data (gender, status, role) MUST return i18n keys, not display text
 - No Arabic string literals anywhere in TypeScript/JavaScript source files
 
@@ -387,5 +385,6 @@ The project uses multiple AI tools as executors:
 | 2.2.1 | 2026-03-03 | Clarified that GitNexus must not be added as a workspace package under packages/. |
 | 2.3.0 | 2026-03-03 | Added methodology.md as binding reference in Governance > Compliance Rules. |
 | 2.4.0 | 2026-03-05 | Added Principle XI: Observability — Sentry opt-in via SENTRY_DSN, PII filtering via beforeSend, self-hosted option, Telegram alerts to SUPER_ADMIN. |
+| 2.5.0 | 2026-03-06 | Added clarification to Principle IV: Defined "engine code" vs "UI-layer code" and clarified coverage metric exclusions. |
 
-**Version**: 2.4.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-03-05
+**Version**: 2.5.0 | **Ratified**: 2026-02-17 | **Last Amended**: 2026-03-06

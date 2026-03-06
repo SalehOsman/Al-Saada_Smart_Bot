@@ -330,21 +330,37 @@ export const sectionService = {
    * Per FR-030
    */
   async getActiveModules(sectionId: string) {
-    const section = await this.getById(sectionId)
+    const section = await prisma.section.findUnique({
+      where: { id: sectionId },
+      include: {
+        children: {
+          where: { isActive: true },
+          include: {
+            modules: {
+              where: { isActive: true },
+              orderBy: { orderIndex: 'asc' },
+            },
+          },
+        },
+        modules: {
+          where: { isActive: true },
+          orderBy: { orderIndex: 'asc' },
+        },
+      },
+    })
+
     if (!section) {
       return []
     }
 
     // Collect modules from this section
-    const directModules = section.modules?.filter(m => m.isActive) ?? []
+    const directModules = section.modules ?? []
 
     // If this is a main section, collect modules from sub-sections
     const allModules = [...directModules]
     if (section.parentId === null) {
       for (const child of section.children ?? []) {
-        if (child.isActive) {
-          allModules.push(...(child.modules?.filter((m: any) => m.isActive) ?? []))
-        }
+        allModules.push(...(child.modules ?? []))
       }
     }
 

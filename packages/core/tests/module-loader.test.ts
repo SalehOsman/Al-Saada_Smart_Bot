@@ -75,7 +75,7 @@ describe('moduleLoader', () => {
     expect(prisma.user.findMany).toHaveBeenCalledWith(expect.objectContaining({
       where: { role: Role.SUPER_ADMIN, isActive: true },
     }))
-    expect(mockBot.api.sendMessage).toHaveBeenCalledWith(expect.stringMatching(/123456789/), expect.stringContaining('broken-module'))
+    expect(mockBot.api.sendMessage).toHaveBeenCalledWith('123456789', expect.stringContaining('broken-module'))
   })
 
   it('correctly sorts loaded modules by orderIndex and slug', () => {

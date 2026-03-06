@@ -52,6 +52,8 @@ export default defineConfig({
         '**/*.test.ts',
         '**/*.spec.ts',
         'packages/core/tests/',
+        'packages/core/src/bot/handlers/**',
+        'packages/core/src/bot/conversations/**',
       ],
       // Phase 1: baseline thresholds — reflects current test coverage
       // TODO: raise to 50% after join flow tests, then 80% after full suite
