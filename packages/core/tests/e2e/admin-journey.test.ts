@@ -13,11 +13,34 @@ const { mockPrisma } = vi.hoisted(() => ({
   },
 }))
 
+vi.mock('grammy', () => ({
+  InlineKeyboard: class {
+    row = vi.fn().mockReturnThis()
+    text = vi.fn().mockReturnThis()
+    url = vi.fn().mockReturnThis()
+  },
+}))
+
 vi.mock('../../src/database/prisma', () => ({ prisma: mockPrisma }))
+vi.mock('../../src/cache/redis', () => ({
+  redis: { get: vi.fn(), set: vi.fn(), del: vi.fn() },
+  bullmqRedis: {},
+  disconnect: vi.fn(),
+}))
 vi.mock('../../src/utils/logger', () => ({
   default: { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
 }))
 vi.mock('../../src/services/audit-logs', () => ({ auditService: { log: vi.fn() } }))
+vi.mock('../../src/services/sections', () => ({ sectionService: { getSections: vi.fn() } }))
+vi.mock('../../src/bot/module-loader', () => ({ moduleLoader: { getLoadedModules: vi.fn(() => []) } }))
+vi.mock('../../src/bot/utils/reply', () => ({
+  replyOrEdit: vi.fn(async (ctx: any, text: string, keyboard: any) => {
+    if (ctx.callbackQuery) {
+      return ctx.editMessageText(text, { reply_markup: keyboard })
+    }
+    return ctx.reply(text, { reply_markup: keyboard })
+  }),
+}))
 
 describe('t071: Admin Journey E2E Tests', () => {
   beforeEach(() => {
