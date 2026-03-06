@@ -10,14 +10,27 @@ import logger from '../../../../src/utils/logger'
 vi.mock('../../../../src/database/prisma', () => ({
   prisma: {
     user: { findUnique: vi.fn() },
+    section: { findMany: vi.fn() },
     auditLog: { create: vi.fn() },
   },
 }))
 vi.mock('../../../../src/utils/logger', () => ({
   default: { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
 }))
+vi.mock('../../../../src/bot/module-loader', () => ({
+  moduleLoader: {
+    getLoadedModules: vi.fn(() => []),
+  },
+}))
+vi.mock('../../../../src/services/maintenance', () => ({
+  maintenanceService: {
+    isMaintenanceMode: vi.fn(() => Promise.resolve(false)),
+  },
+}))
 const mockPrisma = prisma as any
 const mockLogger = logger as any
+const { maintenanceService } = await import('../../../../src/services/maintenance')
+const mockMaintenance = maintenanceService as any
 
 describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
   const mockCtx = {
@@ -33,8 +46,10 @@ describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
         'menu-visitor': 'Welcome Visitor {name}',
         'button-sections': 'Sections',
         'button-users': 'Users',
-        'button-maintenance': 'Maintenance',
+        'button-maintenance-on': 'Maintenance ON',
+        'button-maintenance-off': 'Maintenance OFF',
         'button-audit': 'Audit',
+        'button-settings': 'Settings',
         'button-modules': 'Modules',
         'button-notifications': 'Notifications',
       }
