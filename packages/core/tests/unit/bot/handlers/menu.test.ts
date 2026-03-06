@@ -30,7 +30,7 @@ vi.mock('../../../../src/services/maintenance', () => ({
 const mockPrisma = prisma as any
 const mockLogger = logger as any
 const { maintenanceService } = await import('../../../../src/services/maintenance')
-const mockMaintenance = maintenanceService as any
+const _mockMaintenance = maintenanceService as any
 
 describe('@testing-patterns @typescript-expert Menu Handler Tests', () => {
   const mockCtx = {
