@@ -1,26 +1,49 @@
 import path from 'node:path'
 import { defineConfig } from 'vitest/config'
 
-export default defineConfig({
-  resolve: {
-    alias: {
-      '@core': path.resolve(__dirname, './packages/core/src'),
-      '@module-kit': path.resolve(__dirname, './packages/module-kit/src'),
-    },
+const resolve = {
+  alias: {
+    '@core': path.resolve(__dirname, './packages/core/src'),
+    '@module-kit': path.resolve(__dirname, './packages/module-kit/src'),
   },
+}
+
+export default defineConfig({
+  resolve,
   test: {
     globals: true,
     environment: 'node',
     include: ['**/*.test.ts', '**/*.spec.ts'],
     includeSource: ['packages/core/src/**/*'],
     exclude: [
-      'node_modules/**',
+      '**/node_modules/**',
       '.opencode/**',
       '.claude/**',
       'dist/**',
       'modules/**',
     ],
     setupFiles: ['./packages/core/tests/setup.ts'],
+    // Use projects to apply different timeouts to specific files
+    projects: [
+      {
+        resolve,
+        test: {
+          name: 'scripts',
+          include: ['scripts/tests/**/*.test.ts'],
+          testTimeout: 30000,
+          environment: 'node',
+        },
+      },
+      {
+        resolve,
+        test: {
+          name: 'core',
+          include: ['packages/**/*.test.ts', 'packages/**/*.spec.ts'],
+          environment: 'node',
+          setupFiles: ['./packages/core/tests/setup.ts'],
+        },
+      },
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
