@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { 
-  queueNotification, 
-  queueBulkNotifications, 
+import {
   getNotificationHistory,
-  getUnreadCount
+  getUnreadCount,
+  queueBulkNotifications,
+  queueNotification,
 } from '../../../src/services/notifications'
 
 // ─── Mocks ──────────────────────────────────────────────────────────────
@@ -22,8 +22,8 @@ const { mockPrisma, mockQueue } = vi.hoisted(() => ({
 
 vi.mock('../../../src/database/prisma', () => ({ prisma: mockPrisma }))
 vi.mock('../../../src/services/queue', () => ({ notificationsQueue: mockQueue }))
-vi.mock('../../../src/utils/logger', () => ({ 
-  default: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } 
+vi.mock('../../../src/utils/logger', () => ({
+  default: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }))
 
 describe('notificationService', () => {
@@ -44,7 +44,7 @@ describe('notificationService', () => {
 
       expect(id).toBe('n1')
       expect(mockPrisma.notification.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({ targetUserId: 111n, type: 'TEST' })
+        data: expect.objectContaining({ targetUserId: 111n, type: 'TEST' }),
       })
       expect(mockQueue.add).toHaveBeenCalledWith('notification-TEST', data, { jobId: 'n1' })
     })
@@ -54,7 +54,7 @@ describe('notificationService', () => {
     it('should create notifications in transaction and add bulk to queue', async () => {
       const items = [
         { targetUserId: 111n, type: 'T1' as any },
-        { targetUserId: 222n, type: 'T2' as any }
+        { targetUserId: 222n, type: 'T2' as any },
       ]
       mockPrisma.$transaction.mockResolvedValue([{ id: 'n1' }, { id: 'n2' }])
 
@@ -63,7 +63,7 @@ describe('notificationService', () => {
       expect(ids).toEqual(['n1', 'n2'])
       expect(mockQueue.addBulk).toHaveBeenCalledWith([
         expect.objectContaining({ name: 'notification-T1', data: items[0], opts: { jobId: 'n1' } }),
-        expect.objectContaining({ name: 'notification-T2', data: items[1], opts: { jobId: 'n2' } })
+        expect.objectContaining({ name: 'notification-T2', data: items[1], opts: { jobId: 'n2' } }),
       ])
     })
   })
@@ -80,7 +80,7 @@ describe('notificationService', () => {
       expect(result.totalPages).toBe(2)
       expect(mockPrisma.notification.findMany).toHaveBeenCalledWith(expect.objectContaining({
         skip: 5,
-        take: 5
+        take: 5,
       }))
     })
   })
@@ -91,7 +91,7 @@ describe('notificationService', () => {
       const count = await getUnreadCount(111n)
       expect(count).toBe(5)
       expect(mockPrisma.notification.count).toHaveBeenCalledWith({
-        where: { targetUserId: 111n, isRead: false }
+        where: { targetUserId: 111n, isRead: false },
       })
     })
   })

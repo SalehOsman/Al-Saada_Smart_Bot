@@ -5,6 +5,30 @@ import { backupService } from '../../services/backup'
 import { maintenanceService } from '../../services/maintenance'
 import logger from '../../utils/logger'
 import { replyOrEdit } from '../utils/reply'
+import { redis } from '../../cache/redis'
+
+// Redis key for active notification types
+const ACTIVE_NOTIFICATIONS_KEY = 'system:activeNotificationTypes'
+
+// All available notification types
+const NOTIFICATION_TYPES = [
+  'JOIN_REQUEST_NEW',
+  'JOIN_REQUEST_APPROVED',
+  'JOIN_REQUEST_REJECTED',
+  'USER_DEACTIVATED',
+  'MAINTENANCE_ON',
+  'MAINTENANCE_OFF',
+] as const
+
+// Map notification types to i18n keys
+const NOTIFICATION_TYPE_I18N: Record<string, string> = {
+  JOIN_REQUEST_NEW: 'notif-type-join-request-new',
+  JOIN_REQUEST_APPROVED: 'notif-type-join-request-approved',
+  JOIN_REQUEST_REJECTED: 'notif-type-join-request-rejected',
+  USER_DEACTIVATED: 'notif-type-user-deactivated',
+  MAINTENANCE_ON: 'notif-type-maintenance-on',
+  MAINTENANCE_OFF: 'notif-type-maintenance-off',
+}
 
 /**
  * Main Settings Menu (Super Admin only).
@@ -126,43 +150,17 @@ export async function settingsActionsHandler(ctx: BotContext) {
 
   if (data === 'settings:notifications') {
     const activeTypes = await settingsService.getActiveNotificationTypes()
-    const allTypes = [
-      'JOIN_REQUEST_NEW',
-      'JOIN_REQUEST_APPROVED',
-      'JOIN_REQUEST_REJECTED',
-      'USER_DEACTIVATED',
-      'MAINTENANCE_ON',
-      'MAINTENANCE_OFF',
-    ]
 
-    const typeToI18nKey: Record<string, string> = {
-      JOIN_REQUEST_NEW: 'notif-type-join-request-new',
-      JOIN_REQUEST_APPROVED: 'notif-type-join-request-approved',
-      JOIN_REQUEST_REJECTED: 'notif-type-join-request-rejected',
-      USER_DEACTIVATED: 'notif-type-user-deactivated',
-      MAINTENANCE_ON: 'notif-type-maintenance-on',
-      MAINTENANCE_OFF: 'notif-type-maintenance-off',
-    }
+    // Create notification menu with individual toggle buttons
+    const { menuContent, keyboard } = await generateNotificationsMenu(ctx, activeTypes)
 
-    const keyboard = new InlineKeyboard()
-    for (const type of allTypes) {
-      const isMuted = !activeTypes.includes(type)
-      const icon = isMuted ? '🔇' : '🔔'
-      const label = ctx.t(typeToI18nKey[type])
-      keyboard.text(`${icon} ${label}`, `settings:notif:toggle:${type}`).row()
-    }
-    keyboard.text(ctx.t('button-back-to-sections'), 'settings:main')
-
-    await ctx.editMessageText(ctx.t('settings-notifications-title'), { reply_markup: keyboard })
+    await ctx.editMessageText(menuContent, { reply_markup: keyboard, parse_mode: 'HTML' })
     return
   }
 
-  if (data.startsWith('settings:notif:toggle:')) {
-    const type = data.split(':')[3]
-    await settingsService.toggleNotificationType(type)
-    await ctx.answerCallbackQuery({ text: ctx.t('settings-notifications-updated') })
-    // Refresh the notifications menu
-    return settingsActionsHandler(Object.assign(ctx, { callbackQuery: { data: 'settings:notifications' } }))
+  if (data.startsWith('settings:notif:')) {
+    await handleNotificationAction(ctx, data)
+    return
   }
 
   if (data === 'settings:main') {
@@ -187,7 +185,7 @@ export async function settingsBackupRestoreTextHandler(ctx: BotContext) {
       await ctx.reply(ctx.t('settings-backup-restoring'))
       await backupService.restoreFromBackup(filename, userId)
       await ctx.reply(ctx.t('settings-backup-restore-success'))
-      // In a real environment, you might want to restart the process here or clear sessions
+      // In a real environment, you might want to restart process here or clear sessions
       ctx.session.pendingRestore = undefined
     }
     catch (error) {
@@ -200,4 +198,122 @@ export async function settingsBackupRestoreTextHandler(ctx: BotContext) {
     await ctx.reply(ctx.t('settings-backup-restore-fail'))
     ctx.session.pendingRestore = undefined
   }
+}
+
+/**
+ * Handle notification-related callback actions
+ */
+async function handleNotificationAction(ctx: BotContext, data: string) {
+  const parts = data.split(':')
+  const action = parts[2] // 'toggle', 'enable', 'disable', 'reset'
+  const type = parts[3] // 'all', 'join-request-new', etc.
+
+  // Handle quick control actions
+  if (action === 'enable' && type === 'all') {
+    // Enable all notifications
+    for (const t of NOTIFICATION_TYPES) {
+      await redis.sadd(ACTIVE_NOTIFICATIONS_KEY, t)
+    }
+    await ctx.answerCallbackQuery({ text: ctx.t('notif-toggle-all'), show_alert: true })
+  }
+  else if (action === 'disable' && type === 'all') {
+    // Disable all notifications
+    for (const t of NOTIFICATION_TYPES) {
+      await redis.srem(ACTIVE_NOTIFICATIONS_KEY, t)
+    }
+    await ctx.answerCallbackQuery({ text: ctx.t('notif-disable-all'), show_alert: true })
+  }
+  else if (action === 'reset' && type === 'defaults') {
+    // Reset to defaults (all enabled)
+    await redis.del(ACTIVE_NOTIFICATIONS_KEY)
+    // Add default types (all except maintenance notifications by default)
+    const defaultTypes = ['JOIN_REQUEST_NEW', 'JOIN_REQUEST_APPROVED', 'JOIN_REQUEST_REJECTED', 'USER_DEACTIVATED']
+    for (const t of defaultTypes) {
+      await redis.sadd(ACTIVE_NOTIFICATIONS_KEY, t)
+    }
+    await ctx.answerCallbackQuery({ text: ctx.t('notif-reset-defaults'), show_alert: true })
+  }
+  else if (action === 'toggle') {
+    // Handle individual notification toggle
+    await handleIndividualNotificationToggle(ctx, type)
+  }
+
+  // Refresh the notifications menu
+  const activeTypes = await settingsService.getActiveNotificationTypes()
+  const { menuContent, keyboard } = await generateNotificationsMenu(ctx, activeTypes)
+  await ctx.editMessageText(menuContent, { reply_markup: keyboard, parse_mode: 'HTML' })
+}
+
+/**
+ * Handle individual notification toggle
+ */
+async function handleIndividualNotificationToggle(ctx: BotContext, type: string) {
+  // Convert kebab-case back to UPPER_SNAKE_CASE
+  const notificationType = type.toUpperCase().replace(/-/g, '_')
+
+  const wasActive = await redis.sismember(ACTIVE_NOTIFICATIONS_KEY, notificationType)
+  const i18nKey = NOTIFICATION_TYPE_I18N[notificationType]
+
+  // Toggle notification
+  await settingsService.toggleNotificationType(notificationType)
+
+  // Get label for feedback
+  const label = i18nKey ? ctx.t(i18nKey) : notificationType
+
+  // Send immediate feedback
+  const feedbackMessage = wasActive
+    ? ctx.t('notif-status-toggle-disabled', { type: label })
+    : ctx.t('notif-status-toggle-enabled', { type: label })
+
+  await ctx.answerCallbackQuery({
+    text: feedbackMessage,
+    show_alert: false,
+    cache_time: 3,
+  })
+}
+
+/**
+ * Generate enhanced notifications menu with individual toggle buttons
+ */
+async function generateNotificationsMenu(
+  ctx: BotContext,
+  activeTypes: string[],
+): Promise<{ menuContent: string, keyboard: InlineKeyboard }> {
+  const activeCount = activeTypes.length
+  const totalCount = NOTIFICATION_TYPES.length
+  const percentage = totalCount > 0 ? Math.round((activeCount / totalCount) * 100) : 0
+
+  let menuContent = `<b>${ctx.t('settings-notifications-title')}</b>\n\n`
+  menuContent += `<b>${ctx.t('notif-summary-title')}</b>\n`
+  menuContent += `${ctx.t('notif-summary-total')}: ${totalCount} | ${ctx.t('notif-summary-active')}: ${activeCount} | ${ctx.t('notif-summary-inactive')}: ${totalCount - activeCount} | ${ctx.t('notif-summary-percentage')}: ${percentage}%\n\n`
+  menuContent += `<b>━━━━━━━━━━━━━━━━━━━━━━━━━━</b>\n`
+
+  const keyboard = new InlineKeyboard()
+
+  // Create toggle button for each notification type
+  for (const type of NOTIFICATION_TYPES) {
+    const isActive = activeTypes.includes(type)
+    const statusIcon = isActive ? '🟢' : '🔴'
+    const statusText = isActive ? ctx.t('notif-status-active') : ctx.t('notif-status-inactive')
+    const label = ctx.t(NOTIFICATION_TYPE_I18N[type])
+    const kebabCaseType = type.toLowerCase().replace(/_/g, '-')
+
+    // Add to message content
+    menuContent += `${statusIcon} ${label} (${statusText})\n`
+
+    // Add toggle button
+    const buttonText = isActive ? '🔇' : '🔔'
+    keyboard.text(`${buttonText} ${label}`, `settings:notif:toggle:${kebabCaseType}`).row()
+  }
+
+  menuContent += `\n<b>━━━━━━━━━━━━━━━━━━━━━━━━━━</b>\n`
+  menuContent += `${ctx.t('notif-quick-controls')}`
+
+  // Add quick control buttons
+  keyboard.text(ctx.t('notif-toggle-all'), 'settings:notif:enable:all').row()
+  keyboard.text(ctx.t('notif-disable-all'), 'settings:notif:disable:all').row()
+  keyboard.text(ctx.t('notif-reset-defaults'), 'settings:notif:reset:defaults').row()
+  keyboard.text(ctx.t('button-back-to-sections'), 'settings:main')
+
+  return { menuContent, keyboard }
 }

@@ -170,7 +170,7 @@ export const lazySessionMiddleware: Middleware<BotContext> = async (ctx, next) =
       // Ignore errors if the user doesn't actually exist in the DB yet (e.g., during join flow)
       logger.debug({ err: e }, 'Failed to update lastActiveAt')
     })
-    
+
     // TODO: Implement per-user debouncing to avoid excessive writes in high-scale scenarios
     // Consider checking/updating a Redis timestamp key for ctx.from.id to skip updates more than once per minute
   }

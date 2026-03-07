@@ -57,9 +57,9 @@ describe('sectionService', () => {
     it('should create a sub-section if parent is a main section', async () => {
       mockPrisma.section.findUnique.mockResolvedValue({ id: 'parent1', parentId: null })
       mockPrisma.section.create.mockResolvedValue({ id: 'sub1', ...baseParams, parentId: 'parent1' })
-      
+
       const result = await sectionService.create({ ...baseParams, parentId: 'parent1' })
-      
+
       expect(result.parentId).toBe('parent1')
       expect(mockPrisma.section.findUnique).toHaveBeenCalledWith({
         where: { id: 'parent1' },
@@ -97,7 +97,7 @@ describe('sectionService', () => {
       mockPrisma.section.findUnique.mockResolvedValueOnce({ id: 'p1', parentId: null }) // parent check
       // mock isDescendant return true
       vi.spyOn(sectionService, 'isDescendant').mockResolvedValue(true)
-      
+
       await expect(sectionService.update({ id: 's1', parentId: 'p1' }))
         .rejects.toThrow('Cannot set descendant as parent')
     })
@@ -149,7 +149,7 @@ describe('sectionService', () => {
       mockPrisma.section.findUnique
         .mockResolvedValueOnce({ parentId: 'mid' })
         .mockResolvedValueOnce({ parentId: 'ancestor' })
-      
+
       const result = await sectionService.isDescendant('ancestor', 'child')
       expect(result).toBe(true)
     })
@@ -171,7 +171,7 @@ describe('sectionService', () => {
           {
             isActive: true,
             modules: [{ id: 'm2', orderIndex: 5 }],
-          }
+          },
         ],
       })
 

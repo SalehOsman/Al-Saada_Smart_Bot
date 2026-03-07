@@ -36,9 +36,9 @@ describe('rbacService', () => {
     it('should fetch and cache ancestors if not in redis', async () => {
       mockRedis.get.mockResolvedValue(null)
       mockSectionService.getAncestors.mockResolvedValue(['a1'])
-      
+
       const result = await rbacService.getSectionAncestry('s1')
-      
+
       expect(result).toEqual(['a1'])
       expect(mockRedis.setex).toHaveBeenCalledWith('section:ancestry:s1', 86400, JSON.stringify(['a1']))
     })
@@ -60,7 +60,7 @@ describe('rbacService', () => {
       expect(await rbacService.canAccess(1n, 'EMPLOYEE')).toBe(true)
     })
 
-    describe('ADMIN scoped access', () => {
+    describe('aDMIN scoped access', () => {
       it('should allow access if user has direct section scope', async () => {
         mockAdminScopeService.getScopes.mockResolvedValue([{ sectionId: 'sect1', moduleId: null }])
         mockRedis.get.mockResolvedValue(JSON.stringify([])) // no ancestors
@@ -98,7 +98,7 @@ describe('rbacService', () => {
   describe('canPerformAction', () => {
     it('should allow if role is in allowed roles', async () => {
       mockModuleLoader.getModule.mockReturnValue({
-        config: { permissions: { view: ['EMPLOYEE'] } }
+        config: { permissions: { view: ['EMPLOYEE'] } },
       })
       const result = await rbacService.canPerformAction(1n, 'EMPLOYEE', 'mod1', 'view')
       expect(result).toBe(true)
@@ -106,7 +106,7 @@ describe('rbacService', () => {
 
     it('should deny if role is not in allowed roles', async () => {
       mockModuleLoader.getModule.mockReturnValue({
-        config: { permissions: { delete: ['SUPER_ADMIN'] } }
+        config: { permissions: { delete: ['SUPER_ADMIN'] } },
       })
       const result = await rbacService.canPerformAction(1n, 'ADMIN', 'mod1', 'delete')
       expect(result).toBe(false)
@@ -114,7 +114,7 @@ describe('rbacService', () => {
 
     it('should check ADMIN scope for allowed actions', async () => {
       mockModuleLoader.getModule.mockReturnValue({
-        config: { sectionSlug: 'sect-slug', permissions: { view: ['ADMIN'] } }
+        config: { sectionSlug: 'sect-slug', permissions: { view: ['ADMIN'] } },
       })
       mockPrisma.section.findUnique.mockResolvedValue({ id: 's1' })
       mockRedis.get.mockResolvedValue(JSON.stringify([]))

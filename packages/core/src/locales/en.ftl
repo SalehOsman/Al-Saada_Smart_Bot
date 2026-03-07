@@ -356,6 +356,21 @@ notif-type-user-deactivated = User Deactivated
 notif-type-maintenance-on = Maintenance On
 notif-type-maintenance-off = Maintenance Off
 
+# Enhanced Notification Status Messages
+notif-status-active = 🟢 Active
+notif-status-inactive = 🔴 Inactive
+notif-status-toggle-enabled = ✅ Enabled "{ $type }" notification
+notif-status-toggle-disabled = ❌ Disabled "{ $type }" notification
+notif-summary-title = 📊 Notification Summary
+notif-summary-total = Total
+notif-summary-active = Active
+notif-summary-inactive = Inactive
+notif-summary-percentage = Percentage
+notif-quick-controls = 🎛️ Quick Controls
+notif-toggle-all = 🔔 Enable All
+notif-disable-all = 🔇 Disable All
+notif-reset-defaults = ⚙️ Reset to Defaults
+
 # Section Edit Buttons (US3 - Phase 6)
 button-edit-name = ✏️ Edit Name (Arabic)
 button-edit-name-en = ✏️ Edit Name (English)

@@ -356,6 +356,21 @@ notif-type-user-deactivated = تعطيل مستخدم
 notif-type-maintenance-on = تفعيل صيانة
 notif-type-maintenance-off = إيقاف صيانة
 
+# Enhanced Notification Status Messages
+notif-status-active = 🟢 مفعلة
+notif-status-inactive = 🔴 معطلة
+notif-status-toggle-enabled = ✅ تم تفعيل إشعار "{ $type }"
+notif-status-toggle-disabled = ❌ تم تعطيل إشعار "{ $type }"
+notif-summary-title = 📊 ملخص الإشعارات
+notif-summary-total = الإجمالي
+notif-summary-active = النشط
+notif-summary-inactive = المعطل
+notif-summary-percentage = النسبة المئوية
+notif-quick-controls = 🎛️ تحكم سريع
+notif-toggle-all = 🔔 تفعيل الكل
+notif-disable-all = 🔇 تعطيل الكل
+notif-reset-defaults = ⚙️ إعادة الإعدادات الافتراضية
+
 # Section Edit Buttons (US3 - Phase 6)
 button-edit-name = ✏️ تعديل الاسم (عربي)
 button-edit-name-en = ✏️ تعديل الاسم (إنجليزي)

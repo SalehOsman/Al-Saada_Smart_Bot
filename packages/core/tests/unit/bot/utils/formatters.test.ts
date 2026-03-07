@@ -1,10 +1,10 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { 
-  formatArabicDate, 
-  formatArabicDateTime, 
-  formatGender, 
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  formatArabicDate,
+  formatArabicDateTime,
+  formatGender,
+  notifyAdmins,
   truncateText,
-  notifyAdmins
 } from '../../../../src/bot/utils/formatters'
 
 // ─── Mocks ──────────────────────────────────────────────────────────────
@@ -18,11 +18,11 @@ const { mockPrisma, mockQueueBulkNotifications } = vi.hoisted(() => ({
 }))
 
 vi.mock('../../../../src/database/prisma', () => ({ prisma: mockPrisma }))
-vi.mock('../../../../src/services/notifications', () => ({ 
-  queueBulkNotifications: mockQueueBulkNotifications 
+vi.mock('../../../../src/services/notifications', () => ({
+  queueBulkNotifications: mockQueueBulkNotifications,
 }))
-vi.mock('../../../../src/utils/logger', () => ({ 
-  default: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } 
+vi.mock('../../../../src/utils/logger', () => ({
+  default: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }))
 
 describe('formatters', () => {
@@ -79,17 +79,17 @@ describe('formatters', () => {
     it('should queue notifications for all active admins', async () => {
       mockPrisma.user.findMany.mockResolvedValue([
         { telegramId: 111n },
-        { telegramId: 222n }
+        { telegramId: 222n },
       ])
 
-      await notifyAdmins({ 
-        type: 'JOIN_REQUEST_NEW' as any, 
-        params: { name: 'Test' } 
+      await notifyAdmins({
+        type: 'JOIN_REQUEST_NEW' as any,
+        params: { name: 'Test' },
       })
 
       expect(mockQueueBulkNotifications).toHaveBeenCalledWith([
         { targetUserId: 111n, type: 'JOIN_REQUEST_NEW', params: { name: 'Test' } },
-        { targetUserId: 222n, type: 'JOIN_REQUEST_NEW', params: { name: 'Test' } }
+        { targetUserId: 222n, type: 'JOIN_REQUEST_NEW', params: { name: 'Test' } },
       ])
     })
 

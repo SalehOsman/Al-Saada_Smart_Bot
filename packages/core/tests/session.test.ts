@@ -135,7 +135,7 @@ describe('session Management (T087/T069)', () => {
 
       mockPrisma.user.findUnique.mockResolvedValue({ telegramId: 12345n })
 
-      await lazySessionMiddleware(ctx, next)
+      await (lazySessionMiddleware as any)(ctx, next)
 
       expect(mockAuditService.log).toHaveBeenCalledWith(expect.objectContaining({
         userId: 12345n,
@@ -160,7 +160,7 @@ describe('session Management (T087/T069)', () => {
 
       mockPrisma.user.findUnique.mockResolvedValue(null)
 
-      await lazySessionMiddleware(ctx, next)
+      await (lazySessionMiddleware as any)(ctx, next)
 
       expect(mockAuditService.log).not.toHaveBeenCalled()
       expect(ctx.session.userId).toBeUndefined()
@@ -173,7 +173,7 @@ describe('session Management (T087/T069)', () => {
         session: { userId: 12345 },
       } as any
 
-      await lazySessionMiddleware(ctx, next)
+      await (lazySessionMiddleware as any)(ctx, next)
 
       expect(mockPrisma.user.findUnique).not.toHaveBeenCalled()
       expect(next).toHaveBeenCalled()

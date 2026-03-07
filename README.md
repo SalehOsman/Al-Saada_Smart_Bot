@@ -9,7 +9,7 @@
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)]()
 [![Node.js](https://img.shields.io/badge/Node.js-≥20-green.svg)]()
-[![Tests](https://img.shields.io/badge/tests-in%20development-yellow.svg)]()
+[![Tests](https://img.shields.io/badge/tests-261%20passed-brightgreen.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-green.svg)]()
 
 [عربي](#ما-هو-بوت-السعادة) · [English](#what-is-al-saada-bot)
