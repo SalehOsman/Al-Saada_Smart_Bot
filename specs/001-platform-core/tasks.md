@@ -130,7 +130,7 @@
 - [x] T090 [US2] Extract shared formatters and admin notifier into `packages/core/src/bot/utils/formatters.ts`
       (formatArabicDate, formatGender, notifyAdmins)
 - [x] T091 [US2] Refactor join.ts to use bot/utils — all flow messages deleted before final result
-- [x] T092 [US2] Complete T025-B verification: add unit tests for `approveJoinRequest()`, `rejectJoinRequest()`, `getJoinRequests()` once implemented in Phase 5 (T033)
+- [x] T092 [US2] Complete T025-B verification: add unit tests for Phase 5 admin functions — `approveJoinRequest()`, `rejectJoinRequest()`, `getJoinRequests()` — implemented in T033 (approval/rejection handlers). These tests validate the service layer that T025-B depends on for the full join request lifecycle.
 
 **Checkpoint**: Join request system complete - users can apply to join
 
@@ -225,7 +225,7 @@
 - [x] T106 [P] [US6] Implement Notification Preferences: Super Admin can mute/unmute each of the 6 NotificationType values (`JOIN_REQUEST_NEW`, `JOIN_REQUEST_APPROVED`, `JOIN_REQUEST_REJECTED`, `USER_DEACTIVATED`, `MAINTENANCE_ON`, `MAINTENANCE_OFF`). "Delivery settings" in FR-036 means mute/unmute toggle only — no email/SMS (bot-only in Phase 1). Store active types as a Redis set `system:activeNotificationTypes`. Default: all 6 types active.
 - [x] T107 [P] [US6] Implement System Info Display: read-only view (bot version, uptime, connected services status, environment)
 - [x] T113 [P] [US6] Configure Docker for backup support (prerequisite for T108): (1) add `backup_data` named volume to `docker-compose.yml` mounted at `/backups` in the bot service, (2) ensure `postgresql-client` is installed in the bot's Dockerfile so `pg_dump`/`pg_restore` binaries are available at runtime.
-- [x] T108 [P] [US6] Implement Backup (Full Control): trigger DB backup (pg_dump), download, view history, restore. The double-confirmation prompt for restore MUST use i18n key `backup-restore-confirm` (NOT hardcoded text). The confirmation keyword that the user must type MUST be read from i18n key `backup-restore-confirm-keyword` — this allows Arabic/English versions (e.g., "تأكيد" / "CONFIRM") without hardcoded strings (Constitution Principle VII).
+- [x] T108 [P] [US6] Implement Backup (Full Control): trigger DB backup (pg_dump), download, view history, restore. Backup files MUST use naming convention `backup-YYYY-MM-DD-HHmmss.sql` (spec US6 scenario 4). The double-confirmation prompt for restore MUST use i18n key `backup-restore-confirm` (NOT hardcoded text). The confirmation keyword that the user must type MUST be read from i18n key `backup-restore-confirm-keyword` — this allows Arabic/English versions (e.g., "تأكيد" / "CONFIRM") without hardcoded strings (Constitution Principle VII).
 - [x] T116 [P] [US6] Manual verification: confirm Docker backup/restore works end-to-end — (1) trigger `pg_dump` from within the bot container, verify `.sql` file appears in `/backups` volume, (2) trigger `pg_restore` from the same file, verify data integrity after restore. Document verification steps in `quickstart.md` under a "Backup & Restore" section (FR-036).
 - [x] T109 [P] Write unit tests for settings handlers
 
@@ -307,7 +307,7 @@
 - [x] T080 Verify SC-003: Confirm audit logs capture 100% of 25 defined actions from FR-026 (no gaps)
 - [ ] T093 Verify SC-001: Manual test — first-time bootstrap user completes full flow (name → phone → national ID → confirm → Super Admin welcome) in ≤ 30 seconds
 - [ ] T094 Verify SC-004: Manual test — session state (current section, navigation) persists correctly across bot interactions within a 24-hour window; new session starts after 24hr inactivity
-- [ ] T095 Verify SC-005 + SC-006: Manual test — maintenance mode toggle propagates to all non-Super Admin users within 5 seconds; module discovery completes within 10 seconds of bot startup
+- [ ] T095 Verify SC-005 + SC-006: Manual test — maintenance mode toggle propagates to all non-Super Admin users within 5 seconds; module discovery completes within 10 seconds of bot startup. NOTE (G1): Consider adding a basic vitest or script-based automated performance check for bot initialization time (<10s requirement) to supplement manual verification.
 - [ ] T096 Verify SC-007 + SC-010: Manual test — all user-facing messages are in Arabic with no hardcoded strings; Super Admin can create, rename, reorder, and delete sections (including sub-sections) without any developer intervention
 - [ ] T096-A [P] Verify SC-011: Manual test — section hierarchy navigation allows users to navigate main sections → sub-sections → modules with back buttons at each level
 
