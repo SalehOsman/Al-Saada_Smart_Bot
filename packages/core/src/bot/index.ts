@@ -66,6 +66,34 @@ bot.use(maintenanceMiddleware)
 
 // i18n middleware for bilingual support
 bot.use(i18n)
+
+// Global Command Interceptor (FR-033/T112 robustness)
+// Ensures commands are not swallowed by active conversations
+bot.use(async (ctx, next) => {
+  const text = ctx.message?.text
+
+  if (text?.startsWith('/')) {
+    const cmd = text.split(' ')[0].toLowerCase().replace('/', '')
+    const knownCommands = ['start', 'menu', 'users', 'sections', 'maintenance', 'settings', 'audit', 'cancel', 'help']
+
+    if (knownCommands.includes(cmd)) {
+      // Clear states block gracefully to let the command fire cleanly
+      ctx.session.currentModule = null
+      ctx.session.currentSection = null
+      ctx.session.createSubSection = undefined
+      ctx.session.editSectionQuery = undefined
+      ctx.session.pendingRestore = undefined
+
+      // Wipe the grammar-managed conversation memory so it doesn't intercept
+      if ((ctx.session as any).conversations) {
+        (ctx.session as any).conversations = {}
+      }
+    }
+  }
+
+  await next()
+})
+
 bot.use(draftMiddleware)
 
 // Conversations plugin for multi-step flows
@@ -96,6 +124,14 @@ bot.command('sections', async (ctx) => {
 bot.command('maintenance', maintenanceHandler)
 bot.command('settings', settingsHandler)
 bot.command('audit', auditHandler)
+bot.command('cancel', async (ctx) => {
+  await ctx.reply(ctx.t('module-kit-cancelled'))
+  const { menuHandler } = await import('./handlers/menu')
+  return menuHandler(ctx)
+})
+bot.command('help', async (ctx) => {
+  await ctx.reply(ctx.t('module-kit-help-default'))
+})
 
 // Main menu buttons router (routes callback data to commands)
 bot.callbackQuery(/^menu-(.+)$/, async (ctx) => {

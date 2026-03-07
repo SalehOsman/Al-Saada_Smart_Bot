@@ -154,7 +154,14 @@ export async function settingsActionsHandler(ctx: BotContext) {
     // Create notification menu with individual toggle buttons
     const { menuContent, keyboard } = await generateNotificationsMenu(ctx, activeTypes)
 
-    await ctx.editMessageText(menuContent, { reply_markup: keyboard, parse_mode: 'HTML' })
+    try {
+      await ctx.editMessageText(menuContent, { reply_markup: keyboard, parse_mode: 'HTML' })
+    }
+    catch (err: any) {
+      if (!err.description?.includes('message is not modified')) {
+        throw err
+      }
+    }
     return
   }
 
@@ -241,7 +248,14 @@ async function handleNotificationAction(ctx: BotContext, data: string) {
   // Refresh the notifications menu
   const activeTypes = await settingsService.getActiveNotificationTypes()
   const { menuContent, keyboard } = await generateNotificationsMenu(ctx, activeTypes)
-  await ctx.editMessageText(menuContent, { reply_markup: keyboard, parse_mode: 'HTML' })
+  try {
+    await ctx.editMessageText(menuContent, { reply_markup: keyboard, parse_mode: 'HTML' })
+  }
+  catch (err: any) {
+    if (!err.description?.includes('message is not modified')) {
+      throw err
+    }
+  }
 }
 
 /**
