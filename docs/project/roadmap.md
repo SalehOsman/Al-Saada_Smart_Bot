@@ -23,7 +23,7 @@
 
 ## Overview
 
-This roadmap outlines the development plan for Al-Saada Smart Bot from Phase 3 (Production Readiness) through Phase 6 (Advanced Features). The project follows a **spec-driven development** methodology using SpecKit, with strict adherence to the Constitution (v2.3.0).
+This roadmap outlines the development plan for Al-Saada Smart Bot from Phase 3 (Production Readiness) through Phase 6 (Advanced Features). The project follows a **spec-driven development** methodology using SpecKit, with strict adherence to the Constitution (v2.5.0).
 
 ### Project Vision
 
@@ -710,8 +710,8 @@ Total Duration: ~21 weeks (5 months)
 
 ## References
 
-- Constitution: `.specify/memory/constitution.md` (v2.3.0)
-- Methodology: `docs/project/methodology.md` (v1.5.0)
+- Constitution: `.specify/memory/constitution.md` (v2.5.0)
+- Methodology: `docs/project/methodology.md` (v1.8.0)
 - Backlog: `docs/project/backlog.md`
 - Archived Proposals: `docs/project/archive/`
 - Specs: `specs/` directory

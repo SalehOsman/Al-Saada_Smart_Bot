@@ -67,7 +67,7 @@ Below are all variables found in `.env.example` with descriptions.
 | :--- | :--- | :--- |
 | `BOT_TOKEN` | Required: Telegram API Token from BotFather | `12345:ABC-def1234ghIkl-zyx5` |
 | `WEBHOOK_URL` | Optional: Set to run in webhook mode instead of long polling. | `https://mybot.example.com` |
-| `DATABASE_URL` | Required: Prisma connection string (Pointed at standard docker instance) | `postgresql://al_saada_user:secure_password_here@localhost:5434/al_saada_bot` |
+| `DATABASE_URL` | Required: Prisma connection string (Pointed at standard docker instance) | `postgresql://al_saada_user:secure_password_here@localhost:5432/al_saada_bot` |
 | `REDIS_URL` | Optional: Redis connection string | `redis://localhost:6379` |
 | `PORT` | Optional: Port for Hono HTTP server healthchecks | `3000` |
 | `NODE_ENV` | Optional: development, production, test | `development` |
