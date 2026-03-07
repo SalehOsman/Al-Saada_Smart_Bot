@@ -1,0 +1,55 @@
+{
+  "name": "al-saada-smart-bot",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "packages/*",
+    "modules/*"
+  ],
+  "scripts": {
+    "docs:api": "typedoc",
+    "docs:api:watch": "typedoc --watch",
+    "dev": "tsx --env-file=.env packages/core/src/main.ts",
+    "dev:watch": "tsx watch packages/core/src/main.ts",
+    "build": "tsup packages/core/src/main.ts --format esm --platform node --external node-cron --external pino --external pino-pretty --external ioredis --external bullmq --external @prisma/client",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "module:create": "tsx scripts/module-create.ts",
+    "module:remove": "tsx scripts/module-remove.ts",
+    "module:list": "tsx scripts/module-list.ts"
+  },
+  "prisma": {
+    "schema": "prisma/schema"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^2.8.1",
+    "@types/inquirer": "^9.0.9",
+    "@vitest/coverage-v8": "^4.0.18",
+    "commitlint": "^19.2.1",
+    "eslint": "^8.57.0",
+    "husky": "^9.0.11",
+    "inquirer": "^9.3.8",
+    "lint-staged": "^15.2.2",
+    "tsup": "^8.0.2",
+    "tsx": "^4.7.2",
+    "typedoc": "^0.28.17",
+    "typescript": "^5.4.3",
+    "vitest": "^4.0.18"
+  }
+}

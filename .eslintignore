@@ -1,0 +1,10 @@
+dist
+node_modules
+coverage
+.nuxt
+.output
+.temp
+!.github
+specs/**/*.md
+**/*.md
+.claude/worktrees/**

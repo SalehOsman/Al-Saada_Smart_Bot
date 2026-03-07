@@ -1,0 +1,65 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["prismaSchemaFolder"]
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x", "linux-musl"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enum definitions
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  EMPLOYEE
+  VISITOR
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NotificationType {
+  JOIN_REQUEST_NEW
+  JOIN_REQUEST_APPROVED
+  JOIN_REQUEST_REJECTED
+  USER_DEACTIVATED
+  MAINTENANCE_ON
+  MAINTENANCE_OFF
+  MODULE_OPERATION
+}
+
+enum AuditAction {
+  USER_BOOTSTRAP
+  USER_LOGIN
+  USER_LOGOUT
+  ROLE_CHANGE
+  USER_APPROVE
+  USER_REJECT
+  USER_ACTIVATE
+  USER_DEACTIVATE
+  JOIN_REQUEST_SUBMIT
+  SECTION_CREATE
+  SECTION_UPDATE
+  SECTION_DELETE
+  SECTION_ENABLE
+  SECTION_DISABLE
+  MODULE_REGISTER
+  MODULE_UNREGISTER
+  MODULE_ENABLE
+  MODULE_DISABLE
+  MAINTENANCE_ON
+  MAINTENANCE_OFF
+  PERMISSION_CHANGE
+  ADMIN_SCOPE_ASSIGN
+  ADMIN_SCOPE_REVOKE
+  BACKUP_TRIGGER
+  BACKUP_RESTORE
+  MODULE_CREATE
+  MODULE_UPDATE
+  MODULE_DELETE
+}

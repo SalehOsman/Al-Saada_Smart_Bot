@@ -1,0 +1,155 @@
+// User - Telegram Bot Users
+model User {
+  telegramId       BigInt    @id @map("telegram_id")
+  id               String    @unique @default(cuid())
+  fullName         String    @map("full_name")
+  nickname         String?
+  phone            String?   @unique
+  nationalId       String?   @unique @map("national_id")
+  telegramUsername String?   @map("telegram_username")
+  role             Role      @default(VISITOR)
+  isActive         Boolean   @default(true) @map("is_active")
+  language         String    @default("ar")
+  lastActiveAt     DateTime? @map("last_active_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  // Relationships
+  joinRequests         JoinRequest[]
+  auditLogs            AuditLog[]
+  notifications        Notification[]
+  adminScopes        AdminScope[] @relation("AdminScopeUser")
+  createdAdminScopes AdminScope[] @relation("AdminScopeCreator")
+  createdSections      Section[]      @relation("SectionCreator")
+  reviewedJoinRequests JoinRequest[]  @relation("ReviewAdmin")
+
+  @@map("users")
+}
+
+// JoinRequest - Pending User Registrations
+model JoinRequest {
+  id         String    @id @default(cuid())
+  telegramId BigInt    @map("telegram_id")
+  fullName   String    @map("full_name")
+  nickname   String?
+  phone      String
+  nationalId String    @map("national_id")
+  status     Status    @default(PENDING)
+  reviewedBy BigInt?   @map("reviewed_by")
+  reviewedAt DateTime? @map("reviewed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  // Relationships
+  user     User? @relation(fields: [telegramId], references: [telegramId])
+  reviewer User? @relation("ReviewAdmin", fields: [reviewedBy], references: [telegramId])
+
+  @@map("join_requests")
+}
+
+// Section - Dynamic Departments/Containers
+model Section {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  name       String // Arabic name
+  nameEn     String // English name
+  icon       String // Emoji (e.g., "📁", "💼")
+  parentId   String?  @map("parent_id") // Self-referential FK - nullable for main sections; when set, defines sub-section
+  isActive   Boolean  @default(true) @map("is_active")
+  orderIndex Int      @default(0) @map("order_index")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  createdBy  BigInt?  @map("created_by")
+
+  // Relationships
+  creator User?      @relation("SectionCreator", fields: [createdBy], references: [telegramId])
+  parent  Section?    @relation("SectionHierarchy", fields: [parentId], references: [id])
+  children Section[]   @relation("SectionHierarchy")
+  modules Module[]
+  adminScopes AdminScope[]
+
+  @@index([isActive])
+  @@index([orderIndex])
+  @@index([parentId])
+  @@map("sections")
+}
+
+// Module - Discovered Module Configurations
+model Module {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  name       String // Module name in Arabic
+  nameEn     String // Module name in English
+  sectionId  String   @map("section_id")
+  icon       String // Menu icon emoji
+  isActive   Boolean  @default(true) @map("is_active")
+  orderIndex Int      @default(0) @map("order_index")
+  configPath String   @map("config_path") // Relative path to module.config.ts
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relationships
+  section Section @relation(fields: [sectionId], references: [id])
+  adminScopes AdminScope[]
+
+  @@index([sectionId])
+  @@index([isActive])
+  @@index([orderIndex])
+  @@map("modules")
+}
+
+// AuditLog - System Audit Trail
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     BigInt   @map("user_id")
+  action     AuditAction // Action type
+  targetType String?  @map("target_type") // Entity type (User, Section, Module, etc.)
+  targetId   String?  @map("target_id") // Entity ID
+  details    Json? // Additional context as JSON
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relationships
+  user User @relation(fields: [userId], references: [telegramId])
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// Notification - Queue Notifications
+model Notification {
+  id           String           @id @default(cuid())
+  targetUserId BigInt           @map("target_user_id")
+  type         NotificationType
+  params       Json?
+  isRead       Boolean          @default(false) @map("is_read")
+  createdAt    DateTime         @default(now()) @map("created_at")
+
+  // Relationships
+  user User @relation(fields: [targetUserId], references: [telegramId])
+
+  @@index([targetUserId])
+  @@index([type])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model AdminScope {
+  id        String   @id @default(cuid())
+  userId    BigInt   @map("user_id")
+  sectionId String   @map("section_id")
+  moduleId  String?  @map("module_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy BigInt   @map("created_by")
+
+  // Relationships
+  user    User    @relation("AdminScopeUser", fields: [userId], references: [telegramId])
+  section Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  module  Module? @relation(fields: [moduleId], references: [id])
+  creator User    @relation("AdminScopeCreator", fields: [createdBy], references: [telegramId])
+
+  @@unique([userId, sectionId, moduleId])
+  @@index([userId])
+  @@index([sectionId])
+  @@map("admin_scopes")
+}

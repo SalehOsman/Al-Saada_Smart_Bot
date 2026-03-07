@@ -1,0 +1,17 @@
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+.env*
+specs/
+docs/
+scripts/
+tests/
+vitest.config.ts
+tsconfig.json
+eslint.config.js
+.prettierrc
+.gitignore
+.eslintignore
+.dockerignore
+.prettierignore
