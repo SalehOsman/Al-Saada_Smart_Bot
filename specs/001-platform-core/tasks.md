@@ -310,6 +310,7 @@
 - [ ] T095 Verify SC-005 + SC-006: Manual test — maintenance mode toggle propagates to all non-Super Admin users within 5 seconds; module discovery completes within 10 seconds of bot startup. NOTE (G1): Consider adding a basic vitest or script-based automated performance check for bot initialization time (<10s requirement) to supplement manual verification.
 - [ ] T096 Verify SC-007 + SC-010: Manual test — all user-facing messages are in Arabic with no hardcoded strings; Super Admin can create, rename, reorder, and delete sections (including sub-sections) without any developer intervention
 - [ ] T096-A [P] Verify SC-011: Manual test — section hierarchy navigation allows users to navigate main sections → sub-sections → modules with back buttons at each level
+- [ ] T096-B [P] Verify RTL UI/UX: Manual test — verify all Arabic text renders correctly with proper RTL alignment across different Telegram clients (Android, iOS, Desktop). Telegram handles RTL natively; confirm no layout issues with mixed AR/EN content in menus, buttons, and messages.
 
 **Checkpoint**: Platform Core complete - ready for production deployment
 

@@ -1,12 +1,16 @@
 # Data Model: Platform Core (Layer 1)
 
-**Date**: 2026-02-17
+**Date**: 2026-02-17 | **Updated**: 2026-03-08
 **Feature**: Platform Core (Layer 1)
 **Branch**: `001-platform-core`
+**Source of Truth**: `prisma/schema/platform.prisma` + `prisma/schema/main.prisma`
 
 ## Database Overview
 
-This document defines the complete database schema for Platform Core (Layer 1) of Al-Saada Smart Bot. The schema supports user management, RBAC, section administration, audit logging, and notification systems.
+This document defines the complete database schema for Platform Core (Layer 1) of Al-Saada Smart Bot. The schema supports user management, RBAC, two-level section hierarchy, audit logging, and notification systems.
+
+> [!IMPORTANT]
+> If this document conflicts with `prisma/schema/*.prisma`, the Prisma files take precedence.
 
 ## Core Tables
 
@@ -15,26 +19,27 @@ Stores all bot users with their profile and role information.
 
 ```prisma
 model User {
-  telegramId        BigInt    @id @unique @map("telegram_id")
-  id                String    @default(cuid()) @unique
-  fullName          String    @map("full_name")
-  nickname          String?   @map("nickname")
+  telegramId       BigInt    @id @map("telegram_id")
+  id               String    @unique @default(cuid())
+  fullName         String    @map("full_name")
+  nickname         String?
+  phone            String?   @unique
+  nationalId       String?   @unique @map("national_id")
   telegramUsername  String?   @map("telegram_username")
-  phone             String?   @unique // Egyptian phone format: /^(010|011|012|015)\d{8}$/
-  nationalId        String?   @unique @map("national_id") // Egyptian National ID: 14 digits
-  role              Role      @default(VISITOR)
-  isActive          Boolean   @default(true) @map("is_active")
-  language          String    @default("ar") // ISO 639-1
-  lastActiveAt      DateTime? @map("last_active_at")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
+  role             Role      @default(VISITOR)
+  isActive         Boolean   @default(true) @map("is_active")
+  language         String    @default("ar")
+  lastActiveAt     DateTime? @map("last_active_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   // Relationships
-  joinRequests  JoinRequest[]
-  auditLogs    AuditLog[]
-  notifications Notification[]
-  adminScopes  AdminScope[]
-  createdSections Section[] @relation("SectionCreator")
+  joinRequests         JoinRequest[]
+  auditLogs            AuditLog[]
+  notifications        Notification[]
+  adminScopes          AdminScope[] @relation("AdminScopeUser")
+  createdAdminScopes   AdminScope[] @relation("AdminScopeCreator")
+  createdSections      Section[]    @relation("SectionCreator")
   reviewedJoinRequests JoinRequest[] @relation("ReviewAdmin")
 
   @@map("users")
@@ -53,19 +58,20 @@ Manages user registration requests and approval workflow.
 
 ```prisma
 model JoinRequest {
-  id           String    @id @default(cuid())
-  userId       BigInt    @map("user_id")
-  name         String
-  phone        String    // Egyptian phone format validation
-  message      String?
-  status       Status    @default(PENDING)
-  reviewedBy   BigInt?   @map("reviewed_by")
-  reviewedAt   DateTime?  @map("reviewed_at")
-  createdAt    DateTime  @default(now()) @map("created_at")
+  id         String    @id @default(cuid())
+  telegramId BigInt    @map("telegram_id")
+  fullName   String    @map("full_name")
+  nickname   String?
+  phone      String
+  nationalId String    @map("national_id")
+  status     Status    @default(PENDING)
+  reviewedBy BigInt?   @map("reviewed_by")
+  reviewedAt DateTime? @map("reviewed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
 
   // Relationships
-  user         User      @relation(fields: [userId], references: [telegramId])
-  reviewer     User?     @relation("ReviewAdmin", fields: [reviewedBy], references: [telegramId])
+  user     User? @relation(fields: [telegramId], references: [telegramId])
+  reviewer User? @relation("ReviewAdmin", fields: [reviewedBy], references: [telegramId])
 
   @@map("join_requests")
 }
@@ -77,49 +83,62 @@ enum Status {
 }
 ```
 
-### Section - Dynamic Departments/Containers
-Dynamic sections that organize modules in the bot interface.
+### Section - Dynamic Departments/Containers (Two-Level Hierarchy)
+Dynamic sections that organize modules in the bot interface. Supports main sections and sub-sections via self-referential `parentId`.
 
 ```prisma
 model Section {
-  id          String    @id @default(cuid())
-  slug        String    @unique
-  name        String    // Arabic name
-  nameEn      String    // English name
-  icon        String    // Emoji (e.g., "📁", "💼")
-  isActive    Boolean   @default(true) @map("is_active")
-  orderIndex  Int       @default(0) @map("order_index")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  createdBy   BigInt?   @map("created_by")
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  name       String   // Arabic name
+  nameEn     String   // English name
+  icon       String   // Emoji (e.g., "📁", "💼")
+  parentId   String?  @map("parent_id") // Self-referential FK — nullable for main sections
+  isActive   Boolean  @default(true) @map("is_active")
+  orderIndex Int      @default(0) @map("order_index")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  createdBy  BigInt?  @map("created_by")
 
   // Relationships
-  creator     User?     @relation("SectionCreator", fields: [createdBy], references: [telegramId])
+  creator     User?      @relation("SectionCreator", fields: [createdBy], references: [telegramId])
+  parent      Section?   @relation("SectionHierarchy", fields: [parentId], references: [id])
+  children    Section[]  @relation("SectionHierarchy")
   modules     Module[]
+  adminScopes AdminScope[]
 
+  @@index([isActive])
+  @@index([orderIndex])
+  @@index([parentId])
   @@map("sections")
 }
 ```
+
+**Hierarchy Constraint**: Maximum 2 levels — if `parentId` is set, the referenced section MUST have `parentId = NULL`. Enforced in application code.
 
 ### Module - Discovered Module Configurations
 Modules discovered at runtime with their configuration metadata.
 
 ```prisma
 model Module {
-  id          String    @id @default(cuid())
-  slug        String    @unique
-  name        String    // Module name in Arabic
-  nameEn      String    // Module name in English
-  sectionSlug String    @map("section_slug")
-  icon        String    // Menu icon emoji
-  isActive    Boolean   @default(true) @map("is_active")
-  orderIndex  Int       @default(0) @map("order_index")
-  configPath  String    @map("config_path") // Relative path to module.config.ts
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  name       String   // Module name in Arabic
+  nameEn     String   // Module name in English
+  sectionId  String   @map("section_id")
+  icon       String   // Menu icon emoji
+  isActive   Boolean  @default(true) @map("is_active")
+  orderIndex Int      @default(0) @map("order_index")
+  configPath String   @map("config_path")
+  createdAt  DateTime @default(now()) @map("created_at")
 
   // Relationships
-  section     Section   @relation(fields: [sectionSlug], references: [slug])
+  section     Section      @relation(fields: [sectionId], references: [id])
+  adminScopes AdminScope[]
 
+  @@index([sectionId])
+  @@index([isActive])
+  @@index([orderIndex])
   @@map("modules")
 }
 ```
@@ -129,193 +148,163 @@ Comprehensive logging of all significant system actions.
 
 ```prisma
 model AuditLog {
-  id          String    @id @default(cuid())
-  userId      BigInt    @map("user_id")
-  action      String    // Action type (e.g., "LOGIN", "SECTION_CREATE", "USER_APPROVE")
-  targetType  String?   @map("target_type") // Entity type (User, Section, Module, etc.)
-  targetId    String?   @map("target_id")   // Entity ID
-  details     Json?     // Additional context as JSON
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id         String      @id @default(cuid())
+  userId     BigInt      @map("user_id")
+  action     AuditAction // Typed enum — see AuditAction below
+  targetType String?     @map("target_type")
+  targetId   String?     @map("target_id")
+  details    Json?
+  createdAt  DateTime    @default(now()) @map("created_at")
 
   // Relationships
-  user        User      @relation(fields: [userId], references: [telegramId])
+  user User @relation(fields: [userId], references: [telegramId])
 
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
   @@map("audit_logs")
 }
 ```
 
-### Notification - Queue Notifications
-Queue-based notification system with read tracking.
+### Notification - Queue Notifications (i18n-compliant)
+Queue-based notification system. Uses `type` + `params` (JSONB) pattern — no hardcoded title/body fields. The notification type maps to `.ftl` i18n key patterns.
 
 ```prisma
 model Notification {
-  id        String            @id @default(cuid())
-  userId    BigInt            @map("user_id")
-  type      NotificationType
-  title     String
-  message   String
-  isRead    Boolean           @default(false) @map("is_read")
-  createdAt DateTime          @default(now()) @map("created_at")
+  id           String           @id @default(cuid())
+  targetUserId BigInt           @map("target_user_id")
+  type         NotificationType
+  params       Json?            // i18n template parameters (e.g., { userName, requestCode })
+  isRead       Boolean          @default(false) @map("is_read")
+  createdAt    DateTime         @default(now()) @map("created_at")
 
   // Relationships
-  user      User              @relation(fields: [userId], references: [telegramId])
+  user User @relation(fields: [targetUserId], references: [telegramId])
 
-  @@map("notifications")
-}
-
-enum NotificationType {
-  SYSTEM
-  JOIN_REQUEST
-  APPROVAL
-  REJECTION
-  ANNOUNCEMENT
-}
-```
-
-### AdminScope - Admin Permissions
-Fine-grained permission system for admin users.
-
-```prisma
-model AdminScope {
-  id         String           @id @default(cuid())
-  adminUserId BigInt           @map("admin_user_id")
-  scopeType  ScopeType
-  scopeSlug  String           @map("scope_slug")
-  createdAt  DateTime         @default(now()) @map("created_at")
-
-  // Relationships
-  adminUser  User             @relation(fields: [adminUserId], references: [telegramId])
-  // Note: scopeSlug references either Section.slug or Module.slug based on scopeType
-  // Prisma does not support polymorphic FK, so we handle this in application code
-
-  @@unique([adminUserId, scopeType, scopeSlug])
-  @@map("admin_scopes")
-}
-
-enum ScopeType {
-  SECTION
-  MODULE
-}
-```
-
-## Database Indexes
-
-```prisma
-// User indexes
-model User {
-  @@index([telegramId])
-  @@index([role])
-  @@index([isActive])
-}
-
-// JoinRequest indexes
-model JoinRequest {
-  @@index([userId])
-  @@index([status])
-  @@index([createdAt])
-}
-
-// Section indexes
-model Section {
-  @@index([slug])
-  @@index([isActive])
-  @@index([orderIndex])
-}
-
-// Module indexes
-model Module {
-  @@index([sectionSlug])
-  @@index([slug])
-  @@index([isActive])
-  @@index([orderIndex])
-}
-
-// AuditLog indexes
-model AuditLog {
-  @@index([userId])
-  @@index([action])
-  @@index([createdAt])
-}
-
-// Notification indexes
-model Notification {
-  @@index([userId])
+  @@index([targetUserId])
   @@index([type])
   @@index([isRead])
   @@index([createdAt])
+  @@map("notifications")
 }
+```
 
-// AdminScope indexes
+### AdminScope - Admin Permissions (Section/Module Scoping)
+Fine-grained permission system for admin users. Supports both section-level and module-level scoping with RBAC inheritance (FR-037).
+
+```prisma
 model AdminScope {
-  @@index([adminUserId])
-  @@index([scopeType, scopeSlug])
+  id        String   @id @default(cuid())
+  userId    BigInt   @map("user_id")
+  sectionId String   @map("section_id")
+  moduleId  String?  @map("module_id") // nullable — null = entire section access
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy BigInt   @map("created_by")
+
+  // Relationships
+  user    User    @relation("AdminScopeUser", fields: [userId], references: [telegramId])
+  section Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  module  Module? @relation(fields: [moduleId], references: [id])
+  creator User    @relation("AdminScopeCreator", fields: [createdBy], references: [telegramId])
+
+  @@unique([userId, sectionId, moduleId])
+  @@index([userId])
+  @@index([sectionId])
+  @@map("admin_scopes")
+}
+```
+
+**Scope Inheritance**: AdminScope on a main section grants access to ALL its sub-sections and their modules. AdminScope on a sub-section grants access to that sub-section's modules ONLY. `onDelete: Cascade` ensures scopes are removed when sections are deleted (FR-037).
+
+## Enum Definitions
+
+### Role
+```prisma
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  EMPLOYEE
+  VISITOR
+}
+```
+
+### Status
+```prisma
+enum Status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+```
+
+### NotificationType (7 types)
+```prisma
+enum NotificationType {
+  JOIN_REQUEST_NEW
+  JOIN_REQUEST_APPROVED
+  JOIN_REQUEST_REJECTED
+  USER_DEACTIVATED
+  MAINTENANCE_ON
+  MAINTENANCE_OFF
+  MODULE_OPERATION      // Added by 003-module-kit
+}
+```
+
+### AuditAction (28 total)
+25 actions from 001-platform-core + 3 from 003-module-kit.
+
+```prisma
+enum AuditAction {
+  // --- 001-platform-core (25 actions) ---
+  USER_BOOTSTRAP
+  USER_LOGIN
+  USER_LOGOUT
+  ROLE_CHANGE
+  USER_APPROVE
+  USER_REJECT
+  USER_ACTIVATE
+  USER_DEACTIVATE
+  JOIN_REQUEST_SUBMIT
+  SECTION_CREATE
+  SECTION_UPDATE
+  SECTION_DELETE
+  SECTION_ENABLE
+  SECTION_DISABLE
+  MODULE_REGISTER
+  MODULE_UNREGISTER
+  MODULE_ENABLE
+  MODULE_DISABLE
+  MAINTENANCE_ON
+  MAINTENANCE_OFF
+  PERMISSION_CHANGE
+  ADMIN_SCOPE_ASSIGN
+  ADMIN_SCOPE_REVOKE
+  BACKUP_TRIGGER
+  BACKUP_RESTORE
+  // --- 003-module-kit (3 actions) ---
+  MODULE_CREATE
+  MODULE_UPDATE
+  MODULE_DELETE
 }
 ```
 
 ## Data Validation Rules
 
-### Phone Number Validation
+### Phone Number Validation (Egyptian)
 ```typescript
-// Egyptian mobile numbers only — operators: 010 Vodafone, 011 Etisalat, 012 Orange, 015 WE
+// Operators: 010 Vodafone, 011 Etisalat, 012 Orange, 015 WE
 const egyptianPhoneRegex = /^(010|011|012|015)\d{8}$/;
 ```
 
-### Name Validation
-```typescript
-// Unicode-aware string validation (supports Arabic)
-const nameRegex = /^[\p{L}\s\u0621-\u064A\u0660-\u0669]+$/u;
-```
+### National ID Validation (Egyptian, 14 digits)
+Extracts: Century (digit 1), Birthdate (digits 2-7), Gender (digit 9: odd=MALE, even=FEMALE).
 
-### Telegram ID Validation
-```typescript
-// Must be valid Telegram user ID
-const telegramId = telegramId; // BigInt from Telegram
-```
+### Section Name Validation
+2–50 characters. Icon must be exactly one Unicode emoji (`/^\p{Emoji}$/u`).
 
 ### Slug Validation
 ```typescript
-// Lowercase, alphanumeric, dashes only. Max 64 chars.
-const slugRegex = /^[a-z0-9-]+$/;
-```
-
-## Enum Definitions
-
-### Role Enum
-```typescript
-enum Role {
-  SUPER_ADMIN = 'SUPER_ADMIN'
-  ADMIN = 'ADMIN'
-  EMPLOYEE = 'EMPLOYEE'
-  VISITOR = 'VISITOR'
-}
-```
-
-### Status Enum
-```typescript
-enum Status {
-  PENDING = 'PENDING'
-  APPROVED = 'APPROVED'
-  REJECTED = 'REJECTED'
-}
-```
-
-### NotificationType Enum
-```typescript
-enum NotificationType {
-  SYSTEM = 'SYSTEM'
-  JOIN_REQUEST = 'JOIN_REQUEST'
-  APPROVAL = 'APPROVAL'
-  REJECTION = 'REJECTION'
-  ANNOUNCEMENT = 'ANNOUNCEMENT'
-}
-```
-
-### ScopeType Enum
-```typescript
-enum ScopeType {
-  SECTION = 'SECTION'
-  MODULE = 'MODULE'
-}
+const slugRegex = /^[a-z0-9-]+$/; // Lowercase, alphanumeric, dashes. Max 64 chars.
 ```
 
 ## Business Logic Constraints
@@ -325,56 +314,30 @@ enum ScopeType {
 VISITOR → EMPLOYEE (via admin approval)
 EMPLOYEE → ADMIN (via Super Admin assignment)
 ADMIN → SUPER_ADMIN (via Super Admin promotion)
-Any role → INACTIVE (via admin action)
+Any role → INACTIVE (via admin deactivation — isActive=false)
 ```
 
-### 2. Section Management Rules
-- Sections can only be deleted if they have no modules
-- Section order must be unique and sequential
-- Section names must be unique (Arabic and English)
+### 2. Section Hierarchy Rules
+- Maximum 2 levels: main section → sub-section (no 3rd level)
+- Sections can only be deleted if they have ZERO active modules
+- Deleting a main section cascades to delete all sub-sections (blocked if any has active modules)
+- AdminScope on main section inherits to all descendant sub-sections (FR-037)
 
 ### 3. Module Discovery Rules
-- Modules must be in modules/ directory at project root
-- Each module must have module.config.ts file
+- Modules reside in `modules/` directory at project root
+- Each module must have `module.config.ts` file
 - Invalid module configs are logged but don't crash the bot
-- Modules are automatically assigned to sections via `sectionSlug`
-- Slugs are stable identifiers guaranteed to not change across renames
+- Modules are assigned to sections via `sectionId`
 
 ### 4. Audit Log Requirements
-- All user actions are logged except read-only operations
-- Sensitive data (passwords, tokens) is never logged
-- Audit logs cannot be deleted or modified
-- Audit logs are retained indefinitely
+- All 25 platform-core actions logged (+ 3 module-kit actions)
+- Sensitive data (nationalId, phone, passwords, tokens) NEVER logged — replaced with `[REDACTED]`
+- Audit logs are immutable and retained indefinitely
 
 ### 5. Session Management
-- Sessions expire after 24 hours of inactivity
-- Session keys follow pattern: session:{telegramId}
-- Session data includes navigation state for bot continuity
+- Sessions expire after 24 hours of inactivity (Redis TTL)
+- Session keys: `session:{telegramId}`
+- Session data: `role`, `currentMenu` (breadcrumb array), `telegramId`, `locale`
 
-## Migration Strategy
-
-### Initial Migration (001_initial)
-- Create all tables with indexes
-- Insert default data (empty tables ready for use)
-- Set up foreign key constraints
-
-### Future Migrations
-- Add new tables for Phase 2+ features
-- Modify existing tables as requirements evolve
-- Maintain backward compatibility where possible
-
-## Performance Considerations
-
-1. **Indexing**: Critical tables have appropriate indexes for query performance
-2. **JSONB Storage**: Audit log details use JSONB for flexible querying
-3. **Connection Pooling**: Prisma manages database connections efficiently
-4. **Session Caching**: Redis sessions reduce database load
-5. **Query Optimization**: All queries designed for minimal execution time
-
-## Security Considerations
-
-1. **Data Sanitization**: User inputs validated before storage
-2. **Sensitive Data**: Passwords and tokens never stored or logged
-3. **Access Control**: RBAC enforced at database level via application logic
-4. **Audit Trail**: All modifications tracked for accountability
-5. **Session Security**: Redis sessions with secure configuration
+### 6. Notification Retention
+- Notifications older than 90 days are automatically purged (daily cron at 02:00 AM Africa/Cairo)
