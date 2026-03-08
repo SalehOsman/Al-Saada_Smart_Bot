@@ -262,7 +262,7 @@ paths:
                 properties:
                   role: string
                   currentMenu: array    # navigation breadcrumb stack
-                  telegramId: bigint
+                  telegramId: string    # BigInt in DB, serialized as string in API payloads
                   locale: string        # ar/en
     put:
       summary: Update user session
@@ -290,7 +290,7 @@ paths:
             schema:
               type: object
               properties:
-                userId: bigint    # telegramId (BigInt PK)
+                userId: string    # telegramId (BigInt in DB, string in API)
                 sectionId: string
                 moduleId: string
       responses:
@@ -316,7 +316,7 @@ paths:
             schema:
               type: object
               properties:
-                targetUserId: bigint    # telegramId (BigInt PK)
+                targetUserId: string    # telegramId (BigInt in DB, string in API)
                 type: string
                 params: object    # i18n template parameters (JSONB)
       responses:

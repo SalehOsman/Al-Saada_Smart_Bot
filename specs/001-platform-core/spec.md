@@ -202,7 +202,7 @@ Super Admin configures bot-wide settings.
   - `015` → WE (Telecom Egypt)
   Regex: `/^(010|011|012|015)\d{8}$/`. Validation is handled by `@al-saada/validators` package (`egyptianPhoneNumber()` in `packages/validators/src/phone.ts`). Error message must be shown via i18n key `errors-validation-invalid-phone`.
 - **FR-013**: System MUST notify all Super Admins about new join requests
-- **FR-014 (Bootstrap Lock - Unified Flow)**: The system MUST implement the bootstrap lock mechanism as part of the unified join conversation flow:
+- **FR-014 (Bootstrap Lock - Unified Flow)**: The system MUST implement the bootstrap lock mechanism as part of the unified join conversation flow. Session state recovery during long flows is supported by the Draft Middleware (Constitution Principle II — Config-Driven):
   1. On every `/start` command, the handler checks: (a) existing user by telegramId → show menu, (b) pending join request → show pending message, (c) otherwise → enter join conversation
   2. Bootstrap eligibility is evaluated INSIDE `joinRequestService.createOrBootstrap()` AFTER data collection is complete. **Design Rationale**: This is an intentional architectural decision — full user data (name, phone, national ID) must be collected before creating the Super Admin account. Evaluating eligibility after data collection does NOT create a race condition because: (a) `telegramId` is checked before any DB write, and (b) `superAdminCount === 0` is atomically verified inside the same transaction. A separate bootstrap conversation would add unnecessary complexity with no security benefit.
   3. The bootstrap check: `COUNT(*) FROM users WHERE role = 'SUPER_ADMIN'` === 0 AND `BigInt(env.INITIAL_SUPER_ADMIN_ID) === telegramId`
