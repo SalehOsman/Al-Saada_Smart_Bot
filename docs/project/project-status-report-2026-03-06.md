@@ -17,7 +17,7 @@
 | **Constitution** | v2.5.0 ✅ | آخر تعديل 2026-03-07 — توضيح حدود "engine code" لـ Zero-Defect Gates |
 | **Methodology** | v1.8.0 ✅ | 12 قاعدة ذهبية — القاعدة 12 أُضيفت بتاريخ 2026-03-06 |
 | **001-platform-core tasks.md** | ~95% مكتمل | Phases 1–9 مكتملة. Phase 10 بها 7 مهام أساسية + 5 اختبارات يدوية |
-| **الاختبارات** | ⚠️ 103 ناجح / 9 فاشل / 112 إجمالي | 80.97% coverage على engine code — 9 اختبارات فاشلة تحتاج تصحيح |
+| **الاختبارات** | ✅ 112/112 ناجح | 80.97% coverage على engine code — جميع الاختبارات تمر بنجاح |
 | **TypeCheck** | ✅ 0 أخطاء | تم التحقق آخر تنفيذ |
 | **Coverage Provider** | ✅ مُثبّت وعامل | @vitest/coverage-v8 — 80.97% coverage محقق |
 | **TypeDoc** | ✅ مُحدّث | typedoc ^0.28.17 متوافق مع TS 5.x |
@@ -50,7 +50,7 @@
 | **T071-A,B,C** | Implement unit tests for engine code (services, middlewares, utils, validators) | HIGH | ✅ مكتمل - 2026-03-07 |
 | **T072** | Verify 80% code coverage | HIGH | ✅ مكتمل - 80.97% (2026-03-07) |
 | **T098** | Verify Platform-First Gate (modules/ empty) | MEDIUM | [ ] لم يُنفّذ بعد |
-| **T114** | Zero-Defect Gate verification (BLOCKING) | 🔴 CRITICAL | ⚠️ 9 اختبارات فاشلة (8 ملفات) — تحتاج تحديث |
+| **T114** | Zero-Defect Gate verification (BLOCKING) | 🔴 CRITICAL | ✅ مكتمل — جميع الاختبارات تمر بنجاح |
 | **T075** | Final commit and tag v0.1.0 | HIGH | [ ] يحتاج إكمال T114 أولاً |
 | **T078** | Load test (k6, 200 concurrent users) | MEDIUM | [ ] لم يُنفّذ بعد |
 | **T093** | Manual test: bootstrap flow ≤30 seconds | LOW | [ ] لم يُنفّذ بعد |
@@ -293,7 +293,7 @@ Coverage:     80.97% (engine code)
 | المهمة | النتيجة |
 |--------|---------|
 | vitest.config.ts | ✅ تم زيادة timeout لاختبارات CLI من 5000ms إلى 30000ms |
-| T114 | ⚠️ جزئياً — تم إصلاح timeout لكن توجد 9 اختبارات فاشلة جديدة |
+| T114 | ✅ تم إصلاح جميع الاختبارات المتأثرة بنجاح وتجاوز الـ Zero-Defect Gate |
 
 ---
 
@@ -305,9 +305,8 @@ Coverage:     80.97% (engine code)
 |--------|--------|----------|-------------|
 | ~~[ ]~~ | ✅ إصلاح timeout في اختبارات scripts/ (module:create/list/remove) | HIGH | 30 دقيقة |
 | ~~[ ]~~ | ✅ T072: تشغيل coverage report والتحقق من 80% | HIGH | 1 ساعة |
-| [ ] | إصلاح الاختبارات الفاشلة الجديدة (9 failures) | 🔴 CRITICAL | 2 ساعة |
-| [ ] | T098: التحقق من أن modules/ فارغ | MEDIUM | 5 دقائق |
-| [ ] | T114: Zero-Defect Gate الكامل | 🔴 CRITICAL | 1 ساعة |
+| ~~[ ]~~ | ✅ إصلاح الاختبارات الفاشلة الجديدة (9 failures) | 🔴 CRITICAL | تم الإصلاح |
+| ~~[ ]~~ | ✅ T114: Zero-Defect Gate الكامل | 🔴 CRITICAL | تم الإجتياز |
 | [ ] | T075: Final commit and tag v0.1.0 | HIGH | 30 دقيقة |
 
 ### [ ] المرحلة الثانية: تنظيف التوثيق (🟠 HIGH)
@@ -356,7 +355,7 @@ Coverage:     80.97% (engine code)
 
 2. ~~**تشغيل تقرير Coverage**~~ — ✅ تم التنفيذ (2026-03-07) — 80.97% coverage محقق على engine code.
 
-3. **إصلاح الاختبارات الفاشلة الجديدة (9 failures)** — بعد إضافة unit tests جديدة، ظهرت 9 اختبارات فاشلة تحتاج تحقيق وتصحيح.
+3. ~~**إصلاح الاختبارات الفاشلة الجديدة (9 failures)**~~ — ✅ تم إصلاح جميع الاختبارات بنجاح.
 
 4. **إيقاف ادعاء "مكتمل" لـ Layer 1** في README حتى يُغلق Phase 10 ويُوسم v0.1.0 رسمياً.
 
