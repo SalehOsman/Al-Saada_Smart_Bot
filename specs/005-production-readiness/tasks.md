@@ -13,9 +13,9 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Install production dependencies: `@sentry/node`, `@grammyjs/ratelimiter`, `@grammyjs/auto-retry`, `node-cron`
-- [ ] T002 [P] Update `.env.example` with SENTRY_DSN, BACKUP_*, and RATE_LIMIT_* configurations
-- [ ] T003 [P] Create directory structure: `packages/core/src/bot/monitoring/`, `packages/core/src/bot/middleware/`, `packages/core/src/bot/services/`
+- [X] T001 Install production dependencies: `@sentry/node`, `@grammyjs/ratelimiter`, `@grammyjs/auto-retry`, `node-cron`
+- [X] T002 [P] Update `.env.example` with SENTRY_DSN, BACKUP_*, and RATE_LIMIT_* configurations
+- [X] T003 [P] Create directory structure: `packages/core/src/bot/monitoring/`, `packages/core/src/bot/middleware/`, `packages/core/src/bot/services/`
 
 ---
 
