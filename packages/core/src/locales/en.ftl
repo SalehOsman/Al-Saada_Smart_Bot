@@ -249,7 +249,35 @@ module-kit-draft-expired = ⚠️ Sorry, the draft has expired. Starting fresh.
 module-kit-max-retries-exceeded = ⚠️ Maximum retry attempts exceeded. Process cancelled.
 module-kit-unauthorized-action = 🚫 Sorry, you don't have permission to perform this action.
 
-# Profile View Additions
+# Production Readiness
+# Backups
+backup-manual-trigger = 🛠️ Manual backup triggered...
+backup-success = ✅ Backup created successfully!
+    File: { $fileName }
+    Size: { $fileSize }
+backup-failed = ❌ Backup creation failed.
+    Reason: { $error }
+backup-list-title = 📜 Available Backups:
+backup-item = 📅 { $date } | 💾 { $size }
+    ID: `{ $id }`
+backup-restore-confirm-title = ⚠️ Confirm Data Restore
+backup-restore-confirm-msg = Are you sure you want to restore backup `{ $id }`?
+    All current data will be overwritten. This action cannot be undone.
+backup-restore-in-progress = ⏳ Restoring data... You will be notified when finished.
+backup-restore-success-alert = ✅ Data restored successfully!
+backup-restore-failed-alert = ❌ Data restore failed.
+
+# Error Monitoring
+error-alert-super-admin = ⚠️ *System Error Alert*
+    Type: { $type }
+    Message: { $message }
+    Location: { $location }
+
+# Rate Limiting
+error-rate-limit = ⚠️ You have exceeded the request limit. Please wait { $seconds } seconds before trying again.
+
+# Auto Retry
+error-retry-attempt = ⏳ Request failed due to a transient issue. Retrying ({ $attempt }/{ $maxAttempts })...
 confirmation-deactivate-user = ⚠️ Are you sure you want to deactivate this user's account?
 confirmation-activate-user = ⚠️ Are you sure you want to activate this user's account?
 confirmation-cancelled = ✅ Confirmation cancelled. No changes were made.

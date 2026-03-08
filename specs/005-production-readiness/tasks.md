@@ -23,10 +23,10 @@
 
 **Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented
 
-- [ ] T004 Add `BackupMetadata` model and `BackupStatus` enum to `prisma/schema/platform.prisma`
-- [ ] T005 [P] Implement PII filtering utility in `packages/core/src/bot/utils/pii-filter.ts`
-- [ ] T006 [P] Add i18n keys for production readiness in `packages/core/src/locales/ar.ftl` and `en.ftl` (Arabic/English)
-- [ ] T007 Run database migrations to apply `BackupMetadata` table
+- [X] T004 Add `BackupMetadata` model and `BackupStatus` enum to `prisma/schema/platform.prisma`
+- [X] T005 [P] Implement PII filtering utility in `packages/core/src/bot/utils/pii-filter.ts`
+- [X] T006 [P] Add i18n keys for production readiness in `packages/core/src/locales/ar.ftl` and `en.ftl` (Arabic/English)
+- [X] T007 Run database migrations to apply `BackupMetadata` table
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
