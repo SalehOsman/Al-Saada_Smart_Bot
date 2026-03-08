@@ -19,6 +19,7 @@ import { userActionsHandler, usersHandler } from './handlers/users'
 import { approvalsHandler } from './handlers/approvals'
 import { fallbackHandler } from './handlers/fallback'
 import { joinConversation } from './conversations/join'
+import { backupActionsHandler, backupHandler, backupRestoreTextHandler, backupsHandler } from './handlers/backup'
 
 import { editSectionActionHandler, sectionSetParentHandler, sectionsCallbackHandler } from './handlers/sections'
 
@@ -124,6 +125,8 @@ bot.command('sections', async (ctx) => {
 bot.command('maintenance', maintenanceHandler)
 bot.command('settings', settingsHandler)
 bot.command('audit', auditHandler)
+bot.command('backup', backupHandler)
+bot.command('backups', backupsHandler)
 bot.command('cancel', async (ctx) => {
   await ctx.reply(ctx.t('module-kit-cancelled'))
   const { menuHandler } = await import('./handlers/menu')
@@ -180,6 +183,9 @@ bot.callbackQuery(/^settings:/, settingsActionsHandler)
 // Audit callback queries
 bot.callbackQuery(/^audit:/, auditActionsHandler)
 
+// Backup callback queries
+bot.callbackQuery(/^backup:/, backupActionsHandler)
+
 // Section edit actions
 bot.callbackQuery(/^section:edit:/, editSectionActionHandler)
 
@@ -189,11 +195,10 @@ bot.callbackQuery(/^section:set_parent:/, sectionSetParentHandler)
 // Section create/update text handler
 bot.on('message:text', async (ctx) => {
   const { sectionCreateTextHandler } = await import('./handlers/sections')
-  const { settingsBackupRestoreTextHandler } = await import('./handlers/settings')
 
   // Try backup restore handler first if there's a pending restore
   if (ctx.session.pendingRestore) {
-    return settingsBackupRestoreTextHandler(ctx)
+    return backupRestoreTextHandler(ctx)
   }
 
   await sectionCreateTextHandler(ctx)

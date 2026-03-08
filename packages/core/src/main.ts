@@ -6,12 +6,14 @@ import logger from './utils/logger'
 import { handleGracefulShutdown } from './utils/shutdown'
 import './workers/notification' // Start the notification worker
 import { startNotificationCleanup } from './cron/notification-cleanup'
+import { startBackupSchedule } from './cron/backup-schedule'
 
 async function main() {
   logger.info('Starting Al-Saada Smart Bot...')
 
   // Start cron jobs
   startNotificationCleanup()
+  startBackupSchedule()
 
   // Register graceful shutdown handler
   await handleGracefulShutdown(bot)

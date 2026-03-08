@@ -40,10 +40,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Create unit tests for `BackupService` in `packages/core/tests/services/backup.service.test.ts` (Principle IV)
-- [ ] T009 [US1] Implement `BackupService` in `packages/core/src/bot/services/backup.service.ts` (pg_dump, AES-256-GCM encryption)
-- [ ] T010 [US1] Implement SUPER_ADMIN backup commands (`/backup`, `/backups`, `/restore`) in `packages/core/src/bot/handlers/backup.ts` (with two-step interactive approval for restore)
-- [ ] T011 [US1] Configure daily backup scheduling using `node-cron` in `packages/core/src/index.ts` (resolves I1)
+- [X] T008 [US1] Create unit tests for `BackupService` in `packages/core/tests/services/backup.service.test.ts` (Principle IV)
+- [X] T009 [US1] Implement `BackupService` in `packages/core/src/bot/services/backup.service.ts` (pg_dump, AES-256-GCM encryption)
+- [X] T010 [US1] Implement SUPER_ADMIN backup commands (`/backup`, `/backups`, `/restore`) in `packages/core/src/bot/handlers/backup.ts` (with two-step interactive approval for restore)
+- [X] T011 [US1] Configure daily backup scheduling using `node-cron` in `packages/core/src/index.ts` (resolves I1)
 
 **Checkpoint**: User Story 1 is functional and testable independently.
 

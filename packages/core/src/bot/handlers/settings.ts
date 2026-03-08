@@ -1,7 +1,7 @@
 import { InlineKeyboard } from 'grammy'
 import type { BotContext } from '../../types/context'
 import { settingsService } from '../../services/settings'
-import { backupService } from '../../services/backup'
+import { backupService } from '../services/backup.service'
 import { maintenanceService } from '../../services/maintenance'
 import logger from '../../utils/logger'
 import { replyOrEdit } from '../utils/reply'
@@ -114,37 +114,27 @@ export async function settingsActionsHandler(ctx: BotContext) {
 
   if (data === 'settings:backup:create') {
     await ctx.answerCallbackQuery({ text: ctx.t('settings-backup-creating') })
-    const { filename, size } = await backupService.createBackup(userId)
-    await ctx.reply(ctx.t('settings-backup-created', { filename, size }))
+    const backup = await backupService.createBackup('manual', ctx.from!.id.toString())
+    const size = (Number(backup.fileSize) / (1024 * 1024)).toFixed(2) + ' MB'
+    await ctx.reply(ctx.t('settings-backup-created', { filename: backup.fileName, size }))
     return settingsHandler(ctx)
   }
 
   if (data === 'settings:backup:history') {
-    const history = await backupService.getBackupHistory()
+    const history = await backupService.listBackups()
     if (history.length === 0) {
       await ctx.answerCallbackQuery({ text: ctx.t('settings-backup-history-empty') })
       return
     }
 
     const keyboard = new InlineKeyboard()
-    for (const backup of history) {
-      keyboard.text(`📥 ${backup.filename} (${backup.size})`, `settings:backup:restore:${backup.filename}`).row()
+    for (const backup of history.slice(0, 10)) {
+      const size = (Number(backup.fileSize) / (1024 * 1024)).toFixed(2) + ' MB'
+      keyboard.text(`📥 ${backup.fileName} (${size})`, `backup:restore_init:${backup.id}`).row()
     }
     keyboard.text(ctx.t('button-back-to-sections'), 'settings:backup')
 
     await ctx.editMessageText(ctx.t('settings-backup-history'), { reply_markup: keyboard })
-    return
-  }
-
-  if (data.startsWith('settings:backup:restore:')) {
-    const filename = data.replace('settings:backup:restore:', '')
-    ctx.session.pendingRestore = filename
-
-    const keyword = ctx.t('settings-backup-restore-confirm-keyword')
-    await ctx.reply(ctx.t('settings-backup-restore-confirm', { keyword }), {
-      reply_markup: { force_reply: true },
-    })
-    await ctx.answerCallbackQuery()
     return
   }
 
@@ -172,38 +162,6 @@ export async function settingsActionsHandler(ctx: BotContext) {
 
   if (data === 'settings:main') {
     return settingsHandler(ctx)
-  }
-}
-
-/**
- * Handle backup restore confirmation from text input.
- */
-export async function settingsBackupRestoreTextHandler(ctx: BotContext) {
-  if (!ctx.session.pendingRestore || !ctx.message?.text)
-    return
-
-  const filename = ctx.session.pendingRestore
-  const input = ctx.message.text.trim()
-  const keyword = ctx.t('settings-backup-restore-confirm-keyword')
-  const userId = BigInt(ctx.from!.id)
-
-  if (input === keyword) {
-    try {
-      await ctx.reply(ctx.t('settings-backup-restoring'))
-      await backupService.restoreFromBackup(filename, userId)
-      await ctx.reply(ctx.t('settings-backup-restore-success'))
-      // In a real environment, you might want to restart process here or clear sessions
-      ctx.session.pendingRestore = undefined
-    }
-    catch (error) {
-      logger.error('Restore failed:', error)
-      await ctx.reply(ctx.t('settings-backup-restore-fail'))
-      ctx.session.pendingRestore = undefined
-    }
-  }
-  else {
-    await ctx.reply(ctx.t('settings-backup-restore-fail'))
-    ctx.session.pendingRestore = undefined
   }
 }
 
