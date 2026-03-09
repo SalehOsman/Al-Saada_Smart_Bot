@@ -1,8 +1,23 @@
+/**
+ * @file start.ts
+ * @module bot/handlers/start
+ *
+ * Handler for the /start command.
+ */
+
 import { prisma } from '../../database/prisma'
 import logger from '../../utils/logger'
 import type { BotContext } from '../../types/context'
 import { menuHandler } from './menu'
 
+/**
+ * Main entry point for the bot.
+ * - If user exists: Shows the main menu.
+ * - If user has a pending request: Shows a "pending" status message.
+ * - If new user: Starts the onboarding (join) conversation.
+ *
+ * @param ctx - The bot context
+ */
 export async function startHandler(ctx: BotContext) {
   const telegramId = BigInt(ctx.from?.id || 0)
   if (telegramId === 0n)

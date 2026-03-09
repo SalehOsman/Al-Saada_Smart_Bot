@@ -90,7 +90,16 @@ export interface AdminNotificationPayload {
 
 /**
  * Writes a notification record for every active Super Admin and Admin.
- * Uses notificationService.queueBulkNotifications to add to BullMQ.
+ * This function handles the distribution of administrative alerts (e.g., new join requests,
+ * system errors) to all authorized personnel by queuing bulk notification jobs.
+ *
+ * @param payload - The notification type and optional template parameters
+ *
+ * @example
+ * await notifyAdmins({
+ *   type: 'NEW_JOIN_REQUEST',
+ *   params: { userId: '123456789', name: 'Al-Saada Bot' }
+ * })
  */
 export async function notifyAdmins(payload: AdminNotificationPayload): Promise<void> {
   const admins = await prisma.user.findMany({

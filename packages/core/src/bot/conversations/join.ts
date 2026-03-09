@@ -41,6 +41,13 @@ import {
   notifyAdmins,
 } from '../utils/formatters'
 
+/**
+ * The join request conversation flow.
+ * Guides users through submitting a request or performs initial system bootstrap (FR-001).
+ *
+ * @param conversation - The grammY conversation handle
+ * @param ctx - The bot context
+ */
 export async function joinConversation(
   conversation: Conversation<ConversationFlavor & BotContext>,
   ctx: BotContext,

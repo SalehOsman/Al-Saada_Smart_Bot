@@ -26,8 +26,14 @@ function getPrismaInstance(): PrismaClient {
   return prismaInstance
 }
 
+/**
+ * Prisma singleton instance for database access.
+ */
 export const prisma = getPrismaInstance()
 
+/**
+ * Gracefully disconnects the Prisma client.
+ */
 export async function disconnect(): Promise<void> {
   if (prismaInstance) {
     await prismaInstance.$disconnect()

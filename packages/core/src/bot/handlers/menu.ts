@@ -1,3 +1,10 @@
+/**
+ * @file menu.ts
+ * @module bot/handlers/menu
+ *
+ * Role-based main menu handler and module filtering logic.
+ */
+
 import type { Prisma, Role } from '@prisma/client'
 import type { BotContext } from '../../types/context'
 import { prisma } from '../../database/prisma'
@@ -11,7 +18,11 @@ import { replyOrEdit } from '../utils/reply'
 type MenuUser = Prisma.UserGetPayload<{ include: { adminScopes: true } }>
 
 /**
- * Handles different role-based menu displays
+ * Entry point for the main menu.
+ * Fetches the user's role and scopes, filters authorized modules,
+ * and renders a dynamic inline keyboard menu.
+ *
+ * @param ctx - The bot context
  */
 export async function menuHandler(ctx: BotContext) {
   const telegramId = BigInt(ctx.from?.id || 0)

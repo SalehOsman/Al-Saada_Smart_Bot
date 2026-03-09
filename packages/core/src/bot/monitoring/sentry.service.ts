@@ -1,8 +1,19 @@
+/**
+ * @file sentry.service.ts
+ * @module bot/monitoring/sentry.service
+ *
+ * Centralized error tracking service using Sentry.
+ */
+
 import * as Sentry from '@sentry/node'
 import { env } from '../../config/env'
 import logger from '../../utils/logger'
 import { filterPIIObject } from '../utils/pii-filter'
 
+/**
+ * Service to manage Sentry initialization and exception capturing.
+ * Integrated with PII filtering (FR-003) to ensure sensitive data is redacted before being sent.
+ */
 export class SentryService {
   private isEnabled: boolean = false
 

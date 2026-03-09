@@ -1,6 +1,18 @@
+/**
+ * @file module-list.ts
+ * @module scripts/module-list
+ *
+ * Developer CLI tool to list and audit currently active bot modules.
+ * Scans the `modules/` directory and validates `config.ts` existence and metadata.
+ */
+
 import fs from 'node:fs'
 import path from 'node:path'
 
+/**
+ * Main command entry point for listing modules.
+ * Displays a formatted table with module slugs, names, sections, icons, and configuration status.
+ */
 async function main() {
   // eslint-disable-next-line node/prefer-global/process
   const modulesDir = path.join(process.cwd(), 'modules')

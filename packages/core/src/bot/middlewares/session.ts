@@ -1,3 +1,10 @@
+/**
+ * @file session.ts
+ * @module bot/middlewares/session
+ *
+ * Session management and storage adapters for grammY.
+ */
+
 import { session } from 'grammy'
 import type { Middleware, StorageAdapter } from 'grammy'
 
@@ -8,7 +15,11 @@ import logger from '../../utils/logger'
 import { prisma } from '../../database/prisma'
 import { auditService } from '../../services/audit-logs'
 
-// Default session data
+/**
+ * Returns the default session data for new users or visitors.
+ *
+ * @returns Initialized SessionData object
+ */
 export function defaultSession(): SessionData {
   return {
     userId: undefined,
@@ -27,15 +38,28 @@ export function defaultSession(): SessionData {
 export class InMemoryStorage implements StorageAdapter<SessionData> {
   private storage = new Map<string, string>()
 
+  /**
+   * Reads session data from memory.
+   * @param key - The session key
+   */
   async read(key: string): Promise<SessionData | undefined> {
     const value = this.storage.get(key)
     return value ? JSON.parse(value) : undefined
   }
 
+  /**
+   * Writes session data to memory.
+   * @param key - The session key
+   * @param value - The session data to write
+   */
   async write(key: string, value: SessionData): Promise<void> {
     this.storage.set(key, JSON.stringify(value))
   }
 
+  /**
+   * Deletes session data from memory.
+   * @param key - The session key
+   */
   async delete(key: string): Promise<void> {
     this.storage.delete(key)
   }
@@ -51,6 +75,10 @@ export class ResilientRedisStorage implements StorageAdapter<SessionData> {
   private maxBackoff = 30000
   private reconnectTimeout: NodeJS.Timeout | null = null
 
+  /**
+   * Reads session data from Redis with memory fallback.
+   * @param key - The session key
+   */
   async read(key: string): Promise<SessionData | undefined> {
     if (this.isRedisAvailable) {
       try {
@@ -64,6 +92,11 @@ export class ResilientRedisStorage implements StorageAdapter<SessionData> {
     return this.inMemoryStorage.read(key)
   }
 
+  /**
+   * Writes session data to Redis with memory fallback.
+   * @param key - The session key
+   * @param value - The session data to write
+   */
   async write(key: string, value: SessionData): Promise<void> {
     if (this.isRedisAvailable) {
       try {
@@ -77,6 +110,10 @@ export class ResilientRedisStorage implements StorageAdapter<SessionData> {
     await this.inMemoryStorage.write(key, value)
   }
 
+  /**
+   * Deletes session data from Redis with memory fallback.
+   * @param key - The session key
+   */
   async delete(key: string): Promise<void> {
     if (this.isRedisAvailable) {
       try {
@@ -119,15 +156,19 @@ export class ResilientRedisStorage implements StorageAdapter<SessionData> {
   }
 }
 
-// Create session middleware using resilient storage
+/**
+ * The main session middleware configured with resilient Redis storage.
+ * Must be registered before any middleware that relies on `ctx.session`.
+ */
 export const sessionMiddleware = session({
   initial: defaultSession,
   storage: new ResilientRedisStorage(),
 })
 
 /**
- * Lazy session tracking middleware (FR-026 + T066-B).
- * Detects USER_LOGIN events when a session is missing but the user exists in DB.
+ * Lazy session tracking middleware (FR-026).
+ * Detects implicit logout/login events for returning users whose sessions have expired.
+ * Also maintains the `lastActiveAt` timestamp for all active users.
  */
 export const lazySessionMiddleware: Middleware<BotContext> = async (ctx, next) => {
   // Only process if it's a message/callback from a user and they don't have a userId in session
@@ -166,7 +207,7 @@ export const lazySessionMiddleware: Middleware<BotContext> = async (ctx, next) =
       where: { telegramId: BigInt(ctx.from.id) },
       data: { lastActiveAt: new Date() },
       select: { telegramId: true }, // Minimal select for performance
-    }).catch((e) => {
+    }).catch((e: Error | any) => {
       // Ignore errors if the user doesn't actually exist in the DB yet (e.g., during join flow)
       logger.debug({ err: e }, 'Failed to update lastActiveAt')
     })

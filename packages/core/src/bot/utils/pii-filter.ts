@@ -1,8 +1,12 @@
 /**
- * PII (Personally Identifiable Information) Filter Utility
+ * @file pii-filter.ts
+ * @module bot/utils/pii-filter
+ *
+ * PII (Personally Identifiable Information) Filter Utility.
  *
  * This utility provides functions to mask or remove sensitive information
  * from logs and error reports before sending them to external services like Sentry.
+ * It specifically targets Egyptian data patterns like National IDs and phone numbers.
  */
 
 /**
@@ -22,7 +26,7 @@ export const PII_PATTERNS = {
 /**
  * Mask sensitive data in a string
  *
- * @param text The text to filter
+ * @param text - The text to filter
  * @returns Filtered text with sensitive data masked
  */
 export function maskPII(text: string): string {
@@ -51,10 +55,14 @@ export function maskPII(text: string): string {
 }
 
 /**
- * Deeply filter PII from an object or array
+ * Deeply filter PII from an object or array recursively.
+ * Scans for known PII keys (phone, email, etc.) and masks their values.
  *
- * @param data The data object to filter
- * @returns A new object with all PII masked
+ * @param data - The data object or array to filter
+ * @returns A new object/array with all PII masked
+ *
+ * @example
+ * const filtered = filterPIIObject({ fullName: 'Saleh Osman', phone: '01012345678' })
  */
 export function filterPIIObject<T>(data: T): T {
   if (data === null || data === undefined) {

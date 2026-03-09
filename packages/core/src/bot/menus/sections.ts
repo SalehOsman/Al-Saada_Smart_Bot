@@ -1,3 +1,11 @@
+/**
+ * @file sections.ts
+ * @module bot/menus/sections
+ *
+ * Section menu display utilities.
+ * Handles hierarchical navigation between main sections and sub-sections (FR-019).
+ */
+
 import type { BotContext } from '../../types/context'
 import { prisma } from '../../database/prisma'
 import logger from '../../utils/logger'
@@ -5,13 +13,11 @@ import { moduleLoader } from '../module-loader'
 import { replyOrEdit } from '../utils/reply'
 
 /**
- * Section menu display utilities
- * Per FR-019: hierarchical navigation with main sections and sub-sections
- */
-
-/**
- * Display main sections menu (Super Admin or scoped ADMIN)
- * Shows only main sections (parentId = null)
+ * Displays the main sections menu.
+ * Shows only top-level sections (where parentId is null) and provides an
+ * interface for Super Admins to add new sections.
+ *
+ * @param ctx - The bot context
  */
 export async function showMainSectionsMenu(ctx: BotContext): Promise<void> {
   const sections = await prisma.section.findMany({

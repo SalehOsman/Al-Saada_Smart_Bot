@@ -1,8 +1,25 @@
+/**
+ * @file module-remove.ts
+ * @module scripts/module-remove
+ *
+ * Developer CLI tool for safely removing bot modules.
+ * Deletes module directories and associated Prisma schema snippets.
+ */
+
 import fs from 'node:fs'
 import path from 'node:path'
 import { execSync } from 'node:child_process'
 import inquirer from 'inquirer'
 
+/**
+ * Main command entry point for module removal.
+ * Requires explicit confirmation by typing the module slug.
+ *
+ * @example
+ * ```bash
+ * npm run module:remove my-feature
+ * ```
+ */
 async function main() {
   // eslint-disable-next-line node/prefer-global/process
   const slugArg = process.argv[2]

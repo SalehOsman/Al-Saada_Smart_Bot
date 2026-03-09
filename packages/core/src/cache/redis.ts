@@ -27,15 +27,22 @@ function getRedisInstance(): Redis {
   return redisInstance
 }
 
-// Export the Redis singleton instance
+/**
+ * Redis singleton instance for general application cache.
+ */
 export const redis = getRedisInstance()
 
-// Separate Redis connection for BullMQ (requires maxRetriesPerRequest: null)
+/**
+ * Separate Redis connection for BullMQ.
+ * Configured with `maxRetriesPerRequest: null` as required by BullMQ.
+ */
 export const bullmqRedis = new Redis(env.REDIS_URL, {
   maxRetriesPerRequest: null,
 })
 
-// Function for graceful shutdown
+/**
+ * Gracefully disconnects all Redis instances.
+ */
 export async function disconnect(): Promise<void> {
   if (redisInstance) {
     await redisInstance.quit()

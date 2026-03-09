@@ -1,3 +1,11 @@
+/**
+ * @file users.ts
+ * @module bot/handlers/users
+ *
+ * User management handler for Super Admin.
+ * Provides functionality to list, view, activate/deactivate users, and manage roles/scopes.
+ */
+
 import { InlineKeyboard } from 'grammy'
 import { AuditAction, Role } from '@prisma/client'
 import { prisma } from '../../database/prisma'
@@ -10,8 +18,9 @@ import { replyOrEdit } from '../utils/reply'
 import { formatArabicDate, formatArabicDateTime, truncateText } from '../utils/formatters'
 
 /**
- * Super Admin user management handler (/users)
- * US1, US2, FR-017
+ * Lists the most recent users with role/status overview.
+ *
+ * @param ctx - The bot context
  */
 export async function usersHandler(ctx: BotContext) {
   const users = await prisma.user.findMany({

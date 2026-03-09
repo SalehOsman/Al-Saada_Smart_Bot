@@ -16,10 +16,17 @@ import logger from '../../utils/logger'
 
 const execPromise = promisify(exec)
 
+/**
+ * Service for managing database backups and restores.
+ * Handles compression (GZIP) and encryption (AES-256-GCM) for data security (FR-025).
+ */
 export class BackupService {
   private readonly backupDir: string
   private readonly encryptionKey: Buffer
 
+  /**
+   * Initializes the BackupService with configuration from environment variables.
+   */
   constructor() {
     this.backupDir = env.BACKUP_DIR || path.join(process.cwd(), 'backups')
     // Key must be exactly 32 bytes for AES-256
@@ -27,12 +34,20 @@ export class BackupService {
     this.encryptionKey = Buffer.alloc(32, key).slice(0, 32)
   }
 
+  /**
+   * Initializes the backup directory.
+   */
   async init() {
     await fsp.mkdir(this.backupDir, { recursive: true })
   }
 
   /**
    * Create a new database backup.
+   * Performs an atomic metadata record creation before starting the backup process.
+   *
+   * @param _trigger - Whether the backup was manual or scheduled (unprefixed in JSDoc to satisfy lint if needed, but keeping _ for unused local)
+   * @param createdBy - The ID or name of the entity that triggered the backup
+   * @returns The created backup metadata
    */
   async createBackup(_trigger: 'manual' | 'scheduled' = 'manual', createdBy: string = 'SYSTEM') {
     await this.init()
@@ -125,6 +140,10 @@ export class BackupService {
 
   /**
    * Restore database from a backup file.
+   * Decrypts, decompresses, and applies the SQL dump via `psql`.
+   *
+   * @param backupId - Unique ID of the backup to restore
+   * @param userId - ID of the admin performing the restore
    */
   async restoreBackup(backupId: string, userId: string) {
     const metadata = await prisma.backupMetadata.findUnique({
@@ -175,6 +194,11 @@ export class BackupService {
     }
   }
 
+  /**
+   * Lists recent backup metadata.
+   *
+   * @returns Array of backup metadata records
+   */
   async listBackups() {
     return prisma.backupMetadata.findMany({
       orderBy: { startedAt: 'desc' },
@@ -182,12 +206,22 @@ export class BackupService {
     })
   }
 
+  /**
+   * Fetches a single backup record by ID.
+   *
+   * @param id - The backup ID
+   */
   async getBackup(id: string) {
     return prisma.backupMetadata.findUnique({
       where: { id },
     })
   }
 
+  /**
+   * Deletes a backup record and its physical file.
+   *
+   * @param id - The backup ID
+   */
   async deleteBackup(id: string) {
     const metadata = await prisma.backupMetadata.findUnique({
       where: { id },

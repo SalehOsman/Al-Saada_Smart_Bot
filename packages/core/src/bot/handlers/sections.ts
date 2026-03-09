@@ -1,3 +1,11 @@
+/**
+ * @file sections.ts
+ * @module bot/handlers/sections
+ *
+ * Section management handler for Super Admin.
+ * Handles the creation, editing, deletion, and visibility of 2-level sections (FR-018).
+ */
+
 import { InlineKeyboard } from 'grammy'
 import { AuditAction } from '@prisma/client'
 import type { BotContext } from '../../types/context'
@@ -13,12 +21,11 @@ import {
 } from '../menus/sections'
 
 /**
- * Section management handler for Super Admin
- * Per FR-018: create, edit, delete, enable/disable sections with 2-level hierarchy
- */
-
-/**
- * Handle section management callback queries
+ * Main callback query handler for section management.
+ * Dispatches actions like view, add, edit, delete, and toggle based on callback data format:
+ * "section:ACTION:ID[:EXTRA]"
+ *
+ * @param ctx - The bot context
  */
 export async function sectionsCallbackHandler(ctx: BotContext): Promise<void> {
   const query = ctx.callbackQuery?.data

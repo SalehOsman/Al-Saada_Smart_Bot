@@ -1,3 +1,10 @@
+/**
+ * @file error.ts
+ * @module bot/middlewares/error
+ *
+ * Global error handling middleware for the grammY bot.
+ */
+
 import type { BotError } from 'grammy'
 import * as Sentry from '@sentry/node'
 import type { BotContext } from '../../types/context'
@@ -5,7 +12,12 @@ import logger from '../../utils/logger'
 import { sentryService } from '../monitoring/sentry.service'
 import { errorAlertService } from '../monitoring/error-alert.service'
 
-// Error handling middleware for grammY
+/**
+ * Handles all uncaught errors within the bot's middleware stack.
+ * Performs logging, Sentry reporting (FR-001), admin alerts (FR-006), and user notification.
+ *
+ * @param err - The bot error object containing context and the original error
+ */
 export async function errorHandler(err: BotError<BotContext>) {
   const ctx = err.ctx
   const e = err.error instanceof Error ? err.error : new Error(String(err.error))

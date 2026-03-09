@@ -4,24 +4,8 @@
  *
  * Shared conversation utilities used across ALL bot flows.
  *
- * Helpers:
- * - createMessageTracker / trackMessage / deleteTrackedMessages  â€” cleanup flow messages
- * - waitForTextOrCancel   â€” prompt + cancel button, returns text or null
- * - waitForSkippable      â€” prompt + skip + cancel buttons, returns text | '__skip__' | null
- * - waitForConfirm        â€” summary + confirm/cancel buttons, returns boolean
- * - sendCancelled         â€” unified cancellation message with optional retry button
- *
- * Usage pattern:
- * ```ts
- * const tracker = createMessageTracker()
- * const wait = (prompt: string) => waitForTextOrCancel(conversation, ctx, prompt, { tracker })
- *
- * const name = await wait('What is your name?')
- * if (name === null) { await deleteTrackedMessages(ctx, tracker); await sendCancelled(ctx, ...); return }
- *
- * await deleteTrackedMessages(ctx, tracker)
- * await ctx.reply('Final result')
- * ```
+ * These helpers provide a consistent interface for message tracking, deletion,
+ * and user input collection using grammY conversations.
  */
 
 import type { Conversation, ConversationFlavor } from '@grammyjs/conversations'
@@ -92,7 +76,7 @@ export async function deleteTrackedMessages(
   if (!chatId || tracker.ids.length === 0)
     return
   await Promise.allSettled(
-    tracker.ids.map(id => ctx.api.deleteMessage(chatId, id).catch(() => {})),
+    tracker.ids.map(id => ctx.api.deleteMessage(chatId, id).catch(() => { })),
   )
   tracker.ids = []
 }

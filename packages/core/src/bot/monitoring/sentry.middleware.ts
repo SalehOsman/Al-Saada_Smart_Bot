@@ -1,9 +1,20 @@
+/**
+ * @file sentry.middleware.ts
+ * @module bot/monitoring/sentry.middleware
+ *
+ * GrammY middleware for Sentry error tracking.
+ */
+
 import type { NextFunction } from 'grammy'
 import * as Sentry from '@sentry/node'
 import type { BotContext } from '../../types/context'
 
 /**
- * Middleware to enrich Sentry scope with user and context information
+ * Middleware to enrich Sentry scope with user and context information.
+ * Captures Telegram user ID, chat ID, and update type for better error reporting.
+ *
+ * @param ctx - The bot context
+ * @param next - The next middleware in the stack
  */
 export async function sentryMiddleware(ctx: BotContext, next: NextFunction) {
   // Set user context

@@ -1,24 +1,22 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "entryPoints": [
-    "packages/module-kit/src/index.ts",
-    "packages/core/src/services/audit-logs.ts",
-    "packages/core/src/services/notifications.ts",
-    "packages/core/src/bot/utils/index.ts",
-    "packages/core/src/bot/module-loader.ts",
-    "packages/core/src/bot/middleware/draft.ts",
-    "packages/validators/src/index.ts"
+    "packages/core/src/services",
+    "packages/core/src/bot/middlewares",
+    "packages/core/src/database/prisma.ts",
+    "packages/module-kit/src",
+    "packages/validators/src"
   ],
+  "entryPointStrategy": "expand",
   "out": "docs/api",
   "name": "Al-Saada Smart Bot — API Reference",
   "readme": "none",
-  "excludePrivate": false,
-  "excludeInternal": false,
+  "excludePrivate": true,
+  "excludeInternal": true,
   "includeVersion": true,
-  "categorizeByGroup": true,
-  "sort": [
-    "source-order"
+  "plugin": [
+    "typedoc-plugin-markdown"
   ],
-  "plugin": [],
+  "hideGenerator": true,
   "tsconfig": "tsconfig.json"
 }

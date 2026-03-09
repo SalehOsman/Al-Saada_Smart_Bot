@@ -1,12 +1,26 @@
+/**
+ * @file reply.ts
+ * @module bot/utils/reply
+ *
+ * Unified response helpers for the telegram bot.
+ */
+
 import type { InlineKeyboardMarkup } from 'grammy/types'
 import type { BotContext } from '../../types/context'
 
 /**
- * Helper to seamlessly transition between menus.
+ * Helper to seamlessly transition between menus by either editing an existing message
+ * (if triggered via callback query) or sending a new one (if triggered via command).
  *
- * If the user clicked an inline button (callbackQuery exists),
- * it edits the current message to prevent chat clutter.
- * If the user typed a command (like /menu), it sends a new message.
+ * This prevent chat clutter by updating the current interface instead of sending
+ * repetitive messages during menu navigation.
+ *
+ * @param ctx - The bot context
+ * @param text - The message text (HTML supported)
+ * @param replyMarkup - Optional inline keyboard markup
+ *
+ * @example
+ * await replyOrEdit(ctx, ctx.t('menu-main'), mainKeyboard)
  */
 export async function replyOrEdit(
   ctx: BotContext,

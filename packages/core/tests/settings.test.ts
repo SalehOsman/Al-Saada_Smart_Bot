@@ -290,7 +290,6 @@ describe('settings handler', () => {
       vi.mocked(redis.smembers).mockResolvedValue(['JOIN_REQUEST_NEW'])
 
       // Mock the toggleNotificationType to return true
-      const originalToggle = settingsService.toggleNotificationType
       vi.spyOn(settingsService, 'toggleNotificationType').mockResolvedValue(true)
 
       const mockCtx = createMockCtx()
@@ -306,9 +305,7 @@ describe('settings handler', () => {
       })
 
       // Restore original
-      if (originalToggle) {
-        vi.mocked(settingsService.toggleNotificationType).mockRestore()
-      }
+      vi.mocked(settingsService.toggleNotificationType).mockRestore()
     })
 
     it('should toggle individual notification from active to inactive', async () => {
@@ -317,7 +314,6 @@ describe('settings handler', () => {
       vi.mocked(redis.smembers).mockResolvedValue([])
 
       // Mock the toggleNotificationType to return false
-      const originalToggle = settingsService.toggleNotificationType
       vi.spyOn(settingsService, 'toggleNotificationType').mockResolvedValue(false)
 
       const mockCtx = createMockCtx()
@@ -333,9 +329,7 @@ describe('settings handler', () => {
       })
 
       // Restore original
-      if (originalToggle) {
-        vi.mocked(settingsService.toggleNotificationType).mockRestore()
-      }
+      vi.mocked(settingsService.toggleNotificationType).mockRestore()
     })
 
     it('should handle kebab-case to snake-case conversion for notification types', async () => {
@@ -344,7 +338,6 @@ describe('settings handler', () => {
       vi.mocked(redis.smembers).mockResolvedValue(['MAINTENANCE_ON'])
 
       // Mock the toggleNotificationType to return true
-      const originalToggle = settingsService.toggleNotificationType
       vi.spyOn(settingsService, 'toggleNotificationType').mockResolvedValue(true)
 
       const mockCtx = createMockCtx()
@@ -354,9 +347,7 @@ describe('settings handler', () => {
       expect(settingsService.toggleNotificationType).toHaveBeenCalledWith('MAINTENANCE_ON')
 
       // Restore original
-      if (originalToggle) {
-        vi.mocked(settingsService.toggleNotificationType).mockRestore()
-      }
+      vi.mocked(settingsService.toggleNotificationType).mockRestore()
     })
 
     it('should refresh the notifications menu after any action', async () => {

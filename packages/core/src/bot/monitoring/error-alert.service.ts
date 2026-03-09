@@ -1,10 +1,20 @@
-// Validated: T025 — alert throttling verified 2026-03-09
+/**
+ * @file error-alert.service.ts
+ * @module bot/monitoring/error-alert.service
+ *
+ * Service for broadcasting critical system errors to administrators.
+ */
+
 import { Role } from '@prisma/client'
 import type { Api } from 'grammy'
 import { prisma } from '../../database/prisma'
 import logger from '../../utils/logger'
 import { i18n } from '../i18n'
 
+/**
+ * Manages the delivery of error alerts to SUPER_ADMIN users via Telegram.
+ * Features built-in throttling to prevent alert fatigue during sustained failures.
+ */
 export class ErrorAlertService {
   private throttledErrors = new Map<string, number>()
   private readonly THROTTLE_MS = 5 * 60 * 1000 // 5 minutes

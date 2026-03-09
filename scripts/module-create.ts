@@ -1,3 +1,11 @@
+/**
+ * @file module-create.ts
+ * @module scripts/module-create
+ *
+ * Developer CLI tool for scaffolding new bot modules.
+ * Automates directory creation, configuration generation, and Prisma schema integration.
+ */
+
 import fs from 'node:fs'
 import path from 'node:path'
 import { execSync } from 'node:child_process'
@@ -5,6 +13,15 @@ import inquirer from 'inquirer'
 import { PrismaClient } from '@prisma/client'
 import 'dotenv/config'
 
+/**
+ * Main command entry point for module scaffolding.
+ * Supports both interactive (prompt-based) and non-interactive modes.
+ *
+ * @example
+ * ```bash
+ * npm run module:create my-feature -- --non-interactive --name="My Feature"
+ * ```
+ */
 async function main() {
   // eslint-disable-next-line node/prefer-global/process
   const slugArg = process.argv[2]

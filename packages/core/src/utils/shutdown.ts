@@ -1,3 +1,10 @@
+/**
+ * @file shutdown.ts
+ * @module core/utils/shutdown
+ *
+ * Utility for handling process signals and performing a clean shutdown of all services.
+ */
+
 import process from 'node:process'
 import type { Bot } from 'grammy'
 import { disconnect as disconnectRedis } from '../cache/redis'
@@ -7,10 +14,19 @@ import { closeWorker } from '../workers/notification'
 import type { BotContext } from '../types/context'
 import logger from './logger'
 
+/**
+ * Sets up listeners for graceful shutdown signals (SIGINT, SIGTERM) and uncaught errors.
+ * Ensures the bot stops accepting updates and all services (Redis, Prisma, Queue) are disconnected (FR-027).
+ *
+ * @param bot - The grammY bot instance to shut down
+ */
 export async function handleGracefulShutdown(bot: Bot<BotContext>): Promise<void> {
   logger.info('Starting graceful shutdown process...')
 
-  // Function to handle cleanup and exit
+  /**
+   * Internal helper to perform cleanup and exit the process.
+   * @param signal - The signal that triggered the shutdown
+   */
   const cleanup = async (signal: string) => {
     logger.info(`Received ${signal}, shutting down gracefully`)
 

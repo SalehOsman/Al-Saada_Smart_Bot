@@ -1,3 +1,11 @@
+/**
+ * @file notification.ts
+ * @module workers/notification
+ *
+ * Background worker for bulk notification delivery.
+ * Uses BullMQ to manage asynchronous delivery and ensure reliability.
+ */
+
 import type { Job } from 'bullmq'
 import { Worker } from 'bullmq'
 import logger from '../utils/logger'
@@ -7,8 +15,9 @@ import { bullmqRedis } from '../cache/redis'
 import type { NotificationJobData } from '../types/notification'
 
 /**
- * Worker for processing and delivering notifications via Telegram.
+ * Worker instance for processing and delivering notifications via Telegram.
  * Implements rate limiting to comply with Telegram API flood control (FR-024).
+ * Jobs are triggered by services queuing data to the 'notifications' queue.
  */
 export const notificationWorker = new Worker<NotificationJobData>(
   'notifications',

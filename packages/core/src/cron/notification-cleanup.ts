@@ -1,7 +1,19 @@
+/**
+ * @file notification-cleanup.ts
+ * @module cron/notification-cleanup
+ *
+ * Periodic cleanup of old notification records.
+ */
+
 import cron from 'node-cron'
 import { prisma } from '../database/prisma'
 import logger from '../utils/logger'
 
+/**
+ * Starts the notification cleanup cron job.
+ * Deletes notification records older than 90 days to prevent database bloating.
+ * Runs daily at 2:00 AM (Africa/Cairo timezone).
+ */
 export function startNotificationCleanup() {
   // Runs daily at 02:00 AM Africa/Cairo timezone
   cron.schedule(

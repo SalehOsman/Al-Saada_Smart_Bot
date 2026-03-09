@@ -65,9 +65,12 @@ export function normalizeDigits(input: string): string {
  * Rules: Arabic letters only, min 2 chars.
  * Returns '' on cancel.
  *
+ * @param ctx - The bot context
+ * @param wait - Bound wait function
+ * @returns Validated Arabic name or empty string
+ *
  * @example
  * const fullName = await askForArabicName(ctx, wait)
- * if (!fullName) return // cancelled
  */
 export async function askForArabicName(ctx: BotContext, wait: WaitFn): Promise<string> {
   const arabicNameRegex = /^[\p{sc=Arabic}\s.,'-]+$/u
@@ -100,7 +103,7 @@ export async function askForArabicName(ctx: BotContext, wait: WaitFn): Promise<s
  * Takes the first two "name units", respecting compound prefixes.
  *
  * Compound prefixes:
- * \u0639\u0628\u062f (Abd), \u0639\u0628\u062f\u0647 (Abdeh), \u0623\u0628\u0648/\u0627\u0628\u0648 (Abu), \u0623\u0628\u064a/\u0627\u0628\u064a (Abi), \u0627\u0628\u0646 (Ibn), \u0628\u0646\u062a (Bint), \u0622\u0644 (Al)
+ * \u0639\u0628\u062f (Abd), \u0639\u0628\u062f\u0647 (Abdeh), \u0623\u0628\u0648/\u0627\u0628\u0648 (Abu), \u0623\u0628\u064a/\u0627\u0628\u064a (Abi), \u0627\u0628\u0646 (Ibn), \u0628\u0646\u062A (Bint), \u0622\u0644 (Al)
  *
  * Examples:
  *   \u0635\u0627\u0644\u062d \u0631\u062c\u0628 \u0645\u062d\u0645\u062f \u0639\u062b\u0645\u0627\u0646  ->  \u0635\u0627\u0644\u062d \u0631\u062c\u0628

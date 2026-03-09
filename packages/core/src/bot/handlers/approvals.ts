@@ -1,3 +1,11 @@
+/**
+ * @file approvals.ts
+ * @module bot/handlers/approvals
+ *
+ * Join request approval/rejection handler for Super Admin.
+ * Handles the transition of join requests to user records (US2).
+ */
+
 import { AuditAction, Role, Status } from '@prisma/client'
 import { prisma } from '../../database/prisma'
 import { queueNotification } from '../../services/notifications'
@@ -6,7 +14,10 @@ import { auditService } from '../../services/audit-logs'
 import logger from '../../utils/logger'
 
 /**
- * Handle join request approval/rejection callback queries (US2, T033, T102)
+ * Handles callback queries for approving or rejecting join requests.
+ * Uses an atomic transaction to ensure data consistency during user promotion.
+ *
+ * @param ctx - The bot context
  */
 export async function approvalsHandler(ctx: BotContext) {
   const query = ctx.callbackQuery?.data
