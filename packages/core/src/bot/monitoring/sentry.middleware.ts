@@ -10,7 +10,6 @@ export async function sentryMiddleware(ctx: BotContext, next: NextFunction) {
   if (ctx.from) {
     Sentry.setUser({
       id: ctx.from.id.toString(),
-      username: ctx.from.username,
     })
   }
 
@@ -21,10 +20,6 @@ export async function sentryMiddleware(ctx: BotContext, next: NextFunction) {
   
   Sentry.setTag('update_type', (ctx as any).updateType || 'unknown')
   
-  if (ctx.session?.role) {
-    Sentry.setTag('user_role', ctx.session.role)
-  }
-
   // Set extra context
   Sentry.setContext('telegram_update', {
     update_id: ctx.update.update_id,

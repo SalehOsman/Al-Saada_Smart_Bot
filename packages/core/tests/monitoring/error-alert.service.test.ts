@@ -33,6 +33,7 @@ describe('ErrorAlertService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     errorAlertService = new ErrorAlertService()
+    errorAlertService.setBotApi(bot.api as any)
   })
 
   it('should send alert to all SUPER_ADMINs', async () => {

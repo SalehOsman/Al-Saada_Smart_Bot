@@ -1,17 +1,30 @@
 import { Role } from '@prisma/client'
+import type { Api } from 'grammy'
 import { prisma } from '../../database/prisma'
 import logger from '../../utils/logger'
-import { bot } from '../index'
 import { i18n } from '../i18n'
 
 export class ErrorAlertService {
   private throttledErrors = new Map<string, number>()
   private readonly THROTTLE_MS = 5 * 60 * 1000 // 5 minutes
+  private botApi: Api | null = null
+
+  /**
+   * Set the bot API instance for sending alerts
+   */
+  setBotApi(api: Api) {
+    this.botApi = api
+  }
 
   /**
    * Send an error alert to all SUPER_ADMIN users
    */
   async sendAlert(error: Error, location: string = 'unknown') {
+    if (!this.botApi) {
+      logger.warn('Bot API not initialized in ErrorAlertService. Skipping alert.')
+      return
+    }
+
     const errorSignature = `${error.name}:${error.message}:${location}`
     const lastSent = this.throttledErrors.get(errorSignature)
     const now = Date.now()
@@ -51,7 +64,7 @@ export class ErrorAlertService {
         })
 
         try {
-          await bot.api.sendMessage(admin.telegramId.toString(), message, {
+          await this.botApi.sendMessage(admin.telegramId.toString(), message, {
             parse_mode: 'Markdown',
           })
         } catch (sendErr) {

@@ -53,10 +53,10 @@ import { auditActionsHandler, auditHandler } from './handlers/audit'
 // Create grammy bot instance using BOT_TOKEN from environment
 export const bot = new Bot<BotContext>(env.BOT_TOKEN)
 
-// --- Middlewares ---
+import { errorAlertService } from './monitoring/error-alert.service'
+errorAlertService.setBotApi(bot.api)
 
-// Sentry context (US2)
-bot.use(sentryMiddleware)
+// --- Middlewares ---
 
 // Error handling middleware
 bot.catch(errorHandler)
@@ -66,6 +66,9 @@ bot.use(hydrate())
 
 // Session middleware with Redis storage
 bot.use(sessionMiddleware)
+
+// Sentry context (US2) - Moved after session to capture role (Phase 4 fix)
+bot.use(sentryMiddleware)
 
 // Audit logging helper middleware
 bot.use(auditMiddleware)

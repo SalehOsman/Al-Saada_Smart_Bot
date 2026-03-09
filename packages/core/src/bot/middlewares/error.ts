@@ -1,4 +1,5 @@
 import type { BotError } from 'grammy'
+import * as Sentry from '@sentry/node'
 import type { BotContext } from '../../types/context'
 import logger from '../../utils/logger'
 import { sentryService } from '../monitoring/sentry.service'
@@ -18,6 +19,7 @@ export async function errorHandler(err: BotError<BotContext>) {
   }, 'Bot error occurred')
 
   // 2. Capture exception to Sentry (FR-001)
+  Sentry.setTag('user_role', ctx.session.role || 'unknown')
   sentryService.captureException(e, {
     update: ctx.update,
     session: ctx.session,
