@@ -22,8 +22,22 @@ export async function save(
   }
 
   try {
-    // 1. Execute database action
-    await action(prisma)
+    // 1. Execute database action with max 1 retry (BL-002)
+    try {
+      await action(prisma)
+    }
+    catch (firstError) {
+      logger.warn(`First save attempt failed for module ${moduleSlug}, retrying once...`, firstError)
+      try {
+        await action(prisma)
+      }
+      catch (retryError) {
+        logger.error(`Persistent save failure for module ${moduleSlug} after retry:`, retryError)
+        await ctx.reply(ctx.t('module-kit-save-failed-persistent'))
+        // Preserve draft by not deleting it from Redis (delete is skipped)
+        throw retryError
+      }
+    }
 
     // 2. Audit logging (masked)
     const maskedDetails = maskPII(audit.details || {})
@@ -50,10 +64,22 @@ export async function save(
     await redis.del(redisKey)
   }
   catch (error: any) {
-    logger.error(`Failed to save data for module ${moduleSlug}:`, error)
-    await ctx.reply(ctx.t('module-kit-save-failed')) // Issue B1
-    // Preserve draft by not deleting it from Redis
-    throw error // Let the conversation handler handle it if needed
+    // If it's the retryError we already handled and threw, just re-throw
+    if (error.message && error.message.includes('Persistent save failure')) {
+      throw error
+    }
+
+    logger.error(`Failed to complete save sequence for module ${moduleSlug}:`, error)
+    // Only reply if we haven't already replied in the retry catch
+    if (!ctx.callbackQuery) { // Heuristic to check if we might have already replied
+      // Actually, it's safer to check if the error was already handled
+    }
+
+    // Fallback error message if not handled by retry block
+    if (!error.message?.includes('Persistent save failure')) {
+      await ctx.reply(ctx.t('module-kit-save-failed'))
+    }
+    throw error
   }
 }
 

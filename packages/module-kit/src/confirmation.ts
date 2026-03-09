@@ -11,12 +11,18 @@ export async function confirm<T>(
 ): Promise<boolean> {
   const { data, labels, editableFields, reAsk } = options
 
+  // Developer guard (BL-004)
+  if (!data || Object.keys(data as any).length === 0) {
+    throw new Error('confirm() called with empty data object — ensure validate() is called before confirm()')
+  }
+
   while (true) {
     // 1. Build summary message
     let summaryText = `${ctx.t('module-kit-review-title')}\n\n`
     for (const field in data) {
-      const label = labels[field] ? ctx.t(labels[field]) : field
-      summaryText += `*${label}*: ${String(data[field])}\n`
+      const key = field as keyof T
+      const label = labels[key] ? ctx.t(labels[key]) : field
+      summaryText += `*${label}*: ${String(data[key])}\n`
     }
 
     // 2. Build inline keyboard

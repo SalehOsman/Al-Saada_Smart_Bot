@@ -5,19 +5,17 @@
 
 ---
 
-## ✅ Module Kit Improvements (Valid — Not Yet Implemented)
+## ✅ Module Kit Improvements (IMPLEMENTED)
 
-These are minor UX improvements for the Module Kit. All are LOW priority and can be deferred to Phase 6.
+These minor UX improvements for the Module Kit were implemented in Phase 2.
 
-| ID | Title | Current Behavior | Planned Improvement | Priority | Estimated Time | Affected Files |
-|----|-------|-----------------|---------------------|----------|----------------|----------------|
-| BL-001 | Redis failure user warning | Draft middleware catches errors silently (log only) | Warn user via `module-kit-draft-save-unavailable` | LOW | 1 hour | `packages/core/src/bot/middleware/draft.ts` |
-| BL-002 | save() automatic retry | Throws error immediately, draft preserved | Max 1 retry before throwing, show `module-kit-save-failed-persistent` | LOW | 2 hours | `packages/module-kit/src/persistence.ts` |
-| BL-003 | Conversation inactivity timeout | No timeout — handler stays active indefinitely | 15-min timeout, release handler, keep draft in Redis | LOW | 3-4 hours | `packages/core/src/bot/middleware/draft.ts` |
-| BL-004 | confirm() empty data guard | No validation on empty data object | Throw developer error if data is empty: "confirm() called with empty data object" | LOW | 30 minutes | `packages/module-kit/src/confirmation.ts` |
-| BL-005 | FR-007 doc alignment | FR-007 says "no standalone notifyScopedAdmins" | Update spec.md to reflect actual private helper implementation | LOW | 15 minutes | `specs/003-module-kit/spec.md` |
-
-**Total Estimated Time:** ~7 hours
+| ID | Title | Status | Evidence |
+|----|-------|--------|----------|
+| BL-001 | Redis failure user warning | ✅ IMPLEMENTED | `packages/core/src/bot/middleware/draft.ts` (Warn via `module-kit-draft-save-unavailable`) |
+| BL-002 | save() automatic retry | ✅ IMPLEMENTED | `packages/module-kit/src/persistence.ts` (Max 1 retry, `module-kit-save-failed-persistent`) |
+| BL-003 | Conversation inactivity timeout | ✅ IMPLEMENTED | `packages/core/src/bot/middleware/draft.ts` (15-min timeout) |
+| BL-004 | confirm() empty data guard | ✅ IMPLEMENTED | `packages/module-kit/src/confirmation.ts` (Guard against empty data) |
+| BL-005 | FR-007 doc alignment | ✅ IMPLEMENTED | `specs/003-module-kit/spec.md` (Update FR-007 description) |
 
 ---
 

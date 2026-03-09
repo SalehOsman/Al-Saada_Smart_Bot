@@ -248,6 +248,9 @@ module-kit-draft-fresh-btn = ✨ بدء من جديد
 module-kit-draft-expired = ⚠️ عذراً، انتهت صلاحية المسودة. سيتم البدء من جديد.
 module-kit-max-retries-exceeded = ⚠️ تم تجاوز الحد الأقصى للمحاولات. تم إلغاء العملية.
 module-kit-unauthorized-action = 🚫 عذراً، ليس لديك صلاحية للقيام بهذا الإجراء.
+module-kit-draft-save-unavailable = ⚠️ لا يمكن حفظ تقدمك حالياً. إذا أغلقت المحادثة، ستفقد البيانات.
+module-kit-save-failed-persistent = ❌ فشل الحفظ. بياناتك محفوظة مؤقتاً. حاول مرة أخرى.
+module-kit-conversation-timeout = ⏱️ انتهت المهلة. بياناتك محفوظة.
 
 # Production Readiness
 # Backups

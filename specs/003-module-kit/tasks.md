@@ -232,3 +232,13 @@ Task T023: "confirm() helper in packages/module-kit/src/confirmation.ts"
 - `save()` resolution chain: `sectionSlug` → `Section.slug` → `Section.id` → `AdminScope.sectionId`
 - Draft serialization: data + step index ONLY
 - ModuleLoader scan: shallow only (`modules/*/config.ts`)
+
+---
+
+## Phase 9: Backlog Improvements (BL-001 to BL-005)
+
+- [x] T038 [BL-001] Add Redis failure warning in `packages/core/src/bot/middleware/draft.ts` using `module-kit-draft-save-unavailable` key.
+- [x] T039 [BL-002] Implement `save()` retry mechanism in `packages/module-kit/src/persistence.ts` and notify on persistent failure via `module-kit-save-failed-persistent`.
+- [x] T040 [BL-003] Implement 15-minute inactivity timeout in `packages/core/src/bot/middleware/draft.ts` using `module-kit-conversation-timeout` key.
+- [x] T041 [BL-004] Add empty data guard in `packages/module-kit/src/confirmation.ts` throwing developer-facing error.
+- [x] T042 [BL-005] Update `specs/003-module-kit/spec.md` FR-007 to reflect `notifyScopedAdmins()` as a private helper.

@@ -248,6 +248,9 @@ module-kit-draft-fresh-btn = ✨ Start Fresh
 module-kit-draft-expired = ⚠️ Sorry, the draft has expired. Starting fresh.
 module-kit-max-retries-exceeded = ⚠️ Maximum retry attempts exceeded. Process cancelled.
 module-kit-unauthorized-action = 🚫 Sorry, you don't have permission to perform this action.
+module-kit-draft-save-unavailable = ⚠️ Cannot save your progress. If you close, data will be lost.
+module-kit-save-failed-persistent = ❌ Save failed. Data preserved temporarily. Try again.
+module-kit-conversation-timeout = ⏱️ Session timed out. Your data is saved.
 
 # Production Readiness
 # Backups

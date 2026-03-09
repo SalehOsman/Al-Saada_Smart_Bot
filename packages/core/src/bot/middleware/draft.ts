@@ -4,12 +4,17 @@ import { redis } from '../../cache/redis'
 import { moduleLoader } from '../module-loader'
 import logger from '../../utils/logger'
 
+// In-memory map to track last activity for timeout (BL-003)
+const lastActivity = new Map<string, number>()
+const INACTIVITY_TIMEOUT = 15 * 60 * 1000 // 15 minutes
+
 /**
  * Draft Middleware (Layer 2)
  *
  * 1. Intercepts all inputs during an active module conversation.
  * 2. Saves conversation state to Redis (auto-save).
  * 3. Handles command interrupts (/cancel, /start, /menu, /help).
+ * 4. Enforces inactivity timeout (BL-003).
  */
 export const draftMiddleware: Middleware<BotContext> = async (ctx, next) => {
   // Only process if user is in an active module conversation
@@ -23,6 +28,22 @@ export const draftMiddleware: Middleware<BotContext> = async (ctx, next) => {
     return next()
   }
 
+  const activityKey = `${userId}:${moduleSlug}`
+  const now = Date.now()
+  const lastTime = lastActivity.get(activityKey)
+
+  // Inactivity timeout check (BL-003)
+  if (lastTime && now - lastTime > INACTIVITY_TIMEOUT) {
+    logger.info(`User ${userId} conversation with ${moduleSlug} timed out.`)
+    lastActivity.delete(activityKey)
+    ctx.session.currentModule = null
+    await ctx.reply(ctx.t('module-kit-conversation-timeout'))
+    return // Exit without calling next()
+  }
+
+  // Update activity timestamp
+  lastActivity.set(activityKey, now)
+
   // Detect command interrupts
   const text = ctx.message?.text
   if (text?.startsWith('/')) {
@@ -30,6 +51,9 @@ export const draftMiddleware: Middleware<BotContext> = async (ctx, next) => {
 
     if (['/cancel', '/start', '/menu'].includes(command)) {
       logger.info(`User ${userId} interrupted module ${moduleSlug} with ${command}. Preserving draft.`)
+
+      // Clean up timeout tracking
+      lastActivity.delete(activityKey)
 
       // Exit conversation gracefully (handled by @grammyjs/conversations naturally if we don't call next())
       // But we must clear currentModule from session so next message doesn't trigger this again
@@ -88,6 +112,17 @@ export const draftMiddleware: Middleware<BotContext> = async (ctx, next) => {
     }
     catch (err) {
       logger.error(`Failed to auto-save draft for user ${userId}, module ${moduleSlug}:`, err)
+      // BL-001: Warn user about Redis failure
+      try {
+        await ctx.reply(ctx.t('module-kit-draft-save-unavailable'))
+      }
+      catch {
+        // Ignore reply failure
+      }
     }
+  }
+  else {
+    // Conversation finished or session cleared, clean up timeout tracking
+    lastActivity.delete(activityKey)
   }
 }
