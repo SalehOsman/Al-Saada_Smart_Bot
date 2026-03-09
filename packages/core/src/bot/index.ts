@@ -56,6 +56,13 @@ export const bot = new Bot<BotContext>(env.BOT_TOKEN)
 import { errorAlertService } from './monitoring/error-alert.service'
 errorAlertService.setBotApi(bot.api)
 
+// Resilience Middlewares (US3/Phase 5)
+import { rateLimitMiddleware } from './middleware/rate-limit.middleware'
+import { autoRetryMiddleware } from './middleware/auto-retry.middleware'
+
+// Register auto-retry as API transformer (Phase 5 fix)
+bot.api.config.use(autoRetryMiddleware())
+
 // --- Middlewares ---
 
 // Error handling middleware
@@ -66,6 +73,9 @@ bot.use(hydrate())
 
 // Session middleware with Redis storage
 bot.use(sessionMiddleware)
+
+// Rate limiting middleware (Phase 5 fix) - Registered after session to check role
+bot.use(rateLimitMiddleware())
 
 // Sentry context (US2) - Moved after session to capture role (Phase 4 fix)
 bot.use(sentryMiddleware)

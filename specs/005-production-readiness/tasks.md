@@ -75,10 +75,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T017 [US3] Create unit tests for rate limiting logic in `packages/core/tests/middleware/rate-limit.test.ts` (Principle IV)
-- [ ] T018 [US3] Implement rate limiting middleware in `packages/core/src/bot/middleware/rate-limit.middleware.ts` (with SUPER_ADMIN bypass logic - resolves U1)
-- [ ] T019 [US3] Create unit tests for auto-retry logic in `packages/core/tests/middleware/auto-retry.test.ts` (Principle IV)
-- [ ] T020 [US3] Implement auto-retry middleware in `packages/core/src/bot/middleware/auto-retry.middleware.ts` (transient errors: ETIMEDOUT, ECONNRESET, 429, 502, 503, 504)
+- [X] T017 [US3] Create unit tests for rate limiting logic in `packages/core/tests/middleware/rate-limit.test.ts` (Principle IV)
+- [X] T018 [US3] Implement rate limiting middleware in `packages/core/src/bot/middleware/rate-limit.middleware.ts` (with SUPER_ADMIN bypass logic - resolves U1)
+- [X] T019 [US3] Create unit tests for auto-retry logic in `packages/core/tests/middleware/auto-retry.test.ts` (Principle IV)
+- [X] T020 [US3] Implement auto-retry middleware in `packages/core/src/bot/middleware/auto-retry.middleware.ts` (transient errors: ETIMEDOUT, ECONNRESET, 429, 502, 503, 504)
 
 **Checkpoint**: User Story 3 is functional and testable independently.
 
