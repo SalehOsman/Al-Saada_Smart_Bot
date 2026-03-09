@@ -21,8 +21,8 @@ export function rateLimitMiddleware() {
     limit: env.RATE_LIMIT_REQUESTS_PER_MINUTE,
     onLimitExceeded: async (ctx) => {
       // Use existing i18n key with seconds param
-      // Calculating seconds remaining based on time window
-      const seconds = Math.ceil((env.RATE_LIMIT_WINDOW_MINUTES * 60) / env.RATE_LIMIT_REQUESTS_PER_MINUTE)
+      // Full duration of the window where user is blocked
+      const seconds = env.RATE_LIMIT_WINDOW_MINUTES * 60
       await ctx.reply(ctx.t('error-rate-limit', { seconds }))
     },
     keyGenerator: (ctx) => {

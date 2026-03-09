@@ -19,7 +19,7 @@ export async function errorHandler(err: BotError<BotContext>) {
   }, 'Bot error occurred')
 
   // 2. Capture exception to Sentry (FR-001)
-  Sentry.setTag('user_role', ctx.session.role || 'unknown')
+  Sentry.setTag('user_role', ctx.session?.role || 'unknown')
   sentryService.captureException(e, {
     update: ctx.update,
     session: ctx.session,
