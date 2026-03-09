@@ -167,6 +167,7 @@ npm run module:remove
 
 ```
 al-saada-smart-bot/
+├── .github/workflows/        # CI/CD (lint, test, typecheck)
 ├── packages/
 │   ├── core/                 # Layer 1 — نواة المنصة
 │   ├── module-kit/           # Layer 2 — أدوات تطوير الموديولات
@@ -370,7 +371,7 @@ npm run module:remove
 | Monitoring | Sentry |
 | CI/CD | GitHub Actions |
 | Logging | Pino |
-| Testing | Vitest |
+| Testing | Vitest (274 tests) |
 | Infrastructure | Docker Compose |
 
 ---
@@ -430,7 +431,7 @@ A multi-modal operational assistant trained on company data:
 
 This project follows **[SpecKit](https://github.com/github/spec-kit)** for specification-driven development:
 
-1. 📜 **Constitution** — Supreme reference for all decisions ([v2.4.0](.specify/memory/constitution.md))
+1. 📜 **Constitution** — Supreme reference for all decisions ([v2.5.0](.specify/memory/constitution.md))
 2. 📋 **Specification** — Precise feature definition
 3. 📐 **Plan** — Technical and structural decisions
 4. ✅ **Tasks** — Step-by-step breakdown
