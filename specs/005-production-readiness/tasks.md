@@ -92,9 +92,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] T021 [P] [US4] Create ESLint check workflow in `.github/workflows/lint.yml`
-- [ ] T022 [P] [US4] Create Vitest check workflow in `.github/workflows/test.yml`
-- [ ] T023 [US4] Create main CI pipeline in `.github/workflows/ci.yml` (Prisma generate, GitNexus analysis)
+- [X] T021 [P] [US4] Create ESLint check workflow in `.github/workflows/lint.yml`
+- [X] T022 [P] [US4] Create Vitest check workflow in `.github/workflows/test.yml`
+- [X] T023 [US4] Create main CI pipeline in `.github/workflows/ci.yml` (Prisma generate, GitNexus analysis)
 
 **Checkpoint**: User Story 4 is functional and testable independently.
 

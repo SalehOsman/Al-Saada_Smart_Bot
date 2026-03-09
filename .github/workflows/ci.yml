@@ -1,0 +1,42 @@
+# NOTE: Branch Protection rules must be configured manually on GitHub settings (FR-021, FR-022).
+# Requirements: "Require status checks to pass before merging" and "Require pull request reviews before merging".
+
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+
+    env:
+      BOT_TOKEN: "123456789:fake_token"
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
+      REDIS_URL: "redis://localhost:6379"
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client (Schema Validation)
+        run: npx prisma generate
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # TODO: Enable GitNexus when CLI is available (FR-020)
+      # - name: Run GitNexus Analysis
+      #   run: npx gitnexus analyze
