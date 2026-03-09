@@ -104,9 +104,9 @@
 
 **Purpose**: Improvements and final validation
 
-- [ ] T024 [P] Update `README.md` and `docs/developer/getting-started.md` with production setup details
-- [ ] T025 Perform final validation of backup retention policy and error alert throttling
-- [ ] T026 Run `quickstart.md` validation steps
+- [X] T024 [P] Update `README.md` and `docs/developer/getting-started.md` with production setup details
+- [X] T025 Perform final validation of backup retention policy and error alert throttling
+- [X] T026 Run `quickstart.md` validation steps
 
 ---
 

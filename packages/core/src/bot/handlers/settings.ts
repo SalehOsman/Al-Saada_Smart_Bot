@@ -3,7 +3,6 @@ import type { BotContext } from '../../types/context'
 import { settingsService } from '../../services/settings'
 import { backupService } from '../services/backup.service'
 import { maintenanceService } from '../../services/maintenance'
-import logger from '../../utils/logger'
 import { replyOrEdit } from '../utils/reply'
 import { redis } from '../../cache/redis'
 
@@ -115,7 +114,7 @@ export async function settingsActionsHandler(ctx: BotContext) {
   if (data === 'settings:backup:create') {
     await ctx.answerCallbackQuery({ text: ctx.t('settings-backup-creating') })
     const backup = await backupService.createBackup('manual', ctx.from!.id.toString())
-    const size = (Number(backup.fileSize) / (1024 * 1024)).toFixed(2) + ' MB'
+    const size = `${(Number(backup.fileSize) / (1024 * 1024)).toFixed(2)} MB`
     await ctx.reply(ctx.t('settings-backup-created', { filename: backup.fileName, size }))
     return settingsHandler(ctx)
   }
@@ -129,7 +128,7 @@ export async function settingsActionsHandler(ctx: BotContext) {
 
     const keyboard = new InlineKeyboard()
     for (const backup of history.slice(0, 10)) {
-      const size = (Number(backup.fileSize) / (1024 * 1024)).toFixed(2) + ' MB'
+      const size = `${(Number(backup.fileSize) / (1024 * 1024)).toFixed(2)} MB`
       keyboard.text(`📥 ${backup.fileName} (${size})`, `backup:restore_init:${backup.id}`).row()
     }
     keyboard.text(ctx.t('button-back-to-sections'), 'settings:backup')

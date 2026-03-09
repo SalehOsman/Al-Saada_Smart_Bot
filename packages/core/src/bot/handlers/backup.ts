@@ -2,7 +2,6 @@ import { InlineKeyboard } from 'grammy'
 import type { BotContext } from '../../types/context'
 import { backupService } from '../services/backup.service'
 import logger from '../../utils/logger'
-import { replyOrEdit } from '../utils/reply'
 
 /**
  * Handle /backup command (Super Admin only).
@@ -15,16 +14,17 @@ export async function backupHandler(ctx: BotContext) {
   try {
     const sent = await ctx.reply(ctx.t('settings-backup-creating'))
     const backup = await backupService.createBackup('manual', ctx.from!.id.toString())
-    
+
     await ctx.api.editMessageText(
       ctx.chat!.id,
       sent.message_id,
-      ctx.t('settings-backup-created', { 
-        filename: backup.fileName, 
-        size: (Number(backup.fileSize) / (1024 * 1024)).toFixed(2) + ' MB' 
-      })
+      ctx.t('settings-backup-created', {
+        filename: backup.fileName,
+        size: `${(Number(backup.fileSize) / (1024 * 1024)).toFixed(2)} MB`,
+      }),
     )
-  } catch (error) {
+  }
+  catch (error) {
     logger.error({ err: error }, 'Manual backup failed')
     await ctx.reply(ctx.t('settings-backup-fail'))
   }
@@ -45,7 +45,7 @@ export async function backupsHandler(ctx: BotContext) {
 
   const keyboard = new InlineKeyboard()
   for (const backup of backups.slice(0, 10)) {
-    const size = (Number(backup.fileSize) / (1024 * 1024)).toFixed(2) + ' MB'
+    const size = `${(Number(backup.fileSize) / (1024 * 1024)).toFixed(2)} MB`
     keyboard.text(`📥 ${backup.fileName} (${size})`, `backup:restore_init:${backup.id}`).row()
   }
 
@@ -57,21 +57,22 @@ export async function backupsHandler(ctx: BotContext) {
  */
 export async function backupActionsHandler(ctx: BotContext) {
   const data = ctx.callbackQuery?.data
-  if (!data || ctx.session.role !== 'SUPER_ADMIN') return
+  if (!data || ctx.session.role !== 'SUPER_ADMIN')
+    return
 
   if (data.startsWith('backup:restore_init:')) {
     const backupId = data.replace('backup:restore_init:', '')
     const backup = await backupService.getBackup(backupId)
-    
+
     if (!backup) {
       return ctx.answerCallbackQuery({ text: 'Backup not found', show_alert: true })
     }
 
     ctx.session.pendingRestore = backupId
     const keyword = ctx.t('settings-backup-restore-confirm-keyword')
-    
+
     await ctx.reply(ctx.t('settings-backup-restore-confirm', { keyword }), {
-      reply_markup: { force_reply: true }
+      reply_markup: { force_reply: true },
     })
     await ctx.answerCallbackQuery()
   }
@@ -81,7 +82,8 @@ export async function backupActionsHandler(ctx: BotContext) {
  * Handle restore confirmation text (two-step approval).
  */
 export async function backupRestoreTextHandler(ctx: BotContext) {
-  if (!ctx.session.pendingRestore || !ctx.message?.text) return
+  if (!ctx.session.pendingRestore || !ctx.message?.text)
+    return
 
   const backupId = ctx.session.pendingRestore
   const input = ctx.message.text.trim()
@@ -93,11 +95,13 @@ export async function backupRestoreTextHandler(ctx: BotContext) {
       await ctx.reply(ctx.t('settings-backup-restoring'))
       await backupService.restoreBackup(backupId, userId)
       await ctx.reply(ctx.t('settings-backup-restore-success'))
-    } catch (error) {
+    }
+    catch (error) {
       logger.error({ err: error, backupId }, 'Restore failed')
       await ctx.reply(ctx.t('settings-backup-restore-fail'))
     }
-  } else {
+  }
+  else {
     await ctx.reply(ctx.t('settings-backup-restore-fail'))
   }
 

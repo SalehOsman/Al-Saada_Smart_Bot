@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { Role } from '@prisma/client'
 import { ErrorAlertService } from '../../src/bot/monitoring/error-alert.service'
 import { prisma } from '../../src/database/prisma'
-import { Role } from '@prisma/client'
 
 vi.mock('../../src/database/prisma', () => ({
   prisma: {
@@ -15,10 +15,10 @@ vi.mock('../../src/config/env', () => ({
   env: {
     NODE_ENV: 'test',
     LOG_LEVEL: 'info',
-  }
+  },
 }))
 
-describe('ErrorAlertService', () => {
+describe('errorAlertService', () => {
   let errorAlertService: ErrorAlertService
   const mockApi = {
     sendMessage: vi.fn(),
@@ -53,7 +53,7 @@ describe('ErrorAlertService', () => {
     vi.mocked(prisma.user.findMany).mockResolvedValue(mockAdmins as any)
 
     const error = new Error('Repeated error')
-    
+
     // First call
     await errorAlertService.sendAlert(error)
     expect(mockApi.sendMessage).toHaveBeenCalledTimes(1)
@@ -69,16 +69,16 @@ describe('ErrorAlertService', () => {
     vi.mocked(prisma.user.findMany).mockResolvedValue(mockAdmins as any)
 
     const error = new Error('Delayed error')
-    
+
     await errorAlertService.sendAlert(error)
     expect(mockApi.sendMessage).toHaveBeenCalledTimes(1)
 
     // Advance time by 6 minutes (throttle is usually 5m)
     vi.advanceTimersByTime(6 * 60 * 1000)
-    
+
     await errorAlertService.sendAlert(error)
     expect(mockApi.sendMessage).toHaveBeenCalledTimes(2)
-    
+
     vi.useRealTimers()
   })
 })

@@ -9,7 +9,7 @@
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)]()
 [![Node.js](https://img.shields.io/badge/Node.js-≥20-green.svg)]()
-[![Tests](https://img.shields.io/badge/tests-261%20passed-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-273%20passed-brightgreen.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-green.svg)]()
 
 [عربي](#ما-هو-بوت-السعادة) · [English](#what-is-al-saada-bot)
@@ -202,6 +202,8 @@ al-saada-smart-bot/
 | `/sections` | Super Admin | إدارة الأقسام |
 | `/maintenance on\|off` | Super Admin | وضع الصيانة |
 | `/audit` | Super Admin | عرض سجل التدقيق |
+| `/backup` | Super Admin | إنشاء نسخة احتياطية فورية |
+| `/backups` | Super Admin | عرض واستعادة النسخ الاحتياطية |
 
 ---
 
@@ -363,8 +365,10 @@ npm run module:remove
 | Database | PostgreSQL 16 + Prisma ORM (Multi-File Schema) |
 | Cache | Redis 7 + ioredis |
 | i18n | @grammyjs/i18n (Fluent .ftl) |
+| Monitoring | Sentry |
+| CI/CD | GitHub Actions |
 | Logging | Pino |
-| Testing | Vitest (in development) |
+| Testing | Vitest |
 | Infrastructure | Docker Compose |
 
 ---
@@ -397,7 +401,7 @@ npm run module:remove
 |-------|-------------|---------|--------|
 | **Phase 1** | Platform Core (Bot, RBAC, Sections, Audit) | v0.1.0 | ✅ Complete |
 | **Phase 2** | Module Kit (Helpers, Drafts, CLI) | v0.2.0 | ✅ Complete |
-| **Phase 3** | Production Readiness (Sentry, CI/CD, Backups) | v0.3.0 | ⏳ Coming |
+| **Phase 3** | Production Readiness (Sentry, CI/CD, Backups) | v0.3.0 | ✅ Complete |
 | **Phase 4** | AI Operational Assistant | v0.4.0 | ⏳ Coming |
 | **Phase 5** | Smart Admin Dashboard (MVP) | v0.5.0 | ⏳ Coming |
 | **Phase 6** | Advanced Features | v1.0.0 | ⏳ Coming |

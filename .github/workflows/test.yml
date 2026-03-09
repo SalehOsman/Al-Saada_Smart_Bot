@@ -2,7 +2,7 @@ name: Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
 
 jobs:
@@ -10,9 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      BOT_TOKEN: "123456789:fake_token"
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
-      REDIS_URL: "redis://localhost:6379"
+      BOT_TOKEN: '123456789:fake_token'
+      DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/postgres'
+      REDIS_URL: 'redis://localhost:6379'
       NODE_ENV: test
 
     steps:
@@ -22,7 +22,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
 
       - name: Install dependencies
         run: npm ci

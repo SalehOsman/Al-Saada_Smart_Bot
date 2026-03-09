@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import fs from 'node:fs'
 import fsp from 'node:fs/promises'
 import { spawn } from 'node:child_process'
 import crypto from 'node:crypto'
 import { PassThrough } from 'node:stream'
+import { Buffer } from 'node:buffer'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { backupService } from '../../src/bot/services/backup.service'
 import { prisma } from '../../src/database/prisma'
 
@@ -67,7 +68,7 @@ vi.mock('../../src/config/env', () => ({
   },
 }))
 
-describe('BackupService', () => {
+describe('backupService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(fsp.mkdir).mockResolvedValue(undefined)
@@ -76,17 +77,17 @@ describe('BackupService', () => {
 
   describe('createBackup', () => {
     it('should create an encrypted backup and save metadata', async () => {
-      const mockBackup = { 
-        id: 'test-id', 
+      const mockBackup = {
+        id: 'test-id',
         fileName: 'backup-20260308.sql.gz.enc',
-        filePath: '/tmp/backups/backup-20260308.sql.gz.enc'
+        filePath: '/tmp/backups/backup-20260308.sql.gz.enc',
       }
-      
+
       vi.mocked(prisma.backupMetadata.create).mockResolvedValue(mockBackup as any)
       vi.mocked(prisma.backupMetadata.update).mockResolvedValue(mockBackup as any)
       vi.mocked(fsp.stat).mockResolvedValue({ size: 1024 } as any)
       vi.mocked(fsp.appendFile).mockResolvedValue(undefined)
-      
+
       // Mock cipher
       const mockCipher = new PassThrough() as any
       mockCipher.getAuthTag = vi.fn().mockReturnValue(Buffer.from('tag'))
@@ -97,8 +98,9 @@ describe('BackupService', () => {
       vi.mocked(spawn).mockReturnValue({
         stdout: mockStdout,
         stderr: new PassThrough(),
-        on: vi.fn((event, cb) => { 
-          if (event === 'close') setTimeout(() => cb(0), 10) 
+        on: vi.fn((event, cb) => {
+          if (event === 'close')
+            setTimeout(() => cb(0), 10)
         }),
       } as any)
 
@@ -118,7 +120,7 @@ describe('BackupService', () => {
           status: BackupStatus.COMPLETED,
         }),
       })
-      
+
       expect(result.id).toBe('test-id')
     })
 
@@ -129,7 +131,7 @@ describe('BackupService', () => {
         setTimeout(() => {
           mockStdout.emit('error', new Error('spawn failed'))
         }, 0)
-        
+
         return {
           stdout: mockStdout,
           stderr: new PassThrough(),
@@ -138,7 +140,7 @@ describe('BackupService', () => {
       })
 
       await expect(backupService.createBackup('manual', 'admin-id')).rejects.toThrow()
-      
+
       expect(prisma.backupMetadata.update).toHaveBeenCalledWith({
         where: { id: 'fail-id' },
         data: expect.objectContaining({
@@ -168,14 +170,14 @@ describe('BackupService', () => {
     it('should delete the file and metadata', async () => {
       vi.mocked(prisma.backupMetadata.findUnique).mockResolvedValue({
         id: 'del-id',
-        filePath: '/tmp/backups/old.enc'
+        filePath: '/tmp/backups/old.enc',
       } as any)
 
       await backupService.deleteBackup('del-id')
 
       expect(fsp.unlink).toHaveBeenCalledWith('/tmp/backups/old.enc')
       expect(prisma.backupMetadata.delete).toHaveBeenCalledWith({
-        where: { id: 'del-id' }
+        where: { id: 'del-id' },
       })
     })
   })

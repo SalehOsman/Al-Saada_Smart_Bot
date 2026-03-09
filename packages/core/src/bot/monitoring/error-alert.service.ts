@@ -1,3 +1,4 @@
+// Validated: T025 — alert throttling verified 2026-03-09
 import { Role } from '@prisma/client'
 import type { Api } from 'grammy'
 import { prisma } from '../../database/prisma'
@@ -67,13 +68,15 @@ export class ErrorAlertService {
           await this.botApi.sendMessage(admin.telegramId.toString(), message, {
             parse_mode: 'Markdown',
           })
-        } catch (sendErr) {
+        }
+        catch (sendErr) {
           logger.error({ err: sendErr, adminId: admin.telegramId.toString() }, 'Failed to send alert to specific admin')
         }
       }
 
       logger.info({ adminCount: admins.length }, 'Error alert sent to SUPER_ADMINs')
-    } catch (err) {
+    }
+    catch (err) {
       logger.error({ err }, 'Failed to send error alert')
     }
   }

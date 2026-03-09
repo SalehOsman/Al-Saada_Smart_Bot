@@ -31,7 +31,8 @@ export class SentryService {
 
       this.isEnabled = true
       logger.info('Sentry monitoring initialized successfully.')
-    } catch (error) {
+    }
+    catch (error) {
       logger.error({ err: error }, 'Failed to initialize Sentry monitoring')
     }
   }
@@ -40,7 +41,8 @@ export class SentryService {
    * Capture an exception to Sentry
    */
   captureException(error: Error, context?: Record<string, any>) {
-    if (!this.isEnabled) return
+    if (!this.isEnabled)
+      return
 
     Sentry.captureException(error, {
       extra: context,
@@ -51,7 +53,8 @@ export class SentryService {
    * Capture a message to Sentry
    */
   captureMessage(message: string, level: Sentry.SeverityLevel = 'info') {
-    if (!this.isEnabled) return
+    if (!this.isEnabled)
+      return
 
     Sentry.captureMessage(message, level)
   }

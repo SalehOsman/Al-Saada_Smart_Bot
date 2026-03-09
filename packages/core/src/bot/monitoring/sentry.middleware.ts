@@ -17,9 +17,9 @@ export async function sentryMiddleware(ctx: BotContext, next: NextFunction) {
   if (ctx.chat) {
     Sentry.setTag('chat_id', ctx.chat.id.toString())
   }
-  
+
   Sentry.setTag('update_type', (ctx as any).updateType || 'unknown')
-  
+
   // Set extra context
   Sentry.setContext('telegram_update', {
     update_id: ctx.update.update_id,

@@ -1,3 +1,4 @@
+// Validated: T025 — backup retention policy verified 2026-03-09
 import { exec } from 'node:child_process'
 import { createGzip } from 'node:zlib'
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto'
@@ -6,6 +7,8 @@ import fs from 'node:fs'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
 import { promisify } from 'node:util'
+import { Buffer } from 'node:buffer'
+import process from 'node:process'
 import { BackupStatus } from '@prisma/client'
 import { prisma } from '../../database/prisma'
 import { env } from '../../config/env'
@@ -31,7 +34,7 @@ export class BackupService {
   /**
    * Create a new database backup.
    */
-  async createBackup(trigger: 'manual' | 'scheduled' = 'manual', createdBy: string = 'SYSTEM') {
+  async createBackup(_trigger: 'manual' | 'scheduled' = 'manual', createdBy: string = 'SYSTEM') {
     await this.init()
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
@@ -56,9 +59,9 @@ export class BackupService {
       })
 
       // We'll use a temporary file for the raw dump + gzip, or just pipe it
-      // For AES-256-GCM, we need to handle the AuthTag. 
+      // For AES-256-GCM, we need to handle the AuthTag.
       // Prepending IV (16 bytes) and AuthTag (16 bytes) to the file.
-      
+
       const iv = randomBytes(16)
       const cipher = createCipheriv('aes-256-gcm', this.encryptionKey, iv)
 
@@ -68,7 +71,7 @@ export class BackupService {
       fileStream.write(iv)
 
       // We use exec for pg_dump because it handles DATABASE_URL well
-      // but we need to pipe its output. 
+      // but we need to pipe its output.
       // Better: use spawn for streaming
       const { spawn } = await import('node:child_process')
       const pgDump = spawn('pg_dump', [env.DATABASE_URL])
@@ -78,13 +81,13 @@ export class BackupService {
         pgDump.stdout,
         gzip,
         cipher,
-        fileStream
+        fileStream,
       )
 
       // Get AuthTag and append it or write it at specific offset
       // Easier: Write IV (16) + AuthTag (16) + EncryptedData
       const authTag = cipher.getAuthTag()
-      
+
       // We need to write the auth tag somewhere. Let's prepend it with IV.
       // Current file: [IV][EncryptedData]
       // We want: [IV][AuthTag][EncryptedData]
@@ -93,7 +96,7 @@ export class BackupService {
       await fsp.appendFile(filePath, authTag)
 
       const stats = await fsp.stat(filePath)
-      
+
       await prisma.backupMetadata.update({
         where: { id: metadata.id },
         data: {
@@ -128,8 +131,10 @@ export class BackupService {
       where: { id: backupId },
     })
 
-    if (!metadata) throw new Error('Backup not found')
-    if (metadata.status !== BackupStatus.COMPLETED) throw new Error('Backup is not in COMPLETED status')
+    if (!metadata)
+      throw new Error('Backup not found')
+    if (metadata.status !== BackupStatus.COMPLETED)
+      throw new Error('Backup is not in COMPLETED status')
 
     try {
       // 1. Decrypt and Decompress

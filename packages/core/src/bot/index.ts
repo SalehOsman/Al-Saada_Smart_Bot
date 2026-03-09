@@ -27,9 +27,6 @@ import { editSectionActionHandler, sectionSetParentHandler, sectionsCallbackHand
 import { sentryService } from './monitoring/sentry.service'
 import { sentryMiddleware } from './monitoring/sentry.middleware'
 
-// Initialize Sentry monitoring (FR-001)
-sentryService.init()
-
 // RBAC and user status check (T111, T029)
 import { rbacMiddleware } from './middlewares/rbac'
 
@@ -48,17 +45,20 @@ import { settingsActionsHandler, settingsHandler } from './handlers/settings'
 // /audit command (Super Admin only)
 import { auditActionsHandler, auditHandler } from './handlers/audit'
 
-// --- Layer 2: Module Entry Point (US5) ---
-
-// Create grammy bot instance using BOT_TOKEN from environment
-export const bot = new Bot<BotContext>(env.BOT_TOKEN)
-
 import { errorAlertService } from './monitoring/error-alert.service'
-errorAlertService.setBotApi(bot.api)
 
 // Resilience Middlewares (US3/Phase 5)
 import { rateLimitMiddleware } from './middleware/rate-limit.middleware'
 import { autoRetryMiddleware } from './middleware/auto-retry.middleware'
+
+// Initialize Sentry monitoring (FR-001)
+sentryService.init()
+
+// --- Layer 2: Module Entry Point (US5) ---
+
+// Create grammy bot instance using BOT_TOKEN from environment
+export const bot = new Bot<BotContext>(env.BOT_TOKEN)
+errorAlertService.setBotApi(bot.api)
 
 // Register auto-retry as API transformer (Phase 5 fix)
 bot.api.config.use(autoRetryMiddleware())

@@ -75,10 +75,42 @@ Below are all variables found in `.env.example` with descriptions.
 | `POSTGRES_USER` | Docker initialization parameter | `al_saada_user` |
 | `POSTGRES_PASSWORD` | Docker initialization parameter | `secure_password_here` |
 | `POSTGRES_DB` | Docker initialization parameter | `al_saada_bot` |
+| `SENTRY_DSN` | Optional: Sentry DSN for error monitoring | `https://...@sentry.io/123` |
+| `BACKUP_ENABLED` | Optional: Enable automated backups | `true` |
+| `BACKUP_SCHEDULE` | Optional: cron expression for backups | `0 2 * * *` |
+| `BACKUP_RETENTION_DAYS` | Optional: how many days to keep backups | `30` |
+| `BACKUP_DIR` | Optional: directory for backup storage | `/app/backups` |
+| `BACKUP_ENCRYPTION_KEY` | Required if backups enabled: 32-char secret | `your-32-char-encryption-key-here` |
+| `RATE_LIMIT_ENABLED` | Optional: Enable rate limiting | `true` |
+| `RATE_LIMIT_REQUESTS_PER_MINUTE` | Optional: Requests per user per window | `30` |
+| `RATE_LIMIT_WINDOW_MINUTES` | Optional: Duration of rate limit window | `1` |
 
 ---
 
 ## 4. NPM Scripts Reference
+...
+## 6. Production Setup
+
+### Error Monitoring (Sentry)
+The bot is integrated with Sentry for real-time error tracking. To enable it, provide a `SENTRY_DSN` in your environment. PII (Personally Identifiable Information) like phone numbers and national IDs are automatically filtered before being sent to Sentry.
+
+### Automated Backups
+Database backups are automated and encrypted using AES-256-GCM.
+- **Configuration:** Set `BACKUP_ENABLED=true` and provide a 32-character `BACKUP_ENCRYPTION_KEY`.
+- **Management:** Super Admins can manage backups directly via `/backup` and `/backups` commands.
+- **Retention:** Old backups are automatically cleaned up based on `BACKUP_RETENTION_DAYS`.
+
+### Resilience (Rate Limiting & Auto-Retry)
+- **Rate Limiting:** Protects the bot from abuse. Configured via `RATE_LIMIT_*` variables. Super Admins are exempt from rate limits.
+- **Auto-Retry:** Automatically retries transient Telegram API failures (timeouts, 5xx errors) with exponential backoff.
+
+### CI/CD Pipeline
+The project uses GitHub Actions for continuous integration:
+- **Linting:** Runs on every pull request.
+- **Testing:** Runs Vitest suite on every pull request.
+- **Typechecking:** Ensures TypeScript integrity.
+
+**Note:** Branch Protection rules (requiring status checks and reviews) must be configured manually in the GitHub repository settings.
 
 For a comprehensive list of all available commands, scripts, Docker operations, and troubleshooting workflows, please refer to the [CLI Cheatsheet](cli-cheatsheet.md).
 

@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { Role } from '@prisma/client'
 import { rateLimitMiddleware } from '../../src/bot/middleware/rate-limit.middleware'
 import { env } from '../../src/config/env'
-import { Role } from '@prisma/client'
 
 // Mock env
 vi.mock('../../src/config/env', () => ({
@@ -9,10 +9,10 @@ vi.mock('../../src/config/env', () => ({
     RATE_LIMIT_ENABLED: true,
     RATE_LIMIT_REQUESTS_PER_MINUTE: 1,
     RATE_LIMIT_WINDOW_MINUTES: 1,
-  }
+  },
 }))
 
-describe('Rate Limit Middleware', () => {
+describe('rate Limit Middleware', () => {
   let ctx: any
   let next: any
 
@@ -37,27 +37,27 @@ describe('Rate Limit Middleware', () => {
   it('should bypass rate limiting for SUPER_ADMIN', async () => {
     ctx.session.role = Role.SUPER_ADMIN
     const middleware = rateLimitMiddleware()
-    
+
     // Multiple requests
     await middleware(ctx, next)
     await middleware(ctx, next)
     await middleware(ctx, next)
-    
+
     expect(next).toHaveBeenCalledTimes(3)
     expect(ctx.reply).not.toHaveBeenCalled()
   })
 
   it('should block requests when limit exceeded', async () => {
     const middleware = rateLimitMiddleware()
-    
+
     // First request - allowed
     await middleware(ctx, next)
     expect(next).toHaveBeenCalledTimes(1)
-    
+
     // Second request - blocked (limit is 1 per minute in mock)
     await middleware(ctx, next)
     expect(next).toHaveBeenCalledTimes(1) // Still 1
-    
+
     expect(ctx.reply).toHaveBeenCalledTimes(1)
     expect(ctx.reply).toHaveBeenCalledWith({
       key: 'error-rate-limit',
@@ -68,14 +68,14 @@ describe('Rate Limit Middleware', () => {
   it('should do nothing if RATE_LIMIT_ENABLED is false', async () => {
     // Modify mock for this test
     vi.mocked(env).RATE_LIMIT_ENABLED = false
-    
+
     const middleware = rateLimitMiddleware()
-    
+
     await middleware(ctx, next)
     await middleware(ctx, next)
-    
+
     expect(next).toHaveBeenCalledTimes(2)
-    
+
     // Restore
     vi.mocked(env).RATE_LIMIT_ENABLED = true
   })

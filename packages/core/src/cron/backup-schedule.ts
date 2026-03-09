@@ -16,7 +16,8 @@ export function startBackupSchedule() {
       await backupService.createBackup('scheduled', 'SYSTEM')
       // Also cleanup old backups
       await backupService.cleanupOldBackups()
-    } catch (error) {
+    }
+    catch (error) {
       logger.error({ err: error }, 'Scheduled backup failed')
     }
   })

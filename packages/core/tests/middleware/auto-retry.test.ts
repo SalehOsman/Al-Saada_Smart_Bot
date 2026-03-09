@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { GrammyError } from 'grammy'
 import { autoRetryMiddleware } from '../../src/bot/middleware/auto-retry.middleware'
-import { GrammyError, HttpError } from 'grammy'
 
-describe('Auto Retry Middleware (API Transformer)', () => {
+describe('auto Retry Middleware (API Transformer)', () => {
   let prev: any
   let method: string
   let payload: any
@@ -24,9 +24,9 @@ describe('Auto Retry Middleware (API Transformer)', () => {
   it('should call prev normally when no error occurs', async () => {
     prev.mockResolvedValue({ ok: true, result: { message_id: 1 } })
     const transformer = autoRetryMiddleware()
-    
+
     const result = await transformer(prev, method, payload, signal)
-    
+
     expect(prev).toHaveBeenCalledWith(method, payload, signal)
     expect(result).toEqual({ ok: true, result: { message_id: 1 } })
   })
@@ -38,15 +38,15 @@ describe('Auto Retry Middleware (API Transformer)', () => {
     prev.mockRejectedValue(error400)
 
     const transformer = autoRetryMiddleware()
-    
+
     // The plugin should rethrow the 400 error immediately
     await expect(transformer(prev, method, payload, signal)).rejects.toThrow(GrammyError)
     expect(prev).toHaveBeenCalledTimes(1)
   })
 
   it.todo('should retry on transient HTTP errors (e.g. 502)', () => {
-    // Note: Unit testing the @grammyjs/auto-retry internals (the retry loop and backoff) 
-    // is not feasible as it requires mocking global timers and multiple call cycles 
+    // Note: Unit testing the @grammyjs/auto-retry internals (the retry loop and backoff)
+    // is not feasible as it requires mocking global timers and multiple call cycles
     // inside the external plugin. Functional verification is handled via integration tests.
   })
 })
