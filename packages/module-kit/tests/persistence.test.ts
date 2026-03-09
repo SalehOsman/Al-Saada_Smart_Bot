@@ -101,6 +101,6 @@ describe('save() helper', () => {
     })).rejects.toThrow('DB Error')
 
     expect(mockRedis.del).not.toHaveBeenCalled()
-    expect(mockCtx.reply).toHaveBeenCalledWith('module-kit-save-failed')
+    expect(mockCtx.reply).toHaveBeenCalledWith('module-kit-save-failed-persistent')
   })
 })

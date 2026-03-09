@@ -31,7 +31,8 @@ vi.mock('node:child_process', () => ({
   spawn: vi.fn(),
 }))
 
-vi.mock('node:crypto', () => {
+vi.mock('node:crypto', async () => {
+  const { Buffer } = await import('node:buffer')
   const m = {
     createCipheriv: vi.fn(),
     createDecipheriv: vi.fn(),
