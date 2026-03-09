@@ -31,7 +31,7 @@ This release completes Feature 005: Production Readiness — all 26 tasks across
 
 ---
 
-## [v0.1.0] - 2026-03-07
+## [v0.1.0] - 2026-03-07 (no separate tag — merged into v0.3.0)
 
 This release represents the completion of Layer 1 (Platform Core) Phases 1 through 9, and the stabilization phase of Phase 10. The platform engine is now fully active with 80.97% test coverage.
 

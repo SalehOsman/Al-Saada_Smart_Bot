@@ -297,22 +297,22 @@
 - [x] T072 Verify 80% code coverage across engine code (CURRENT: 80.97% - MET 80% threshold after excluding UI-layer code)
 - [x] T073 Code cleanup, formatting, and final linting
 - [x] T074 Update quickstart.md with actual commands and verification steps
-- [ ] T098 [P] Verify Platform-First Gate: confirm `modules/` directory contains ZERO implemented module files. Run: `find modules/ -name '*.ts' | grep -v '.gitkeep'` — must return empty output. Document result in commit message.
+- [x] T098 [P] Verify Platform-First Gate: confirm `modules/` directory contains ZERO implemented module files. ✅ Verified 2026-03-09 — modules/ contains only .gitkeep.
 - [x] T118 [P] Fix session middleware test failures in `packages/core/tests/session.test.ts` by adding `update: vi.fn()` to `mockPrisma.user`.
 - [x] T119 [P] Update menu handler test assertions in `packages/core/tests/unit/bot/handlers/menu.test.ts` to expect `-` instead of `_` (e.g. `menu-super-admin` instead of `menu-super_admin`) and align with the new keyboard structure.
 - [x] T120 [P] Update user journey test assertions in `packages/core/tests/e2e/user-journey.test.ts` to expect `-` instead of `_` for menu roles.
 - [x] T114 [P] Execute Zero-Defect Gate verification (all tests pass, no lint errors, specs fully aligned). This is a MANDATORY recurring gate — MUST be executed before closing ANY phase, not just Phase 10. Each phase completion requires: `npm test` passes 100%, `npm run lint` has zero errors, and spec/tasks alignment is verified.
-- [ ] T075 Final commit and tag v0.1.0. **Note (M1):** The 90/10 rule (90% config, max 10% hook code per module) cannot be verified until Phase 3 (first business module). Add compliance verification to Phase 3 tasks.
-- [ ] T078 [P] [NFR-001/003] Write and execute load test script using k6 to verify bot handles 200 concurrent users and maintains <500ms p95 response time.
+- [x] T075 ~~Tag v0.1.0~~ — CANCELLED: v0.1.0 merged into v0.3.0 release (2026-03-09). No separate tag needed.
+- [ ] T078 [P] [NFR-001/003] Write and execute load test script using k6 to verify bot handles 200 concurrent users and maintains <500ms p95 response time. **DEFERRED: to after Phase 4 (AI Assistant) completion.**
 - [x] T079 [P] [NFR-003] Write integration test to verify Redis fallback behavior (switching to in-memory map when Redis is down and auto-reconnecting).
 - [x] T080 Verify SC-003: Confirm audit logs capture 100% of 25 defined actions from FR-026 (no gaps)
-- [ ] T093 Verify SC-001: Manual test — first-time bootstrap user completes full flow (name → phone → national ID → confirm → Super Admin welcome) in ≤ 30 seconds
-- [ ] T094 Verify SC-004: Manual test — session state (current section, navigation) persists correctly across bot interactions within a 24-hour window; new session starts after 24hr inactivity
-- [ ] T095 Verify SC-005 + SC-006: Manual test — maintenance mode toggle propagates to all non-Super Admin users within 5 seconds; module discovery completes within 10 seconds of bot startup. NOTE (G1): Consider adding a basic vitest or script-based automated performance check for bot initialization time (<10s requirement) to supplement manual verification.
-- [ ] T096 Verify SC-007 + SC-010: Manual test — all user-facing messages are in Arabic with no hardcoded strings; Super Admin can create, rename, reorder, and delete sections (including sub-sections) without any developer intervention
-- [ ] T096-A [P] Verify SC-011: Manual test — section hierarchy navigation allows users to navigate main sections → sub-sections → modules with back buttons at each level
-- [ ] T096-B [P] Verify RTL UI/UX: Manual test — verify all Arabic text renders correctly with proper RTL alignment across different Telegram clients (Android, iOS, Desktop). Telegram handles RTL natively; confirm no layout issues with mixed AR/EN content in menus, buttons, and messages.
-- [ ] T098 [P] Sentry Integration (Constitution Principle XI — Observability): Configure Sentry error tracking opt-in via `SENTRY_DSN` env var. When set, integrate `@sentry/node` into the grammY error handler. MUST enable PII filtering (`sendDefaultPii: false`) and strip `nationalId`/`phone` from breadcrumbs. When `SENTRY_DSN` is unset, Sentry is disabled (no-op). This is NOT a blocker for v0.1.0 — it's additive for production readiness.
+- [ ] T093 Verify SC-001: Manual test — first-time bootstrap user completes full flow. **DEFERRED: to after Phase 4 (AI Assistant) completion.**
+- [ ] T094 Verify SC-004: Manual test — session state persistence. **DEFERRED: to after Phase 4 (AI Assistant) completion.**
+- [ ] T095 Verify SC-005 + SC-006: Manual test — maintenance + module discovery timing. **DEFERRED: to after Phase 4 (AI Assistant) completion.**
+- [ ] T096 Verify SC-007 + SC-010: Manual test — i18n + section management. **DEFERRED: to after Phase 4 (AI Assistant) completion.**
+- [ ] T096-A [P] Verify SC-011: Manual test — hierarchy navigation. **DEFERRED: to after Phase 4 (AI Assistant) completion.**
+- [ ] T096-B [P] Verify RTL UI/UX: Manual test — RTL alignment. **DEFERRED: to after Phase 4 (AI Assistant) completion.**
+- [x] T098 [P] Sentry Integration — ✅ COMPLETED in 005-production-readiness (T012-T016, v0.3.0).
 
 **Checkpoint**: Platform Core complete - ready for production deployment
 
