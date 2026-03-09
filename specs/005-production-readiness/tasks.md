@@ -57,11 +57,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T012 [US2] Create unit tests for `SentryService` in `packages/core/tests/monitoring/sentry.service.test.ts` (Principle IV)
-- [ ] T013 [US2] Implement `SentryService` in `packages/core/src/bot/monitoring/sentry.service.ts` with beforeSend PII filtering
-- [ ] T014 [US2] Create unit tests for `ErrorAlertService` in `packages/core/tests/monitoring/error-alert.service.test.ts` (Principle IV)
-- [ ] T015 [US2] Implement `ErrorAlertService` in `packages/core/src/bot/monitoring/error-alert.service.ts` with alert throttling for SUPER_ADMIN
-- [ ] T016 [US2] Register Sentry middleware and global error handlers in bot initialization
+- [X] T012 [US2] Create unit tests for `SentryService` in `packages/core/tests/monitoring/sentry.service.test.ts` (Principle IV)
+- [X] T013 [US2] Implement `SentryService` in `packages/core/src/bot/monitoring/sentry.service.ts` with beforeSend PII filtering
+- [X] T014 [US2] Create unit tests for `ErrorAlertService` in `packages/core/tests/monitoring/error-alert.service.test.ts` (Principle IV)
+- [X] T015 [US2] Implement `ErrorAlertService` in `packages/core/src/bot/monitoring/error-alert.service.ts` with alert throttling for SUPER_ADMIN
+- [X] T016 [US2] Register Sentry middleware and global error handlers in bot initialization
 
 **Checkpoint**: User Story 2 is functional and testable independently.
 

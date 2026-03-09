@@ -30,14 +30,14 @@ export function maskPII(text: string): string {
 
   let filtered = text;
 
-  // Mask phone numbers (keep first 4 digits)
-  filtered = filtered.replace(PII_PATTERNS.PHONE, (match) => {
-    return `${match.slice(0, 4)}*******`;
-  });
-
   // Mask National ID (keep first 3 digits)
   filtered = filtered.replace(PII_PATTERNS.NATIONAL_ID, (match) => {
     return `${match.slice(0, 3)}***********`;
+  });
+
+  // Mask phone numbers (keep first 4 digits)
+  filtered = filtered.replace(PII_PATTERNS.PHONE, (match) => {
+    return `${match.slice(0, 4)}*******`;
   });
 
   // Mask Email (keep first 2 chars and domain)

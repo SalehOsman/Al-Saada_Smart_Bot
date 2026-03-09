@@ -23,6 +23,13 @@ import { backupActionsHandler, backupHandler, backupRestoreTextHandler, backupsH
 
 import { editSectionActionHandler, sectionSetParentHandler, sectionsCallbackHandler } from './handlers/sections'
 
+// Monitoring and Error Handling (US2)
+import { sentryService } from './monitoring/sentry.service'
+import { sentryMiddleware } from './monitoring/sentry.middleware'
+
+// Initialize Sentry monitoring (FR-001)
+sentryService.init()
+
 // RBAC and user status check (T111, T029)
 import { rbacMiddleware } from './middlewares/rbac'
 
@@ -47,6 +54,9 @@ import { auditActionsHandler, auditHandler } from './handlers/audit'
 export const bot = new Bot<BotContext>(env.BOT_TOKEN)
 
 // --- Middlewares ---
+
+// Sentry context (US2)
+bot.use(sentryMiddleware)
 
 // Error handling middleware
 bot.catch(errorHandler)

@@ -27,6 +27,21 @@ const envSchema = z.object({
 
   // Super Admin Configuration
   INITIAL_SUPER_ADMIN_ID: z.coerce.number().int().positive().optional(),
+
+  // Sentry Configuration
+  SENTRY_DSN: z.string().url().optional(),
+
+  // Backup Configuration
+  BACKUP_ENABLED: z.coerce.boolean().default(false),
+  BACKUP_SCHEDULE: z.string().default('0 2 * * *'),
+  BACKUP_RETENTION_DAYS: z.coerce.number().default(30),
+  BACKUP_DIR: z.string().default('./backups'),
+  BACKUP_ENCRYPTION_KEY: z.string().optional(),
+
+  // Rate Limiting Configuration
+  RATE_LIMIT_ENABLED: z.coerce.boolean().default(true),
+  RATE_LIMIT_REQUESTS_PER_MINUTE: z.coerce.number().default(30),
+  RATE_LIMIT_WINDOW_MINUTES: z.coerce.number().default(1),
 })
 
 // Validate environment variables

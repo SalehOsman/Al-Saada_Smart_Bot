@@ -197,10 +197,11 @@ This feature does not expose new user-facing APIs. Integration points are:
    - `restoreBackup(id: string)` → Promise<void>
    - `deleteBackup(id: string)` → Promise<void>
 
-2. **Bot Commands** (via Telegram):
-   - `/backup` (Super Admin only) - Trigger manual backup
-   - `/restore <id>` (Super Admin only) - Restore from backup
-   - `/backups` (Super Admin only) - List available backups
+2. **Bot UI & Commands** (via Telegram):
+   - **Settings > Backup Menu**: Main entry point for backup management.
+   - **Inline Buttons**: [Create Backup], [List Backups], [Restore Selected].
+   - **Fallback Commands**: `/backup`, `/restore <id>`, `/backups`.
+   - **Interactive Flow**: Two-step approval for restore using generated code buttons.
 
 3. **Sentry Integration** (internal):
    - `initSentry()` → void
