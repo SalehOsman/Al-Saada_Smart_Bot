@@ -1,6 +1,6 @@
 # Al-Saada Smart Bot — Development Roadmap
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Last Updated:** 2026-03-09
 **Status:** Active
 **Document Owner:** Technical Advisor
@@ -55,7 +55,7 @@ Layer 3 (Modules):        ░░░░░░░░░░░░░░░░░░
 
 ### ⚠️ Known Issues
 
-- 5 LOW priority UX improvements in Module Kit (see `backlog.md`)
+- No known blocking issues. Module Kit backlog (BL-001→005) has been fully implemented.
 
 ---
 
@@ -85,164 +85,77 @@ Prepare the platform for safe, reliable production deployment with proper monito
 
 ---
 
-### PR-001: Sentry Integration
+### PR-001: Sentry Integration ✅ IMPLEMENTED
 
 **Purpose:** Real-time error tracking and alerting for production issues.
 
-**Implementation:**
+**Actual Implementation:**
+- `packages/core/src/bot/monitoring/sentry.service.ts` — SentryService with opt-in via SENTRY_DSN, beforeSend PII filtering using shared `filterPIIObject`
+- `packages/core/src/bot/monitoring/sentry.middleware.ts` — Enriches Sentry scope with user ID, chat ID, update type
+- `packages/core/src/bot/monitoring/error-alert.service.ts` — Telegram alerts to SUPER_ADMINs with 5-min throttling, dependency injection via `setBotApi()`
+- `packages/core/src/bot/middlewares/error.ts` — Global error handler captures to Sentry + triggers alerts
 
-```typescript
-// New files:
-- packages/core/src/services/sentry.ts
-- packages/core/src/bot/middleware/sentry.ts
-
-// Modified files:
-- packages/core/src/bot/index.ts
-- packages/core/src/main.ts
-- .env.example (add SENTRY_DSN)
-```
-
-**Features:**
+**Features delivered:**
 - ✅ Opt-in via `SENTRY_DSN` environment variable
-- ✅ PII filtering via `beforeSend` hook
+- ✅ PII filtering via `beforeSend` hook (Egyptian phones, national IDs, emails)
 - ✅ Self-hosted Sentry support
-- ✅ Telegram alerts for critical errors (via BullMQ)
-- ✅ Performance monitoring (Prisma query tracing)
-
-**Constitutional Addition Required:**
-
-```markdown
-### Principle XI: Observability
-- Sentry MUST be opt-in via SENTRY_DSN environment variable
-- PII MUST be filtered via beforeSend hook before sending to Sentry
-- Self-hosted Sentry option MUST be supported for sensitive deployments
-- Error alerts MUST be sent to SUPER_ADMIN via Telegram
-```
+- ✅ Telegram alerts for critical errors (direct API, not BullMQ)
+- ✅ Constitution Principle XI: Observability — implemented
 
 ---
 
-### PR-002: Rate Limiting & Auto-Retry
+### PR-002: Rate Limiting & Auto-Retry ✅ IMPLEMENTED
 
 **Purpose:** Protect against Telegram API flood limits and user spam.
 
-**Implementation:**
-
-```typescript
-// Dependencies:
-npm install @grammyjs/auto-retry @grammyjs/ratelimiter
-
-// Modified files:
-- packages/core/src/bot/index.ts
-- packages/core/src/locales/ar.ftl (add rate-limit-exceeded)
-- packages/core/src/locales/en.ftl (add rate-limit-exceeded)
-```
-
-**Configuration:**
-```typescript
-bot.api.config.use(autoRetry())
-
-bot.use(limit({
-  timeFrame: 2000, // 2 seconds
-  limit: 3, // 3 requests max
-  storageClient: redisClient,
-  onLimitExceeded: async (ctx) => {
-    await ctx.reply(ctx.t('rate-limit-exceeded'))
-  },
-}))
-```
-
-**i18n Keys:**
-```fluent
-# ar.ftl
-rate-limit-exceeded = ⚠️ عذراً، الرجاء الانتظار قليلاً قبل إرسال المزيد من الطلبات.
-
-# en.ftl
-rate-limit-exceeded = ⚠️ Please wait before sending more requests.
-```
+**Actual Implementation:**
+- `packages/core/src/bot/middleware/rate-limit.middleware.ts` — Per-user rate limiting via `@grammyjs/ratelimiter` with SUPER_ADMIN bypass
+- `packages/core/src/bot/middleware/auto-retry.middleware.ts` — API transformer via `@grammyjs/auto-retry` (max 3 retries, exponential backoff)
+- Configuration via env: `RATE_LIMIT_ENABLED`, `RATE_LIMIT_REQUESTS_PER_MINUTE`, `RATE_LIMIT_WINDOW_MINUTES`
+- i18n key: `error-rate-limit` (with `{ $seconds }` param)
 
 ---
 
-### PR-003: CI/CD Pipeline
+### PR-003: CI/CD Pipeline ✅ IMPLEMENTED
 
 **Purpose:** Automated quality checks on every pull request.
 
-**Implementation:**
+**Actual Implementation — 3 separate workflows:**
+- `.github/workflows/lint.yml` — ESLint check (push to main + all PRs)
+- `.github/workflows/test.yml` — Vitest suite with Prisma generate (push to main + all PRs)
+- `.github/workflows/ci.yml` — TypeScript typecheck + Prisma schema validation (push to main + all PRs)
+- All use `actions/checkout@v4` + `actions/setup-node@v4` + Node 20 + npm cache
+- GitNexus: placeholder step (TODO when CLI available)
+- Branch Protection: must be configured manually on GitHub
 
-```yaml
-# .github/workflows/ci.yml (new file)
-name: CI
-on: [pull_request, push]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Type check
-        run: npm run typecheck
-
-      - name: Generate Prisma Client
-        run: npm run db:generate
-
-      - name: GitNexus Analysis
-        run: npx gitnexus analyze
-
-      - name: Run tests
-        run: npm run test
-
-      - name: Check migrations
-        run: npx prisma migrate diff --exit-code
-```
-
-**Benefits:**
+**Benefits delivered:**
 - ✅ Catches errors before merge
 - ✅ Enforces code quality standards
 - ✅ Validates Prisma schema changes
-- ✅ Runs full test suite (112+ tests)
-- ✅ GitNexus blast radius check
+- ✅ Runs full test suite (274 tests)
+- ✅ All PRs checked regardless of target branch
 
 ---
 
-### PR-004: Automated Backups
+### PR-004: Automated Backups ✅ IMPLEMENTED
 
 **Purpose:** Daily encrypted backups with retention policy.
 
-**Implementation:**
+**Actual Implementation:**
+- `packages/core/src/bot/services/backup.service.ts` — BackupService with pg_dump + AES-256-GCM encryption (Node.js crypto)
+- `packages/core/src/cron/backup-schedule.ts` — Daily cron job via node-cron
+- `packages/core/src/bot/handlers/backup.ts` — `/backup`, `/backups` commands with two-step interactive restore approval
+- `prisma/schema/platform.prisma` — BackupMetadata model + BackupStatus enum
+- `docker-compose.yml` — `backup_data` volume mounted at `/app/backups`
 
-```typescript
-// New files:
-- packages/core/src/cron/backup.ts
-- packages/core/src/services/backup.ts
-
-// Modified files:
-- docker-compose.yml (add backup volume)
-- packages/core/src/main.ts (register cron job)
-```
-
-**Features:**
-- ✅ Daily `pg_dump` at 3 AM Cairo time
+**Features delivered:**
+- ✅ Daily `pg_dump` with configurable schedule via `BACKUP_SCHEDULE` env
 - ✅ Local storage in Docker volume
-- ✅ Encryption with `openssl`
-- ✅ 30-day retention policy
+- ✅ AES-256-GCM encryption (Node.js crypto, not openssl)
+- ✅ Configurable retention policy via `BACKUP_RETENTION_DAYS`
 - ✅ Audit log entry on success/failure
 - ✅ Telegram notification to SUPER_ADMIN
-- ❌ Google Drive: **Optional plugin** (NOT mandatory)
-
-**Rationale for Local-Only:**
-- Simpler implementation
-- No external dependencies
-- Works in offline/air-gapped environments
-- Google Drive can be added as optional plugin in Phase 6
+- ❌ Google Drive: deferred (optional plugin for future)
 
 ---
 
@@ -530,15 +443,15 @@ Add advanced dashboard features and Module Kit UX improvements based on user fee
 | Advanced Audit Explorer | Security center with filtering | 1 week |
 | BI/Analytics | Tremor charts for usage stats | 1 week |
 
-#### 2. Module Kit UX (from backlog.md)
+#### 2. Module Kit UX ~~(from backlog.md)~~ ✅ ALREADY IMPLEMENTED
 
-| ID | Feature | Time |
-|----|---------|------|
-| BL-001 | Redis failure warning | 1 hour |
-| BL-002 | save() retry mechanism | 2 hours |
-| BL-003 | Conversation timeout | 3-4 hours |
-| BL-004 | confirm() empty guard | 30 min |
-| BL-005 | Doc alignment | 15 min |
+| ID | Feature | Status |
+|----|---------|--------|
+| BL-001 | Redis failure warning | ✅ Implemented (v0.3.0) |
+| BL-002 | save() retry mechanism | ✅ Implemented (v0.3.0) |
+| BL-003 | Conversation timeout | ✅ Implemented (v0.3.0) |
+| BL-004 | confirm() empty guard | ✅ Implemented (v0.3.0) |
+| BL-005 | Doc alignment | ✅ Implemented (v0.3.0) |
 
 #### 3. Optional Extensions (On-Demand)
 
@@ -665,31 +578,15 @@ Total Duration: ~21 weeks (5 months)
 
 ## Next Steps
 
-### Immediate Actions (Week 1)
+### Immediate Actions
 
-1. **Create Feature 005 Spec**
-   ```bash
-   /speckit.specify Create Feature 005: Production Readiness
-   Include: Sentry, Rate Limiting, CI/CD, Local Backups
-   Exclude: Google Drive (optional plugin)
-   ```
+1. **Start Phase 4: AI Assistant (002-ai-assistant)**
+   - Update `docker-compose.yml`: replace `postgres:16` with `pgvector/pgvector:pg16` + add Ollama service
+   - Create `packages/ai-assistant/` structure
+   - Follow existing spec: `specs/002-ai-assistant/spec.md`
 
-2. **Update Constitution**
-   ```bash
-   /speckit.constitution Add Principle XI: Observability
-   ```
-
-3. **Create AI Security Spec**
-   ```bash
-   # Move AI security from Enhancement Proposals to:
-   specs/002-ai-assistant/security.md
-   ```
-
-4. **Start PR-001 Implementation**
-   - Install @sentry/node
-   - Create sentry.ts service
-   - Add middleware
-   - Test with sample errors
+2. **Create AI Security Spec** (if not already done)
+   - `specs/002-ai-assistant/security.md` — RBAC in RAG, PII masking for cloud LLMs, vector encryption
 
 ---
 
@@ -698,6 +595,7 @@ Total Duration: ~21 weeks (5 months)
 | Version | Date | Changes | Author |
 |---------|------|---------|--------|
 | 1.0.0 | 2026-03-04 | Initial roadmap created from Enhancement Proposals + Dashboard & Scaling | Technical Advisor |
+| 1.1.0 | 2026-03-09 | Phase 3 completed (v0.3.0), updated PR-001→004 with actual implementation details, backlog BL-001→005 marked implemented, Next Steps updated for Phase 4 | Technical Advisor |
 
 ---
 
