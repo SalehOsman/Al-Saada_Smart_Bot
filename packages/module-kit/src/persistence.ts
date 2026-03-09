@@ -21,6 +21,8 @@ export async function save(
     throw new Error('User ID not found in context')
   }
 
+  let userNotified = false
+
   try {
     // 1. Execute database action with max 1 retry (BL-002)
     try {
@@ -34,7 +36,7 @@ export async function save(
       catch (retryError) {
         logger.error(`Persistent save failure for module ${moduleSlug} after retry:`, retryError)
         await ctx.reply(ctx.t('module-kit-save-failed-persistent'))
-        // Preserve draft by not deleting it from Redis (delete is skipped)
+        userNotified = true
         throw retryError
       }
     }
@@ -64,21 +66,12 @@ export async function save(
     await redis.del(redisKey)
   }
   catch (error: any) {
-    // If it's the retryError we already handled and threw, just re-throw
-    if (error.message && error.message.includes('Persistent save failure')) {
-      throw error
-    }
-
     logger.error(`Failed to complete save sequence for module ${moduleSlug}:`, error)
-    // Only reply if we haven't already replied in the retry catch
-    if (!ctx.callbackQuery) { // Heuristic to check if we might have already replied
-      // Actually, it's safer to check if the error was already handled
-    }
 
-    // Fallback error message if not handled by retry block
-    if (!error.message?.includes('Persistent save failure')) {
+    if (!userNotified) {
       await ctx.reply(ctx.t('module-kit-save-failed'))
     }
+
     throw error
   }
 }
