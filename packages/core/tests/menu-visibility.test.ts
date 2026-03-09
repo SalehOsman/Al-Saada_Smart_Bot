@@ -20,6 +20,24 @@ vi.mock('../src/utils/logger', () => ({
   default: { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
 }))
 
+vi.mock('../src/cache/redis', () => ({
+  default: {
+    get: vi.fn(),
+    set: vi.fn(),
+    setex: vi.fn(),
+    del: vi.fn(),
+    publish: vi.fn(),
+    on: vi.fn(),
+    quit: vi.fn(),
+  },
+}))
+
+vi.mock('../src/services/maintenance', () => ({
+  maintenanceService: {
+    isMaintenanceMode: vi.fn().mockResolvedValue(false),
+  },
+}))
+
 describe('menu Visibility (US5)', () => {
   const mockCtx = {
     from: { id: 12345 },

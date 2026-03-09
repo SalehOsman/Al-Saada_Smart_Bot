@@ -14,6 +14,24 @@ const { mockPrisma } = vi.hoisted(() => ({
 vi.mock('../../src/database/prisma', () => ({ prisma: mockPrisma }))
 vi.mock('../../src/utils/logger', () => ({ default: { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() } }))
 
+vi.mock('../../src/cache/redis', () => ({
+  default: {
+    get: vi.fn(),
+    set: vi.fn(),
+    setex: vi.fn(),
+    del: vi.fn(),
+    publish: vi.fn(),
+    on: vi.fn(),
+    quit: vi.fn(),
+  },
+}))
+
+vi.mock('../../src/services/maintenance', () => ({
+  maintenanceService: {
+    isMaintenanceMode: vi.fn().mockResolvedValue(false),
+  },
+}))
+
 // We need to mock moduleLoader for menuHandler
 vi.mock('../../src/bot/module-loader', () => ({
   moduleLoader: {
