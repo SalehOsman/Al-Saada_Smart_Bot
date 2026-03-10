@@ -78,7 +78,7 @@ export async function showMainSectionsMenu(ctx: BotContext): Promise<void> {
 
 /**
  * Display sub-sections for a main section
- * Shows sub-sections + back button
+ * Shows sub-sections + direct modules + back button
  */
 export async function showSubSectionsMenu(ctx: BotContext, parentSectionId: string): Promise<void> {
   const parentSection = await prisma.section.findUnique({
@@ -87,11 +87,10 @@ export async function showSubSectionsMenu(ctx: BotContext, parentSectionId: stri
       children: {
         where: { isActive: true },
         orderBy: [{ orderIndex: 'asc' }, { name: 'asc' }],
-        include: {
-          _count: {
-            select: { modules: { where: { isActive: true } } },
-          },
-        },
+      },
+      modules: {
+        where: { isActive: true },
+        orderBy: { orderIndex: 'asc' },
       },
     },
   })
@@ -103,29 +102,49 @@ export async function showSubSectionsMenu(ctx: BotContext, parentSectionId: stri
   }
 
   const subSections = parentSection.children ?? []
+  const directModules = parentSection.modules ?? []
 
-  if (subSections.length === 0) {
-    // No sub-sections, show modules directly
-    await showSectionModules(ctx, parentSectionId)
+  if (subSections.length === 0 && directModules.length === 0) {
+    // Empty section message
+    ctx.answerCallbackQuery()
+    const keyboard = [
+      [{ text: ctx.t('button-back-to-sections'), callback_data: 'menu:sections' }],
+    ]
+    ctx.editMessageText(ctx.t('section-empty-modules'), {
+      reply_markup: { inline_keyboard: keyboard },
+    })
     return
   }
 
   const keyboard: any[][] = []
 
+  // 1. Add Sub-sections
   for (const section of subSections) {
     keyboard.push([
       {
-        text: `${section.icon} ${ctx.t(section.name as any)}`,
+        text: `📂 ${section.icon} ${ctx.t(section.name as any)}`,
         callback_data: `section:view:${section.id}`,
       },
     ])
   }
 
+  // 2. Add Direct Modules
+  const allLoadedModules = moduleLoader.getLoadedModules()
+  const sectionModules = allLoadedModules.filter((m) => {
+    return m.config.sectionSlug === parentSection.slug
+  }).sort((a, b) => (a.config.orderIndex ?? 0) - (b.config.orderIndex ?? 0))
+
+  for (const mod of sectionModules) {
+    keyboard.push([
+      {
+        text: `${mod.config.icon} ${ctx.t(mod.config.name as any)}`,
+        callback_data: `mod:${mod.slug}`,
+      },
+    ])
+  }
+
   keyboard.push([
-    { text: ctx.t('button-add-subsection'), callback_data: `section:add:${parentSectionId}` },
-  ])
-  keyboard.push([
-    { text: ctx.t('button-back-to-sections'), callback_data: 'menu:sections' },
+    { text: ctx.t('button-back-to-sections'), callback_data: 'menu:main' },
   ])
 
   ctx.answerCallbackQuery()
@@ -144,7 +163,7 @@ export async function showSectionModules(ctx: BotContext, sectionId: string): Pr
   const section = await prisma.section.findUnique({
     where: { id: sectionId },
     include: {
-      children: true,
+      children: { where: { isActive: true } },
       modules: {
         where: { isActive: true },
         orderBy: { orderIndex: 'asc' },
@@ -159,49 +178,34 @@ export async function showSectionModules(ctx: BotContext, sectionId: string): Pr
     return
   }
 
-  const hasSubSections = (section.children ?? []).length > 0
-  const modules = section.modules ?? []
-
-  if (hasSubSections) {
-    // Main section with sub-sections, show sub-sections instead of modules
+  // If it's a main section with children, show the sub-sections menu
+  if (!section.parentId && section.children.length > 0) {
     await showSubSectionsMenu(ctx, section.id)
     return
   }
 
-  if (modules.length === 0) {
-    // Empty section message
-    ctx.answerCallbackQuery()
-    const keyboard = [
-      [{ text: ctx.t('button-back-to-sections'), callback_data: 'menu:sections' }],
-    ]
-    ctx.editMessageText(ctx.t('section-empty-modules'), {
-      reply_markup: { inline_keyboard: keyboard },
-    })
-    return
-  }
-
-  // Display modules using moduleLoader (single source of truth for loaded modules)
+  // Otherwise, show modules for this specific (sub)section
   const allLoadedModules = moduleLoader.getLoadedModules()
   const sectionModules = allLoadedModules.filter((m) => {
-    // Match by section: check if the module's sectionSlug maps to this section
     return m.config.sectionSlug === section.slug
   }).sort((a, b) => (a.config.orderIndex ?? 0) - (b.config.orderIndex ?? 0))
 
   const keyboard: any[][] = []
 
-  if (sectionModules.length > 0) {
-    for (const mod of sectionModules) {
-      keyboard.push([
-        {
-          text: `${mod.config.icon} ${ctx.t(mod.config.name as any)}`,
-          callback_data: `mod:${mod.slug}`,
-        },
-      ])
-    }
+  for (const mod of sectionModules) {
+    keyboard.push([
+      {
+        text: `${mod.config.icon} ${ctx.t(mod.config.name as any)}`,
+        callback_data: `mod:${mod.slug}`,
+      },
+    ])
   }
 
+  // Determine back button destination
+  const backData = section.parentId ? `section:view:${section.parentId}` : 'menu:main'
+
   keyboard.push([
-    { text: ctx.t('button-back-to-sections'), callback_data: 'menu:sections' },
+    { text: ctx.t('button-back-short'), callback_data: backData },
   ])
 
   ctx.answerCallbackQuery()
@@ -265,34 +269,34 @@ export async function handleBackNavigation(ctx: BotContext): Promise<void> {
     // At top level, go back to main menu
     ctx.session.currentMenu = []
     const { menuHandler } = await import('../handlers/menu')
-    menuHandler(ctx)
+    await menuHandler(ctx)
     return
   }
 
   // Pop current level
-  const previousMenu = currentMenu[currentMenu.length - 2] // The one before current
   ctx.session.currentMenu = currentMenu.slice(0, -1)
+  const previousMenu = ctx.session.currentMenu[ctx.session.currentMenu.length - 1]
 
   // Navigate to previous level
   const previousMenuItem = previousMenu as any
   if (previousMenuItem.level === 'sections') {
-    showMainSectionsMenu(ctx)
+    await showMainSectionsMenu(ctx)
     return
   }
 
   if (previousMenuItem.level === 'section') {
-    showSectionModules(ctx, previousMenuItem.id)
+    await showSectionModules(ctx, previousMenuItem.id)
     return
   }
 
   if (previousMenuItem.level === 'main') {
     const { menuHandler } = await import('../handlers/menu')
-    menuHandler(ctx)
+    await menuHandler(ctx)
     return
   }
 
   // Default back to main menu
   ctx.session.currentMenu = []
   const { menuHandler } = await import('../handlers/menu')
-  menuHandler(ctx)
+  await menuHandler(ctx)
 }

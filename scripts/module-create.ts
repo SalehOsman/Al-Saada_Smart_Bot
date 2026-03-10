@@ -96,23 +96,6 @@ async function main() {
         },
         {
           type: 'input',
-          name: 'sectionSlug',
-          message: 'Enter section slug (e.g., "operations"):',
-          validate: async (input) => {
-            try {
-              const section = await prisma.section.findUnique({ where: { slug: input } })
-              if (section)
-                return true
-              return `Section "${input}" not found in database. Please ensure the section exists first.`
-            }
-            catch {
-              console.warn(`\n⚠️ Warning: Database connection failed. Skipping validation for sectionSlug: "${input}".`)
-              return true // Allow continuation even if DB is unreachable (Issue F1)
-            }
-          },
-        },
-        {
-          type: 'input',
           name: 'icon',
           message: 'Enter emoji icon:',
           default: '📦',
@@ -132,10 +115,77 @@ async function main() {
       ])
       name = response.name
       nameEn = response.nameEn
-      sectionSlug = response.sectionSlug
       icon = response.icon
       includeEdit = response.includeEdit
       includeHooks = response.includeHooks
+
+      // --- Hierarchical Section Selection (FR-002, FR-003, FR-004) ---
+      console.log('\n📂 Selecting Section Hierarchy...')
+
+      // 1. Select Main Section
+      const mainSections = await prisma.section.findMany({
+        where: { parentId: null },
+        orderBy: { name: 'asc' },
+      })
+
+      const mainSectionChoices = [
+        ...mainSections.map(s => ({ name: `${s.icon} ${s.name} (${s.slug})`, value: s })),
+        new inquirer.Separator(),
+        { name: '➕ Create New Main Section', value: 'CREATE_NEW' },
+      ]
+
+      const { mainSelection } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'mainSelection',
+          message: 'Choose Main Section:',
+          choices: mainSectionChoices,
+        },
+      ])
+
+      let selectedMainSection
+      if (mainSelection === 'CREATE_NEW') {
+        selectedMainSection = await createNewSectionPrompt(prisma, null)
+      }
+      else {
+        selectedMainSection = mainSelection
+      }
+
+      // 2. Select Sub-section
+      const subSections = await prisma.section.findMany({
+        where: { parentId: selectedMainSection.id },
+        orderBy: { name: 'asc' },
+      })
+
+      const subSectionChoices = [
+        ...subSections.map(s => ({ name: `${s.icon} ${s.name} (${s.slug})`, value: s })),
+        new inquirer.Separator(),
+        { name: '➕ Create New Sub-section', value: 'CREATE_NEW' },
+        { name: '⏭️ Skip (Place directly in Main Section)', value: 'SKIP' },
+      ]
+
+      const { subSelection } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'subSelection',
+          message: `Choose Sub-section for "${selectedMainSection.name}":`,
+          choices: subSectionChoices,
+        },
+      ])
+
+      let finalSection
+      if (subSelection === 'CREATE_NEW') {
+        finalSection = await createNewSectionPrompt(prisma, selectedMainSection.id)
+      }
+      else if (subSelection === 'SKIP') {
+        finalSection = selectedMainSection
+      }
+      else {
+        finalSection = subSelection
+      }
+
+      sectionSlug = finalSection.slug
+      console.log(`✅ Selected section: ${finalSection.icon} ${finalSection.name} (${finalSection.slug})\n`)
     }
 
     console.log(`Scaffolding module "${slug}"...`)
@@ -267,3 +317,59 @@ describe('${slug} flow', () => {
 }
 
 main()
+
+/**
+ * Prompts the developer to create a new section in the database.
+ */
+async function createNewSectionPrompt(prisma: PrismaClient, parentId: string | null) {
+  const type = parentId ? 'Sub-section' : 'Main Section'
+  console.log(`\n✨ Creating New ${type}...`)
+
+  const response = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'name',
+      message: `Enter ${type} Arabic name (display text):`,
+      validate: input => input.length > 0 || 'Name is required.',
+    },
+    {
+      type: 'input',
+      name: 'nameEn',
+      message: `Enter ${type} English name (display text):`,
+      validate: input => input.length > 0 || 'English name is required.',
+    },
+    {
+      type: 'input',
+      name: 'slug',
+      message: `Enter ${type} slug (lowercase, hyphen-separated):`,
+      validate: async (input) => {
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(input))
+          return 'Invalid slug format.'
+        const existing = await prisma.section.findUnique({ where: { slug: input } })
+        if (existing)
+          return `Slug "${input}" is already taken.`
+        return true
+      },
+    },
+    {
+      type: 'input',
+      name: 'icon',
+      message: `Enter ${type} emoji icon:`,
+      default: parentId ? '🔹' : '📁',
+    },
+  ])
+
+  const section = await prisma.section.create({
+    data: {
+      slug: response.slug,
+      name: response.name,
+      nameEn: response.nameEn,
+      icon: response.icon,
+      parentId,
+      orderIndex: 0,
+    },
+  })
+
+  console.log(`✅ ${type} "${section.name}" created successfully.`)
+  return section
+}

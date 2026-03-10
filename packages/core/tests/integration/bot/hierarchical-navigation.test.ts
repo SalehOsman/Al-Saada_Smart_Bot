@@ -15,7 +15,7 @@ const { mockPrisma } = vi.hoisted(() => ({
 vi.mock('../../../src/database/prisma', () => ({ prisma: mockPrisma }))
 vi.mock('../../../src/bot/module-loader', () => ({
   moduleLoader: {
-    getLoadedModules: vi.fn(),
+    getLoadedModules: vi.fn(() => []),
   },
 }))
 
@@ -42,7 +42,8 @@ describe('hierarchical navigation integration (T040-A)', () => {
     }))
 
     const replyMarkup = ctx.reply.mock.calls[0][1].reply_markup
-    expect(replyMarkup.inline_keyboard.length).toBe(4) // S1, S2, Add, Back
+    // S1, S2, Add, Back
+    expect(replyMarkup.inline_keyboard.length).toBe(4)
     expect(replyMarkup.inline_keyboard[0][0].callback_data).toBe('section:view:s1')
     expect(replyMarkup.inline_keyboard[1][0].callback_data).toBe('section:view:s2')
   })
@@ -53,11 +54,10 @@ describe('hierarchical navigation integration (T040-A)', () => {
       id: 'main1',
       name: 'Main 1',
       icon: '📁',
-      children: [{ id: 'sub1', name: 'Sub 1', icon: '📄', _count: { modules: 1 } }],
+      children: [{ id: 'sub1', name: 'Sub 1', icon: '📄', isActive: true }],
       modules: [],
     }
 
-    // Ensure both findUnique calls return the same mock section
     mockPrisma.section.findUnique.mockResolvedValue(mockSection)
 
     const ctx = {
@@ -68,18 +68,10 @@ describe('hierarchical navigation integration (T040-A)', () => {
 
     await showSectionModules(ctx, 'main1')
 
-    // It should fetch children for the menu
-    expect(mockPrisma.section.findUnique).toHaveBeenCalled()
-
-    // Ensure editMessageText was called
     expect(ctx.editMessageText).toHaveBeenCalled()
-
-    const firstCall = ctx.editMessageText.mock.calls[0]
-    expect(firstCall).toBeDefined()
-    expect(firstCall[1]).toBeDefined()
-
-    const editMarkup = firstCall[1].reply_markup
+    const editMarkup = ctx.editMessageText.mock.calls[0][1].reply_markup
     expect(editMarkup.inline_keyboard[0][0].text).toContain('Sub 1')
+    expect(editMarkup.inline_keyboard[0][0].text).toContain('📂')
     expect(editMarkup.inline_keyboard[0][0].callback_data).toBe('section:view:sub1')
   })
 
@@ -148,12 +140,11 @@ describe('hierarchical navigation integration (T040-A)', () => {
     expect(ctx.editMessageText).toHaveBeenCalled()
 
     const editMarkup = ctx.editMessageText.mock.calls[0][1].reply_markup
-    // 2 modules + back button = 3 rows
     expect(editMarkup.inline_keyboard.length).toBe(3)
     expect(editMarkup.inline_keyboard[0][0].callback_data).toBe('mod:mod-a')
     expect(editMarkup.inline_keyboard[1][0].callback_data).toBe('mod:mod-b')
-    // Last row = back button
-    expect(editMarkup.inline_keyboard[2][0].callback_data).toBe('menu:sections')
+    // Last row = back button to parent
+    expect(editMarkup.inline_keyboard[2][0].callback_data).toBe('section:view:main1')
   })
 
   it('(5) breadcrumb tracking and back button works', async () => {

@@ -206,27 +206,27 @@ paths:
                     type: array
                     items:
                       type: object
-                        properties:
-                          entryId:
-                            type: string
-                            format: uuid
-                          key:
-                            type: string
-                          useCount:
-                            type: integer
+                      properties:
+                        entryId:
+                          type: string
+                          format: uuid
+                        key:
+                          type: string
+                        useCount:
+                          type: integer
                   unusedEntries:
                     type: array
                     items:
                       type: object
-                        properties:
-                          entryId:
-                            type: string
-                            format: uuid
-                          key:
-                            type: string
-                          lastUsedAt:
-                            type: string
-                            format: date-time
+                      properties:
+                        entryId:
+                          type: string
+                          format: uuid
+                        key:
+                          type: string
+                        lastUsedAt:
+                          type: string
+                          format: date-time
         '403':
           description: User is not SUPER_ADMIN
 

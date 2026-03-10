@@ -70,16 +70,25 @@ async function getAuthorizedModules(user: MenuUser): Promise<LoadedModule[]> {
     return allModules
   }
 
-  // Get all section slugs for which user has scope
-  const sectionIds = (user.adminScopes || []).map(s => s.sectionId)
-  let scopedSectionSlugs: string[] = []
+  // Get all section IDs for which user has scope
+  const scopedSectionIds = (user.adminScopes || []).map(s => s.sectionId)
+  if (scopedSectionIds.length === 0 && user.role === 'ADMIN') {
+    return []
+  }
 
-  if (sectionIds.length > 0) {
+  // For ADMIN, we need to find all sub-sections of their scoped sections
+  let authorizedSectionSlugs: string[] = []
+  if (user.role === 'ADMIN') {
     const sections = await prisma.section.findMany({
-      where: { id: { in: sectionIds } },
-      select: { id: true, slug: true },
+      where: {
+        OR: [
+          { id: { in: scopedSectionIds } },
+          { parentId: { in: scopedSectionIds } },
+        ],
+      },
+      select: { slug: true },
     })
-    scopedSectionSlugs = sections.map(s => s.slug)
+    authorizedSectionSlugs = sections.map(s => s.slug)
   }
 
   return allModules.filter((m) => {
@@ -89,9 +98,9 @@ async function getAuthorizedModules(user: MenuUser): Promise<LoadedModule[]> {
     if (!isRoleAllowed)
       return false
 
-    // ADMIN must have scope for the module's section
+    // ADMIN must have scope for the module's section or its parent
     if (user.role === 'ADMIN') {
-      return scopedSectionSlugs.includes(m.config.sectionSlug)
+      return authorizedSectionSlugs.includes(m.config.sectionSlug)
     }
 
     return true
@@ -115,7 +124,7 @@ async function showDynamicMenu(ctx: BotContext, user: MenuUser, modules: LoadedM
       : ctx.t('button-maintenance-on')
 
     keyboard.push([
-      { text: `🗂️ ${ctx.t('button-sections')}`, callback_data: 'menu-sections' },
+      { text: `🗂️ ${ctx.t('button-sections-manage')}`, callback_data: 'menu-sections' },
       { text: `👥 ${ctx.t('button-users')}`, callback_data: 'menu-users' },
     ])
     keyboard.push([
@@ -124,41 +133,67 @@ async function showDynamicMenu(ctx: BotContext, user: MenuUser, modules: LoadedM
     ])
     keyboard.push([{ text: ctx.t('button-settings'), callback_data: 'menu-settings' }])
     keyboard.push([
-      { text: `📦 ${ctx.t('button-modules')}`, callback_data: 'menu-modules' },
+      { text: `📦 ${ctx.t('button-modules-manage')}`, callback_data: 'menu-modules' },
       { text: `🔔 ${ctx.t('button-notifications')}`, callback_data: 'menu-notifications' },
     ])
   }
   else if (user.role === 'ADMIN') {
-    // ADMIN: Sections (scoped) + Users (scoped) only — no Maintenance/Audit (spec US1)
     keyboard.push([
-      { text: ctx.t('button-sections'), callback_data: 'menu-sections' },
+      { text: ctx.t('button-sections-manage'), callback_data: 'menu-sections' },
       { text: ctx.t('button-users'), callback_data: 'menu-users' },
     ])
   }
-  else {
-    // EMPLOYEE / VISITOR
-    keyboard.push([
-      { text: ctx.t('button-sections'), callback_data: 'menu-sections' },
-    ])
+
+  // 2. Add Main Sections for Navigation (FR-005)
+  const scopedSectionIds = (user.adminScopes || []).map(s => s.sectionId)
+  const allMainSections = await prisma.section.findMany({
+    where: { parentId: null, isActive: true },
+    include: { children: { where: { isActive: true }, select: { slug: true } } },
+    orderBy: { orderIndex: 'asc' },
+  })
+
+  // Determine which sections to show
+  let mainSections = allMainSections
+  if (user.role !== 'SUPER_ADMIN') {
+    const authorizedSectionSlugs = new Set(modules.map(m => m.config.sectionSlug))
+    mainSections = allMainSections.filter((s) => {
+      if (authorizedSectionSlugs.has(s.slug)) {
+        return true
+      }
+      if (s.children.some(c => authorizedSectionSlugs.has(c.slug))) {
+        return true
+      }
+      if (user.role === 'ADMIN' && scopedSectionIds.includes(s.id)) {
+        return true
+      }
+      return false
+    })
   }
 
-  // 2. Add Module Buttons (Grouped by Section could be added later, for now just append)
-  if (modules.length > 0) {
-    // Add a separator or header? Inline keyboards don't support headers well.
-    // We'll just add them in rows of 2.
-    for (let i = 0; i < modules.length; i += 2) {
+  if (mainSections.length > 0) {
+    // Add a separator label if we have many sections?
+    // keyboard.push([{ text: `--- ${ctx.t('label-sections')} ---`, callback_data: 'noop' }])
+    for (let i = 0; i < mainSections.length; i += 2) {
       const row = []
-      const m1 = modules[i]
-      row.push({ text: `${m1.config.icon} ${ctx.t(m1.config.name as any)}`, callback_data: `mod:${m1.slug}` })
+      const s1 = mainSections[i]
+      row.push({ text: `${s1.icon} ${ctx.t(s1.name as any)}`, callback_data: `section:view:${s1.id}` })
 
-      if (i + 1 < modules.length) {
-        const m2 = modules[i + 1]
-        row.push({ text: `${m2.config.icon} ${ctx.t(m2.config.name as any)}`, callback_data: `mod:${m2.slug}` })
+      if (i + 1 < mainSections.length) {
+        const s2 = mainSections[i + 1]
+        row.push({ text: `${s2.icon} ${ctx.t(s2.name as any)}`, callback_data: `section:view:${s2.id}` })
       }
-
       keyboard.push(row)
     }
   }
+
+  // 3. Add Standalone Module Buttons (those not in sections or just keep the old behavior for now)
+  // For now, we only show sections. If a module is not in a main section, it might be in a sub-section.
+  // The user navigates through sections to find modules.
+  // EXCEPT for modules that might be assigned directly to the user or are global?
+  // The current logic shows ALL authorized modules in a flat list.
+  // We should probably change this to only show modules if they are not in a section or if the user wants a flat list.
+  // Spec says: Main Menu -> Section Menu -> Sub-section Menu -> Module.
+  // So we SHOULD NOT list all modules in the main menu anymore.
 
   logger.debug('showDynamicMenu: Calling replyOrEdit()')
   await replyOrEdit(ctx, menuText, {
