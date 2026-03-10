@@ -184,12 +184,12 @@ Prepare the platform for safe, reliable production deployment with proper monito
 
 **Duration:** 4-6 weeks
 **Priority:** 🟠 HIGH
-**Status:** Planned
+**Status:** In Progress
 **Dependencies:** Phase 3 complete
 
 ### Objectives
 
-Build an AI-powered operational assistant that allows users to query company data in natural Arabic, with voice support and strict RBAC enforcement.
+Build an AI-powered operational assistant serving as a comprehensive operational partner for business management — including data entry, retrieval, reporting, analysis, document extraction, and proactive suggestions.
 
 ---
 
@@ -198,13 +198,16 @@ Build an AI-powered operational assistant that allows users to query company dat
 **Follow existing spec:** `specs/002-ai-assistant/spec.md`
 
 **Key Features:**
-- ✅ Local LLM: Qwen2.5:7b via Ollama
+- ✅ Local LLM: Qwen2.5:7b via Ollama (Fast Mode)
+- ✅ Cloud Models: Gemini/Claude/OpenAI via REST APIs (Smart Mode)
 - ✅ Embeddings: nomic-embed-text (local, Arabic-capable)
 - ✅ Vector DB: pgvector (PostgreSQL extension)
-- ✅ RAG: Company data embeddings (employees, sections, modules, audit logs)
-- ✅ Voice: Whisper STT + Google/OpenAI TTS
-- ✅ RBAC-aware: Users only see data they have permission to access
-- ✅ Read-only: No data modification via AI
+- ✅ RAG: Company data, module schema, and module documentation
+- ✅ Voice: Whisper STT + Google Cloud TTS
+- ✅ Hybrid OCR: Gemini Vision API + DeepSeek-OCR for document analysis
+- ✅ AI Toolkit: Internal API for module integration (@al-saada/ai-assistant/toolkit)
+- ✅ RBAC-aware: Enforced via System Roles + AI Permission Profiles
+- ✅ Read-only Training Mode: Background self-improvement for vector embeddings
 
 ---
 

@@ -1,0 +1,285 @@
+openapi: 3.0.0
+info:
+  title: AI Audit Trail
+  description: Complete audit log of all AI interactions with filtering and export
+  version: 1.0.0
+
+paths:
+  /ai-audit:
+    get:
+      summary: Query audit trail entries
+      description: Returns AI interaction logs with filtering options
+      security:
+        - bearerAuth
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by user ID
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Filter by start date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Filter by end date
+        - name: requestType
+          in: query
+          schema:
+            type: string
+            enum: [query, data_entry, report_generation, voice, document_analysis, validation, other]
+          description: Filter by request type
+        - name: result
+          in: query
+          schema:
+            type: string
+            enum: [success, denied, error]
+          description: Filter by result
+        - name: aiProfile
+          in: query
+          schema:
+            type: string
+          description: Filter by AI permission profile
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 1000
+          description: Maximum number of entries to return
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+          description: Pagination offset
+      responses:
+        '200':
+          description: Audit entries retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuditEntry'
+                  totalCount:
+                    type: integer
+                    description: Total number of matching entries
+        '400':
+          description: Invalid filter parameters
+        '403':
+          description: User is not authorized to view this data
+
+  /ai-audit/export:
+    post:
+      summary: Export audit trail entries
+      description: Generates and downloads a filtered audit log export
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filters:
+                  type: object
+                  description: Same filters as GET /ai-audit endpoint
+                format:
+                  type: string
+                  enum: [csv, json, pdf]
+                  default: csv
+                  description: Export format
+                includeDetails:
+                  type: boolean
+                  default: false
+                  description: Include request/response content (SENSITIVE)
+      responses:
+        '200':
+          description: Export file generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+                    description: Background job ID for export tracking
+                  downloadUrl:
+                    type: string
+                    description: URL to download export file (when ready)
+                  expiresAt:
+                    type: string
+                    format: date-time
+                    description: When download URL expires
+        '400':
+          description: Invalid export parameters
+        '403':
+          description: User is not SUPER_ADMIN
+
+  /ai-audit/stats:
+    get:
+      summary: Get audit statistics
+      description: Returns aggregated statistics on AI usage
+      security:
+        - bearerAuth
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [today, week, month, year, all]
+            default: month
+          description: Time period for statistics
+      responses:
+        '200':
+          description: Statistics retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalRequests:
+                    type: integer
+                  successRate:
+                    type: number
+                    format: float
+                  denialRate:
+                    type: number
+                    format: float
+                  errorRate:
+                    type: number
+                    format: float
+                  requestsByType:
+                    type: object
+                    additionalProperties:
+                      type: integer
+                  requestsByProfile:
+                    type: object
+                    additionalProperties:
+                      type: integer
+                  topUsers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        userId:
+                          type: string
+                          format: uuid
+                        userName:
+                          type: string
+                        requestCount:
+                          type: integer
+                  deniedCapabilities:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        capability:
+                          type: string
+                        denialCount:
+                          type: integer
+
+  /ai-audit/{id}:
+    get:
+      summary: Get a specific audit entry
+      description: Returns detailed information about a single audit entry
+      security:
+        - bearerAuth
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Audit entry retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditEntryDetail'
+        '403':
+          description: User not authorized to view this entry
+        '404':
+          description: Audit entry not found
+
+components:
+  schemas:
+    AuditEntry:
+      type: object
+      required: [id, userId, requestType, result, timestamp, aiProfile]
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        userName:
+          type: string
+          description: Username at time of request
+        requestType:
+          type: string
+          enum: [query, data_entry, report_generation, voice, document_analysis, validation, other]
+        result:
+          type: string
+          enum: [success, denied, error]
+        aiProfile:
+          type: string
+          description: AI permission profile used for this request
+        operatingMode:
+          type: string
+          enum: [fast, smart, training]
+          nullable: true
+        confidence:
+          type: number
+          format: float
+          nullable: true
+          description: Confidence score for successful responses
+        timestamp:
+          type: string
+          format: date-time
+        deniedCapability:
+          type: string
+          nullable: true
+          description: Which AI capability caused the denial (if result = denied)
+        errorMessage:
+          type: string
+          nullable: true
+          description: Error message (if result = error)
+
+    AuditEntryDetail:
+      allOf:
+        - $ref: '#/components/schemas/AuditEntry'
+        - type: object
+          properties:
+            requestContext:
+              type: object
+              additionalProperties: true
+              description: Request context without sensitive content
+            responseTime:
+              type: integer
+              description: Response time in milliseconds
+            module:
+              type: string
+              nullable: true
+              description: Module involved (if applicable)
+
+securitySchemes:
+  bearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT

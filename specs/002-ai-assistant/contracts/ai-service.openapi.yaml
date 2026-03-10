@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: AI Assistant Service
-  description: Core AI service for natural language queries, data entry, and configuration
+  description: Core AI service for natural language queries, data entry, configuration, and permission management
   version: 1.0.0
 
 paths:
@@ -47,17 +47,29 @@ paths:
                     format: float
                     minimum: 0
                     maximum: 1
+                    description: Confidence score (0-100%)
                   sources:
                     type: array
                     items:
                       type: string
                     description: Data sources used for context
+                  qualityCheck:
+                    type: object
+                    properties:
+                      crag:
+                        type: boolean
+                        description: Whether CRAG relevance check passed
+                      selfRag:
+                        type: boolean
+                        description: Whether Self-RAG quality check passed
         '400':
           description: Invalid input
         '401':
           description: Unauthorized (user has no AI access)
+        '403':
+          description: AI capability denied by permission profile
         '429':
-          description: Rate limit exceeded
+          $ref: '#/components/responses/Error429'
 
   /ai/data-entry:
     post:
@@ -97,6 +109,11 @@ paths:
                   confidence:
                     type: number
                     format: float
+                  validation:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ValidationWarning'
+                    description: AI data validation warnings
                   needsFallback:
                     type: boolean
                     description: True if parsing confidence is low
@@ -124,12 +141,18 @@ paths:
                     type: string
                     nullable: true
                     enum: [gemini, openai, claude]
+                  ocrProvider:
+                    type: string
+                    enum: [gemini_vision, deepseek_ocr]
+                    description: Primary OCR provider
                   voiceResponse:
                     type: boolean
                   privacyRules:
                     type: array
                     items:
                       $ref: '#/components/schemas/PrivacyRule'
+                  aiProfile:
+                    $ref: '#/components/schemas/AIProfile'
     put:
       summary: Update AI configuration
       security:
@@ -148,6 +171,9 @@ paths:
                   type: string
                   enum: [gemini, openai, claude]
                   nullable: true
+                ocrProvider:
+                  type: string
+                  enum: [gemini_vision, deepseek_ocr]
                 voiceResponse:
                   type: boolean
       responses:
@@ -174,7 +200,397 @@ paths:
                     type: string
                     enum: [TEXT_ONLY, VOICE_INPUT_ONLY, FULL_VOICE]
 
+  /ai/feedback:
+    post:
+      summary: Submit feedback on AI response
+      description: User feedback used to improve AI quality in Training Mode
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [interactionId, rating]
+              properties:
+                interactionId:
+                  type: string
+                  format: uuid
+                  description: ID of AI interaction being rated
+                rating:
+                  type: string
+                  enum: [correct, incorrect, partial]
+                  description: User's assessment of the AI response
+                correction:
+                  type: string
+                  description: Optional correction or explanation of why incorrect
+      responses:
+        '200':
+          description: Feedback recorded
+        '400':
+          description: Invalid feedback data
+        '404':
+          description: Interaction not found
+
+  /ai/permissions/profiles:
+    get:
+      summary: List AI permission profiles
+      description: Returns all available AI permission profiles
+      security:
+        - bearerAuth
+      responses:
+        '200':
+          description: Profiles retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profiles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AIProfile'
+                  builtinProfiles:
+                    type: array
+                    items:
+                      type: string
+                    description: List of built-in profile names (cannot be deleted)
+    post:
+      summary: Create custom AI permission profile
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, capabilities]
+              properties:
+                name:
+                  type: string
+                  description: Unique name for the custom profile
+                capabilities:
+                  type: array
+                  items:
+                    type: string
+                  description: Array of enabled capabilities
+      responses:
+        '201':
+          description: Profile created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIProfile'
+        '400':
+          description: Invalid profile data or duplicate name
+        '403':
+          description: User is not SUPER_ADMIN
+
+  /ai/permissions/profiles/{profileId}:
+    put:
+      summary: Update AI permission profile
+      security:
+        - bearerAuth
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                capabilities:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Profile updated
+        '400':
+          description: Invalid profile data
+        '403':
+          description: User is not SUPER_ADMIN or profile is immutable
+    delete:
+      summary: Delete custom AI permission profile
+      security:
+        - bearerAuth
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Profile deleted
+        '403':
+          description: User is not SUPER_ADMIN or profile is immutable
+        '404':
+          description: Profile not found
+
+  /ai/permissions/assign:
+    post:
+      summary: Assign AI permission profile to user
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, profileId]
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                  description: ID of user to assign profile to
+                profileId:
+                  type: string
+                  format: uuid
+                  description: ID of AI permission profile to assign
+      responses:
+        '200':
+          description: Profile assigned
+        '400':
+          description: Invalid user or profile ID
+        '403':
+          description: User is not SUPER_ADMIN
+        '404':
+          description: User or profile not found
+
+  /ai/briefings:
+    get:
+      summary: List scheduled briefings for current user
+      security:
+        - bearerAuth
+      responses:
+        '200':
+          description: Briefings retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  briefings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Briefing'
+    post:
+      summary: Create scheduled briefing
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [schedule, recipients]
+              properties:
+                schedule:
+                  type: string
+                  enum: [daily, weekly]
+                  description: Briefing frequency
+                time:
+                  type: string
+                  pattern: '^[0-2][0-9]:[0-5][0-9]$'
+                  description: Time in HH:MM format (24-hour)
+                dayOfWeek:
+                  type: integer
+                  minimum: 0
+                  maximum: 6
+                  description: Day of week (0=Sunday, 6=Saturday) for weekly briefings
+                recipients:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  description: User IDs to receive briefings
+                contentScope:
+                  type: array
+                  items:
+                    type: string
+                  description: Topics to include (activity_summary, upcoming_deadlines, anomalies, action_items)
+      responses:
+        '201':
+          description: Briefing created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Briefing'
+        '400':
+          description: Invalid briefing configuration
+        '403':
+          description: User is not SUPER_ADMIN
+
+  /ai/briefings/{id}:
+    put:
+      summary: Update scheduled briefing
+      security:
+        - bearerAuth
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                schedule:
+                  type: string
+                  enum: [daily, weekly]
+                time:
+                  type: string
+                dayOfWeek:
+                  type: integer
+                recipients:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                contentScope:
+                  type: array
+                  items:
+                    type: string
+                isActive:
+                  type: boolean
+      responses:
+        '200':
+          description: Briefing updated
+    delete:
+      summary: Delete scheduled briefing
+      security:
+        - bearerAuth
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Briefing deleted
+
+  /ai/briefings/{id}/preview:
+    get:
+      summary: Preview briefing content
+      description: Generates a preview of briefing without delivering
+      security:
+        - bearerAuth
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Briefing preview generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: string
+                    description: Briefing text content
+                  sections:
+                    type: object
+                    additionalProperties: true
+                  generatedAt:
+                    type: string
+                    format: date-time
+
+  /ai/help:
+    post:
+      summary: Get usage guidance for a topic
+      description: RAG-powered help for system usage with optional flow initiation
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                  description: Help query in Arabic or English
+                module:
+                  type: string
+                  description: Optional module to filter guidance to
+      responses:
+        '200':
+          description: Help response with optional flow suggestion
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  answer:
+                    type: string
+                    description: AI-generated help response
+                  suggestedFlow:
+                    type: object
+                    nullable: true
+                    description: Suggested flow to start (if applicable)
+                  confidence:
+                    type: number
+                    format: float
+        '400':
+          description: Invalid query
+
 components:
+  responses:
+    Error429:
+      description: Too Many Requests (Quota Exceeded)
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Total quota limit for the period
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Remaining quota for the period
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          description: UTC timestamp when quota resets
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [error, resetAt]
+            properties:
+              error:
+                type: string
+                description: Localized error message
+              resetAt:
+                type: integer
+                description: UTC timestamp when quota resets
   schemas:
     PrivacyRule:
       type: object
@@ -189,6 +605,87 @@ components:
           enum: [full, partial, token]
         isActive:
           type: boolean
+
+    AIProfile:
+      type: object
+      required: [id, name, capabilities, isBuiltIn, isImmutable]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+          description: Enabled AI capabilities
+        isBuiltIn:
+          type: boolean
+          description: Whether this is a built-in profile
+        isImmutable:
+          type: boolean
+          description: Whether this profile cannot be modified
+        defaultForRole:
+          type: string
+          nullable: true
+          description: System role this profile defaults to (if built-in)
+
+    ValidationWarning:
+      type: object
+      required: [fieldName, message, severity]
+      properties:
+        fieldName:
+          type: string
+          description: Name of field with validation issue
+        message:
+          type: string
+          description: Warning message with context
+        severity:
+          type: string
+          enum: [info, warning, error]
+        historicalAverage:
+          type: number
+          nullable: true
+          description: Historical average for comparison
+        deviationPercent:
+          type: number
+          nullable: true
+          description: Percentage deviation from average
+
+    Briefing:
+      type: object
+      required: [id, schedule, recipients, isActive]
+      properties:
+        id:
+          type: string
+          format: uuid
+        schedule:
+          type: string
+          enum: [daily, weekly]
+        time:
+          type: string
+          description: Time in HH:MM format
+        dayOfWeek:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: Day of week for weekly briefings
+        recipients:
+          type: array
+          items:
+            type: string
+            format: uuid
+        contentScope:
+          type: array
+          items:
+            type: string
+        isActive:
+          type: boolean
+        lastDeliveredAt:
+          type: string
+          format: date-time
+          nullable: true
 
 securitySchemes:
   bearerAuth:

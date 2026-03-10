@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: RAG Service
-  description: Retrieval-Augmented Generation service for vector search and embeddings
+  description: Retrieval-Augmented Generation service with CRAG and Self-RAG quality patterns
   version: 1.0.0
 
 paths:
@@ -24,10 +24,13 @@ paths:
                   maxLength: 10000
                 entityType:
                   type: string
-                  description: Type of entity being embedded (User, Employee, etc.)
+                  description: Type of entity being embedded (User, Employee, ModuleDoc, etc.)
                 entityId:
                   type: string
                   description: Entity ID for tracking
+                rbacScope:
+                  type: string
+                  description: RBAC scope for access control
       responses:
         '200':
           description: Embedding generated
@@ -44,11 +47,13 @@ paths:
                   id:
                     type: string
                     description: Embedding record ID
+        '429':
+          $ref: '#/components/responses/Error429'
 
   /rag/search:
     post:
       summary: Search similar documents by vector
-      description: Finds similar vectors using pgvector similarity search
+      description: Finds similar vectors using pgvector similarity search with CRAG relevance filtering
       security:
         - bearerAuth
       requestBody:
@@ -73,6 +78,15 @@ paths:
                 filters:
                   type: object
                   description: Additional filters (entityType, date range, etc.)
+                enableCrag:
+                  type: boolean
+                  default: true
+                  description: Enable CRAG relevance evaluation
+                relevanceThreshold:
+                  type: number
+                  format: float
+                  default: 0.7
+                  description: Minimum relevance score for CRAG filtering
       responses:
         '200':
           description: Similar documents found
@@ -95,17 +109,34 @@ paths:
                           format: float
                           minimum: 0
                           maximum: 1
+                        relevance:
+                          type: number
+                          format: float
+                          nullable: true
+                          description: CRAG relevance score
                         entityType:
                           type: string
                         entityId:
                           type: string
+                  cragSummary:
+                    type: object
+                    properties:
+                      documentsEvaluated:
+                        type: integer
+                      passedThreshold:
+                        type: integer
+                      averageRelevance:
+                        type: number
+                        format: float
                   total:
                     type: integer
+        '429':
+          $ref: '#/components/responses/Error429'
 
   /rag/context:
     post:
       summary: Build context for AI prompt
-      description: Combines search results into formatted context string
+      description: Combines search results into formatted context string with Self-RAG quality indicators
       security:
         - bearerAuth
       requestBody:
@@ -121,6 +152,10 @@ paths:
                 maxTokens:
                   type: integer
                   default: 4000
+                enableSelfRag:
+                  type: boolean
+                  default: true
+                  description: Enable Self-RAG quality evaluation
       responses:
         '200':
           content:
@@ -137,6 +172,21 @@ paths:
                       type: string
                   tokenCount:
                     type: integer
+                  selfRag:
+                    type: object
+                    properties:
+                      supportScore:
+                        type: number
+                        format: float
+                        description: Self-RAG support score (0-1)
+                      confidence:
+                        type: string
+                        enum: [high, medium, low]
+                      qualityFlags:
+                        type: array
+                        items:
+                          type: string
+                        description: Quality issues detected
 
   /rag/index:
     post:
@@ -160,7 +210,7 @@ paths:
                   type: string
                 metadata:
                   type: object
-                  description: Additional metadata (rbacScope, etc.)
+                  description: Additional metadata (rbacScope, locale, etc.)
       responses:
         '201':
           description: Entity indexed
@@ -202,3 +252,227 @@ paths:
                     type: array
                     items:
                       type: string
+
+  /rag/modules:
+    get:
+      summary: List indexed modules
+      description: Returns all modules with indexed documentation
+      security:
+        - bearerAuth
+      responses:
+        '200':
+          description: Modules retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  modules:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        moduleSlug:
+                          type: string
+                        moduleName:
+                          type: string
+                        indexedAt:
+                          type: string
+                          format: date-time
+                        documentCount:
+                          type: integer
+
+  /rag/modules/{slug}/reindex:
+    post:
+      summary: Trigger re-indexing of a module
+      description: Creates a background job to re-index module documentation
+      security:
+        - bearerAuth
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Module slug
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                force:
+                  type: boolean
+                  default: false
+                  description: Force full re-index (not incremental)
+      responses:
+        '202':
+          description: Re-indexing job created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+                  estimatedDuration:
+                    type: integer
+                    description: Estimated seconds to complete
+        '404':
+          description: Module not found
+
+  /rag/relevance-check:
+    post:
+      summary: Evaluate retrieval relevance (CRAG)
+      description: Evaluates whether retrieved documents are relevant to the query
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query, documents]
+              properties:
+                query:
+                  type: string
+                documents:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      content:
+                        type: string
+      responses:
+        '200':
+          description: Relevance evaluation complete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  relevanceScores:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        documentId:
+                          type: string
+                        relevance:
+                          type: number
+                          format: float
+                          minimum: 0
+                          maximum: 1
+                        isRelevant:
+                          type: boolean
+                  overallRelevance:
+                    type: number
+                    format: float
+                    description: Average relevance score
+                  passedThreshold:
+                    type: boolean
+                    description: Whether enough documents passed relevance threshold
+                  recommendedAction:
+                    type: string
+                    enum: [proceed, refine_query, escalate_to_cloud]
+                    description: CRAG-recommended action
+
+  /rag/jobs/{jobId}:
+    get:
+      summary: Get indexing job status
+      description: Checks status of a module indexing background job
+      security:
+        - bearerAuth
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Job status retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  status:
+                    type: string
+                    enum: [pending, processing, completed, failed]
+                  progress:
+                    type: integer
+                    description: Progress percentage (0-100)
+                  indexedCount:
+                    type: integer
+                  errorMessage:
+                    type: string
+                    nullable: true
+                  startedAt:
+                    type: string
+                    format: date-time
+                  completedAt:
+                    type: string
+                    format: date-time
+                    nullable: true
+        '404':
+          description: Job not found
+
+components:
+  responses:
+    Error429:
+      description: Too Many Requests (Quota Exceeded)
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Total quota limit for the period
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Remaining quota for the period
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          description: UTC timestamp when quota resets
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [error, resetAt]
+            properties:
+              error:
+                type: string
+                description: Localized error message
+              resetAt:
+                type: integer
+                description: UTC timestamp when quota resets
+  schemas:
+    EmbeddingMetadata:
+      type: object
+      properties:
+        entityType:
+          type: string
+        entityId:
+          type: string
+        rbacScope:
+          type: string
+        locale:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+securitySchemes:
+  bearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT

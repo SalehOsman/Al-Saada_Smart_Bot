@@ -15,9 +15,11 @@ The objective of the AI Assistant is to abstract away complex UI navigation and 
 - **Natural Language Querying (P1):** Business users retrieve live stats or metrics instantaneously through natural Q&A over the business datasets.
 - **Smart Report Generation (P2):** Generation of scheduled or ad-hoc reports dynamically infused with predictive insights highlighting trends and anomalies.
 - **Proactive Suggestions (P2):** Algorithmic threshold monitors push relevant business anomalies directly to scoped Admins (e.g., repeating lateness, missing truck logs).
-- **Document Analysis (P2):** OCR ingestion extracting schema-ready data from invoices and PDFs directly to the database.
-- **Voice Interaction (P3):** Hands-free operation using high-accuracy STT transcription.
+- **Document Analysis (P2):** Hybrid OCR ingestion (Gemini Vision + DeepSeek-OCR) extracting schema-ready data from invoices and PDFs directly to the database.
+- **Voice Interaction (P3):** Hands-free operation using high-accuracy Whisper STT transcription and Google TTS.
 - **Module Developer Wizard (P3):** AI-paired Module Generation via `/ai create-module` scaffolding conversational codebases safely on-demand.
+- **Usage Guidance Assistant (P3):** Intelligent routing of user questions to module documentation via RAG index.
+- **AI Toolkit APIs (P2):** Shared typed interfaces for integrations across Layer 3 modules.
 
 ---
 
@@ -49,10 +51,10 @@ The AI implementation mirrors the "Phase 4" structure defined within the platfor
 Established natural language extraction paradigms via semantic prompts, implemented pgvector architecture over Prisma, and cemented Google TTS and Whisper STT for Arabic logic.
 
 ### Phase 1: Design & Contracts *(Completed)*
-Established all underlying models: `AIInteraction`, `AISuggestion`, `ScheduledReport`, `PrivacyRule`, `DocumentAnalysis`, and `VoiceSession`. Drafted OpenAPI specs isolating `rag.service`, `document-parser.service`, and `voice.service`.
+Established all underlying models: `AIInteraction`, `AISuggestion`, `ScheduledReport`, `PrivacyRule`, `DocumentAnalysis`, `VoiceSession`, and `AIConfig`. Drafted fully typed OpenAPI specs isolating structured services. Generated comprehensive implementation plan (`plan.md`) and highly detailed test-driven tasks (`tasks.md`) explicitly covering Priority Requirements: Prompt Injection Protection, Quota Signalling, PII Redaction, and comprehensive AI Toolkit service signatures.
 
 ### Phase 2: Implementation *(Pending)*
-Execution of the actual AI processing logic, including integrating the Vercel AI SDK into the `packages/ai-assistant` package.
+Execution of the actual AI processing logic via 251 sequential tasks from `tasks.md`, including integrating the Vercel AI SDK into the `packages/ai-assistant` package, building prompt pipelines, and fortifying security layers prior to production launch.
 
 ---
 

@@ -1,4 +1,4 @@
-<!-- gitnexus:start -->
+﻿<!-- gitnexus:start -->
 # GitNexus MCP
 
 This project is indexed by GitNexus as **_Al-Saada_Smart_Bot** (353 symbols, 656 relationships, 16 execution flows).

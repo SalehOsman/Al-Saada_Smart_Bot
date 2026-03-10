@@ -1,0 +1,286 @@
+openapi: 3.0.0
+info:
+  title: Business Knowledge Base
+  description: CRUD operations for business-specific knowledge entries used by AI
+  version: 1.0.0
+
+paths:
+  /knowledge-base:
+    get:
+      summary: List all knowledge entries
+      description: Returns all business knowledge entries with metadata
+      security:
+        - bearerAuth
+      responses:
+        '200':
+          description: Knowledge entries retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/KnowledgeEntry'
+        '403':
+          description: User is not SUPER_ADMIN
+
+    post:
+      summary: Create a new knowledge entry
+      description: Adds a business-specific fact to the knowledge base
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, key, value]
+              properties:
+                type:
+                  type: string
+                  enum: [price_range, staff_responsibility, seasonal_pattern, domain_fact, operational_rule]
+                  description: Category of knowledge entry
+                key:
+                  type: string
+                  description: Identifier or name for the knowledge entry
+                value:
+                  type: string
+                  description: The actual knowledge/fact content
+                module:
+                  type: string
+                  nullable: true
+                  description: Associated module (if applicable)
+                appliesTo:
+                  type: array
+                  items:
+                    type: string
+                  description: User roles or sections this applies to
+      responses:
+        '201':
+          description: Knowledge entry created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeEntry'
+        '400':
+          description: Invalid knowledge entry data
+        '403':
+          description: User is not SUPER_ADMIN
+
+  /knowledge-base/{id}:
+    get:
+      summary: Get a specific knowledge entry
+      security:
+        - bearerAuth
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Knowledge entry retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeEntry'
+        '404':
+          description: Knowledge entry not found
+
+    put:
+      summary: Update a knowledge entry
+      description: Modifies an existing knowledge entry
+      security:
+        - bearerAuth
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: string
+                  description: Updated knowledge/fact content
+                appliesTo:
+                  type: array
+                  items:
+                    type: string
+                isActive:
+                  type: boolean
+                  description: Whether this entry is active
+      responses:
+        '200':
+          description: Knowledge entry updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeEntry'
+        '400':
+          description: Invalid update data
+        '403':
+          description: User is not SUPER_ADMIN
+        '404':
+          description: Knowledge entry not found
+
+    delete:
+      summary: Delete a knowledge entry
+      security:
+        - bearerAuth
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Knowledge entry deleted
+        '403':
+          description: User is not SUPER_ADMIN
+        '404':
+          description: Knowledge entry not found
+
+  /knowledge-base/types:
+    get:
+      summary: Get all knowledge entry types
+      description: Returns available types and their descriptions
+      security:
+        - bearerAuth
+      responses:
+        '200':
+          description: Knowledge types retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  types:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        description:
+                          type: string
+
+  /knowledge-base/usage:
+    get:
+      summary: Get knowledge usage statistics
+      description: Returns statistics on how knowledge entries are being used
+      security:
+        - bearerAuth
+      responses:
+        '200':
+          description: Usage statistics retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalEntries:
+                    type: integer
+                  activeEntries:
+                    type: integer
+                  lastUsedDate:
+                    type: string
+                    format: date-time
+                    description: When knowledge was last referenced
+                  mostUsedEntries:
+                    type: array
+                    items:
+                      type: object
+                        properties:
+                          entryId:
+                            type: string
+                            format: uuid
+                          key:
+                            type: string
+                          useCount:
+                            type: integer
+                  unusedEntries:
+                    type: array
+                    items:
+                      type: object
+                        properties:
+                          entryId:
+                            type: string
+                            format: uuid
+                          key:
+                            type: string
+                          lastUsedAt:
+                            type: string
+                            format: date-time
+        '403':
+          description: User is not SUPER_ADMIN
+
+components:
+  schemas:
+    KnowledgeEntry:
+      type: object
+      required: [id, type, key, value, isActive, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [price_range, staff_responsibility, seasonal_pattern, domain_fact, operational_rule]
+        key:
+          type: string
+          description: Identifier for the knowledge entry
+        value:
+          type: string
+          description: The actual knowledge content
+        module:
+          type: string
+          nullable: true
+          description: Associated module (if applicable)
+        appliesTo:
+          type: array
+          items:
+            type: string
+          description: User roles or sections this applies to
+        isActive:
+          type: boolean
+          description: Whether this entry is active
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+          format: uuid
+          description: ID of user who created this entry
+        lastUsedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When this knowledge was last referenced by AI
+        useCount:
+          type: integer
+          description: Number of times this entry has been referenced
+
+securitySchemes:
+  bearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT

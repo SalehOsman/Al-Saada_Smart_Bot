@@ -53,6 +53,9 @@
 
 ```
 ┌─────────────────────────────────────────────┐
+│         Layer 4: المساعد الذكي (AI)          │
+│   RAG │ OCR │ Voice │ Validation │ Memory    │
+├─────────────────────────────────────────────┤
 │         Layer 3: الموديولات (مخصصة)          │
 │   وقود │ حضور │ إجازات │ مصروفات │ ...      │
 ├─────────────────────────────────────────────┤
@@ -72,6 +75,7 @@
 | **Layer 1** — نواة المنصة | بوت، مصادقة، صلاحيات، أقسام، تدقيق | ✅ مكتمل |
 | **Layer 2** — Module Kit | أدوات التحقق، التأكيد، الحفظ، المسودات | ✅ مكتمل |
 | **Layer 3** — الموديولات | تعريف الموديول + مسارات الحوار | 🔧 جاهز للبناء |
+| **Layer 4** — المساعد الذكي | معالجة لغة طبيعية، تقارير ذكية، OCR، RAG | ⏳ جاهز للبرمجة |
 
 ---
 
@@ -129,8 +133,10 @@ npm run module:remove
 |--------|---------|
 | Runtime | Node.js ≥20, TypeScript 5.x (strict) |
 | Bot | grammY + @grammyjs/conversations + hydrate |
+| AI Assistant | Vercel AI SDK, Ollama (Qwen2.5), Gemini Vision, DeepSeek-OCR |
 | Module Kit | @al-saada/module-kit (حزمة داخلية) |
-| Database | PostgreSQL 16 + Prisma ORM (Multi-File Schema) |
+| Database | PostgreSQL 16 + Prisma ORM (Multi-File Schema) + pgvector |
+| Queue | BullMQ + Redis |
 | Cache | Redis 7 + ioredis |
 | i18n | @grammyjs/i18n (Fluent .ftl) |
 | Monitoring | Sentry (اختياري) |
@@ -230,7 +236,7 @@ al-saada-smart-bot/
 | الميزة | الوصف | التقنية |
 |---------|-------|---------|
 | 💬 أسئلة بالعربية | اكتب سؤال عن بيانات شركتك واحصل على إجابة | RAG + pgvector |
-| 📄 تحليل ملفات | ارفع PDF/Excel/صورة وحلّلها | Tesseract/PaddleOCR |
+| 📄 تحليل ملفات | ارفع PDF/Excel/صورة لاستخراج البيانات | Gemini Vision / DeepSeek-OCR |
 | 🎤 ملاحظات صوتية | أرسل ملاحظة صوتية بدلاً من الكتابة | Whisper |
 | 🤖 نماذج مرنة | محلي (Qwen2.5:7b) أو سحابي (Gemini/Claude/OpenAI) | Ollama + REST APIs |
 | 🔒 خصوصية | تصفية البيانات الحساسة قبل إرسالها للنماذج الخارجية | Context Redaction |
@@ -288,6 +294,9 @@ Employee opens bot ──▶ selects section ──▶ selects module ──▶ 
 
 ```
 ┌─────────────────────────────────────────────┐
+│        Layer 4: AI Assistant                 │
+│   RAG │ OCR │ Voice │ Validation │ Memory    │
+├─────────────────────────────────────────────┤
 │        Layer 3: Modules (Custom)             │
 │   Fuel │ Attendance │ Leave │ Expenses │ ... │
 ├─────────────────────────────────────────────┤
@@ -307,6 +316,7 @@ Employee opens bot ──▶ selects section ──▶ selects module ──▶ 
 | **Layer 1** — Platform Core | Bot, Auth, RBAC, Sections, Audit | ✅ Complete |
 | **Layer 2** — Module Kit | Validation, Confirmation, Persistence, Drafts | ✅ Complete |
 | **Layer 3** — Modules | Module definitions + Conversation flows | 🔧 Ready to build |
+| **Layer 4** — AI Assistant | NLP, Smart Reports, OCR, RAG, Suggestions | ⏳ Ready for Dev |
 
 ---
 
@@ -364,8 +374,10 @@ npm run module:remove
 |------|-----------|
 | Runtime | Node.js ≥20, TypeScript 5.x (strict) |
 | Bot | grammY + @grammyjs/conversations + hydrate |
+| AI Assistant | Vercel AI SDK, Ollama (Qwen2.5), Gemini Vision, DeepSeek-OCR |
 | Module Kit | @al-saada/module-kit (internal package) |
-| Database | PostgreSQL 16 + Prisma ORM (Multi-File Schema) |
+| Database | PostgreSQL 16 + Prisma ORM (Multi-File Schema) + pgvector |
+| Queue | BullMQ + Redis |
 | Cache | Redis 7 + ioredis |
 | i18n | @grammyjs/i18n (Fluent .ftl) |
 | Monitoring | Sentry |
@@ -418,7 +430,7 @@ A multi-modal operational assistant trained on company data:
 | Feature | Description | Technology |
 |---------|-------------|-----------|
 | 💬 Arabic Q&A | Ask questions about your company data | RAG + pgvector |
-| 📄 File Analysis | Upload PDF/Excel/Image for analysis | Tesseract/PaddleOCR |
+| 📄 File Analysis | Upload PDF/Excel/Image for structured data extraction | Gemini Vision / DeepSeek-OCR |
 | 🎤 Voice Notes | Send voice notes instead of typing | Whisper |
 | 🤖 Flexible Models | Local (Qwen2.5:7b) or Cloud (Gemini/Claude/OpenAI) | Ollama + REST APIs |
 | 🔒 Privacy | Filter sensitive data before sending to external models | Context Redaction |

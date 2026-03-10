@@ -1,0 +1,270 @@
+openapi: 3.0.0
+info:
+  title: Quota Management and Health Dashboard
+  description: AI service health monitoring, quota tracking, and emergency shutdown
+  version: 1.0.0
+
+paths:
+  /ai-health:
+    get:
+      summary: Get AI service health status
+      description: Returns real-time status of all AI services and quotas
+      security:
+        - bearerAuth
+      responses:
+        '200':
+          description: Health status retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  emergencyShutdown:
+                    type: boolean
+                    description: Whether emergency shutdown is active
+                  services:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ServiceHealth'
+                  overallStatus:
+                    type: string
+                    enum: [healthy, degraded, down]
+        '429':
+          $ref: '#/components/responses/Error429'
+        '403':
+          description: User is not SUPER_ADMIN
+
+  /ai-health/shutdown/emergency:
+    post:
+      summary: Trigger emergency shutdown
+      description: Disables all AI services system-wide within 5 seconds
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  description: Reason for emergency shutdown
+                  maxLength: 500
+                initiatedBy:
+                  type: string
+                  description: Name of admin initiating shutdown
+      responses:
+        '200':
+          description: Emergency shutdown initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  initiatedAt:
+                    type: string
+                    format: date-time
+                  estimatedCompletion:
+                    type: integer
+                    description: Seconds until services are fully disabled
+        '403':
+          description: User is not SUPER_ADMIN
+
+  /ai-health/shutdown/lift:
+    post:
+      summary: Lift emergency shutdown
+      description: Re-enables AI services after emergency shutdown
+      security:
+        - bearerAuth
+      responses:
+        '200':
+          description: Shutdown lifted, services re-enabled
+        '403':
+          description: User is not SUPER_ADMIN
+
+  /ai-quotas:
+    get:
+      summary: Get quota usage for all services
+      description: Returns current quota usage and alerts for all cloud AI services
+      security:
+        - bearerAuth
+      responses:
+        '200':
+          description: Quota data retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  quotas:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/QuotaUsage'
+                  alerts:
+                    type: array
+                    items:
+                      type: string
+                      description: Active quota alert messages
+        '403':
+          description: User is not SUPER_ADMIN
+
+  /ai-quotas/{service}:
+    put:
+      summary: Update quota configuration for a service
+      description: Sets monthly quota limit for a specific AI service
+      security:
+        - bearerAuth
+      parameters:
+        - name: service
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [gemini, openai, claude, whisper, google_tts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [monthlyLimit]
+              properties:
+                monthlyLimit:
+                  type: integer
+                  minimum: 1
+                  description: Monthly quota limit in API units
+                alertThreshold:
+                  type: number
+                  format: float
+                  minimum: 0.5
+                  maximum: 1
+                  default: 0.8
+                  description: Alert when usage reaches this percentage of limit
+      responses:
+        '200':
+          description: Quota configuration updated
+        '400':
+          description: Invalid quota values
+        '403':
+          description: User is not SUPER_ADMIN
+
+  /ai-quotas/reset:
+    post:
+      summary: Reset quota counters for new billing period
+      description: Manually resets monthly quota usage counters
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                service:
+                  type: string
+                  enum: [gemini, openai, claude, whisper, google_tts, all]
+                  default: all
+                  description: Service to reset, or 'all' for all services
+      responses:
+        '200':
+          description: Quota counters reset
+        '403':
+          description: User is not SUPER_ADMIN
+
+components:
+  responses:
+    Error429:
+      description: Too Many Requests (Quota Exceeded)
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Total quota limit for the period
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Remaining quota for the period
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          description: UTC timestamp when quota resets
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [error, resetAt]
+            properties:
+              error:
+                type: string
+                description: Localized error message
+              resetAt:
+                type: integer
+                description: UTC timestamp when quota resets
+  schemas:
+    ServiceHealth:
+      type: object
+      required: [name, status, responseTime]
+      properties:
+        name:
+          type: string
+          description: Service name (e.g., ollama, gemini, whisper, google_tts)
+        status:
+          type: string
+          enum: [operational, degraded, down]
+        responseTime:
+          type: number
+          format: float
+          description: Average response time in milliseconds
+        successRate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Success rate over last hour
+        lastError:
+          type: string
+          description: Last error message (if any)
+        errorCount:
+          type: integer
+          description: Number of errors in last hour
+
+    QuotaUsage:
+      type: object
+      required: [service, used, limit, alertThreshold]
+      properties:
+        service:
+          type: string
+          description: Service name
+        used:
+          type: integer
+          description: Units used in current month
+        limit:
+          type: integer
+          description: Monthly quota limit
+        alertThreshold:
+          type: number
+          format: float
+          description: Alert percentage (0-1)
+        percentageUsed:
+          type: number
+          format: float
+          description: Percentage of quota used
+        alertActive:
+          type: boolean
+          description: Whether quota alert is currently active
+        hardStop:
+          type: boolean
+          description: Whether service is hard-stopped due to quota exhaustion
+        resetsOn:
+          type: string
+          format: date
+          description: Date when quota resets
+
+securitySchemes:
+  bearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT
