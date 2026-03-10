@@ -145,24 +145,33 @@ async function showDynamicMenu(ctx: BotContext, user: MenuUser, modules: LoadedM
   }
 
   // 2. Add Main Sections for Navigation (FR-005)
-  const scopedSectionIds = (user.adminScopes || []).map(s => s.sectionId)
   const allMainSections = await prisma.section.findMany({
     where: { parentId: null, isActive: true },
-    include: { children: { where: { isActive: true }, select: { slug: true } } },
+    include: { 
+      children: { 
+        where: { isActive: true }, 
+        select: { id: true, slug: true } 
+      } 
+    },
     orderBy: { orderIndex: 'asc' },
   })
 
-  // Determine which sections to show
+  // Determine which sections to show based on authorized modules
   let mainSections = allMainSections
   if (user.role !== 'SUPER_ADMIN') {
     const authorizedSectionSlugs = new Set(modules.map(m => m.config.sectionSlug))
+    const scopedSectionIds = (user.adminScopes || []).map(s => s.sectionId)
+
     mainSections = allMainSections.filter((s) => {
+      // 1. Direct module in this main section
       if (authorizedSectionSlugs.has(s.slug)) {
         return true
       }
+      // 2. Module in one of its sub-sections
       if (s.children.some(c => authorizedSectionSlugs.has(c.slug))) {
         return true
       }
+      // 3. Admin has explicit scope for this section (even if empty)
       if (user.role === 'ADMIN' && scopedSectionIds.includes(s.id)) {
         return true
       }
@@ -171,21 +180,18 @@ async function showDynamicMenu(ctx: BotContext, user: MenuUser, modules: LoadedM
   }
 
   if (mainSections.length > 0) {
-    // Add a separator label if we have many sections?
-    // keyboard.push([{ text: `--- ${ctx.t('label-sections')} ---`, callback_data: 'noop' }])
     for (let i = 0; i < mainSections.length; i += 2) {
       const row = []
       const s1 = mainSections[i]
-      row.push({ text: `${s1.icon} ${ctx.t(s1.name as any)}`, callback_data: `section:view:${s1.id}` })
+      row.push({ text: `${s1.icon} ${ctx.t(s1.name as any)}`, callback_data: `section:view:${s1.id}` })   
 
       if (i + 1 < mainSections.length) {
         const s2 = mainSections[i + 1]
-        row.push({ text: `${s2.icon} ${ctx.t(s2.name as any)}`, callback_data: `section:view:${s2.id}` })
+        row.push({ text: `${s2.icon} ${ctx.t(s2.name as any)}`, callback_data: `section:view:${s2.id}` }) 
       }
       keyboard.push(row)
     }
   }
-
   // 3. Add Standalone Module Buttons (those not in sections or just keep the old behavior for now)
   // For now, we only show sections. If a module is not in a main section, it might be in a sub-section.
   // The user navigates through sections to find modules.

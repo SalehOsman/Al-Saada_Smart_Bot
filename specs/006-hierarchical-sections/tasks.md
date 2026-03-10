@@ -35,12 +35,12 @@
 
 **Independent Test**: Navigate through the bot menus: Main Menu -> Select Main Section -> Select Sub-section -> Open Module. Verify "Back" buttons work at each level.
 
-- [ ] T014 [US2] Update `menuHandler` in `packages/core/src/bot/handlers/menu.ts` to list Main Sections as buttons for authorized users
-- [ ] T015 [US2] Implement `showSubSectionsMenu` in `packages/core/src/bot/menus/sections.ts`
-- [ ] T016 [US2] Update navigation routing logic to handle sub-section drill-down in `packages/core/src/bot/menus/sections.ts`
-- [ ] T017 [US2] Update breadcrumb/back navigation to support 2-level hierarchy in `packages/core/src/bot/menus/sections.ts`
-- [ ] T018 [US2] Ensure icons and i18n names are correctly displayed in bot menus in `packages/core/src/bot/menus/sections.ts`
-- [ ] T019 [US2] Test hierarchical navigation for SC-002 in Telegram bot
+- [x] T014 [US2] Update `menuHandler` in `packages/core/src/bot/handlers/menu.ts` to list Main Sections as buttons for authorized users
+- [x] T015 [US2] Implement `showSubSectionsMenu` in `packages/core/src/bot/menus/sections.ts`
+- [x] T016 [US2] Update navigation routing logic to handle sub-section drill-down in `packages/core/src/bot/menus/sections.ts`
+- [x] T017 [US2] Update breadcrumb/back navigation to support 2-level hierarchy in `packages/core/src/bot/menus/sections.ts`
+- [x] T018 [US2] Ensure icons and i18n names are correctly displayed in bot menus in `packages/core/src/bot/menus/sections.ts`
+- [x] T019 [US2] Test hierarchical navigation for SC-002 in Telegram bot
 
 ## Phase 5: User Story 3 - Backwards Compatibility & Polish (Priority: P1)
 
