@@ -66,7 +66,7 @@ export async function showMainSectionsMenu(ctx: BotContext): Promise<void> {
  */
 export async function showSectionModules(ctx: BotContext, sectionId: string): Promise<void> {
   const telegramId = BigInt(ctx.from?.id || 0)
-  
+
   // 1. Fetch section and user info for authorization
   const [section, user] = await Promise.all([
     prisma.section.findUnique({
@@ -124,7 +124,8 @@ export async function showSectionModules(ctx: BotContext, sectionId: string): Pr
     // Filter modules based on role permissions
     const authorizedModules = allLoadedModules.filter((m) => {
       const isRoleAllowed = m.config.permissions.view.includes(user.role as Role)
-      if (!isRoleAllowed) return false
+      if (!isRoleAllowed)
+        return false
 
       if (user.role === 'ADMIN') {
         // ADMIN needs scope for this section or its parent
@@ -137,11 +138,11 @@ export async function showSectionModules(ctx: BotContext, sectionId: string): Pr
 
     // Add sub-sections if they have authorized modules or admin has scope
     for (const child of section.children) {
-      const hasAuthModules = allLoadedModules.some(m => 
-        m.config.sectionSlug === child.slug && 
-        m.config.permissions.view.includes(user.role as Role)
+      const hasAuthModules = allLoadedModules.some(m =>
+        m.config.sectionSlug === child.slug
+        && m.config.permissions.view.includes(user.role as Role),
       )
-      
+
       if (hasAuthModules || (user.role === 'ADMIN' && scopedSectionIds.includes(child.id))) {
         keyboard.push([
           {
@@ -171,12 +172,12 @@ export async function showSectionModules(ctx: BotContext, sectionId: string): Pr
   ])
 
   const titleKey = section.parentId ? 'subsections-menu-title' : 'section-modules-title'
-  const titleParams = section.parentId 
+  const titleParams = section.parentId
     ? { parentName: ctx.t(section.name as any) }
     : { sectionName: ctx.t(section.name as any) }
 
   ctx.answerCallbackQuery()
-  await replyOrEdit(ctx, ctx.t(titleKey as any, titleParams), {
+  await replyOrEdit(ctx, ctx.t(titleKey as any, titleParams as any), {
     inline_keyboard: keyboard,
   })
 }
@@ -192,6 +193,18 @@ export async function handleBackNavigation(ctx: BotContext): Promise<void> {
 /**
  * Legacy handler for backward compatibility if needed
  */
-export async function showSubSectionsMenu(ctx: BotContext, parentSectionId: string): Promise<void> {      
+export async function showSubSectionsMenu(ctx: BotContext, parentSectionId: string): Promise<void> {
   return showSectionModules(ctx, parentSectionId)
+}
+
+/**
+ * Update navigation breadcrumb in session
+ * Stub for backward compatibility
+ */
+export async function updateNavigationBreadcrumb(
+  _ctx: BotContext,
+  _level: string,
+  _targetId?: string,
+): Promise<void> {
+  // Navigation is now handled dynamically without explicit breadcrumb pushing
 }

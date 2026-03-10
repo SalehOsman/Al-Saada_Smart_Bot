@@ -8,7 +8,7 @@ import { auditHandler } from '../../src/bot/handlers/audit'
 const { mockPrisma } = vi.hoisted(() => ({
   mockPrisma: {
     section: { findMany: vi.fn(), findUnique: vi.fn() },
-    user: { findMany: vi.fn(), count: vi.fn() },
+    user: { findMany: vi.fn(), count: vi.fn(), findUnique: vi.fn() },
     auditLog: { findMany: vi.fn(), count: vi.fn() },
   },
 }))
@@ -72,6 +72,11 @@ describe('t071: Admin Journey E2E Tests', () => {
       children: [{ id: '2' }],
     }
     mockPrisma.section.findUnique.mockResolvedValue(parent)
+    mockPrisma.user.findUnique.mockResolvedValue({
+      telegramId: 1n,
+      role: 'SUPER_ADMIN',
+      adminScopes: [],
+    })
 
     const ctx = {
       callbackQuery: { data: 'section:view:1' },
@@ -80,6 +85,7 @@ describe('t071: Admin Journey E2E Tests', () => {
       answerCallbackQuery: vi.fn(),
       t: vi.fn((k: string) => k),
       session: { currentMenu: [] },
+      from: { id: 1 },
     } as any
 
     await sectionsCallbackHandler(ctx)

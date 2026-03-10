@@ -10,6 +10,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { execSync } from 'node:child_process'
+import process from 'node:process'
 import inquirer from 'inquirer'
 import { PrismaClient } from '@prisma/client'
 import 'dotenv/config'
@@ -62,8 +63,8 @@ async function main() {
 
     if (isNonInteractive) {
       name = process.argv.find(a => a.startsWith('--name='))?.split('=')[1] || `${slug}-name`
-      nameEn = process.argv.find(a => a.startsWith('--nameEn='))?.split('=')[1] || `${slug}-name-en`      
-      sectionSlug = process.argv.find(a => a.startsWith('--sectionSlug='))?.split('=')[1] || 'operations' 
+      nameEn = process.argv.find(a => a.startsWith('--nameEn='))?.split('=')[1] || `${slug}-name-en`
+      sectionSlug = process.argv.find(a => a.startsWith('--sectionSlug='))?.split('=')[1] || 'operations'
       icon = process.argv.find(a => a.startsWith('--icon='))?.split('=')[1] || '📦'
       includeEdit = process.argv.includes('--includeEdit')
       includeHooks = process.argv.includes('--includeHooks')
@@ -102,7 +103,7 @@ async function main() {
           default: false,
         },
       ])
-      
+
       name = infoResponse.name
       nameEn = infoResponse.nameEn
       icon = infoResponse.icon
@@ -242,7 +243,16 @@ export async function edit${slug.split('-').map(s => s.charAt(0).toUpperCase() +
       fs.writeFileSync(path.join(moduleDir, 'edit.conversation.ts'), editConvTemplate)
     }
 
-    // 4. schema.prisma
+    // 4. hooks.ts
+    if (includeHooks) {
+      const hooksTemplate = `export async function onModuleLoad() {
+  // Logic to run when module is loaded
+}
+`
+      fs.writeFileSync(path.join(moduleDir, 'hooks.ts'), hooksTemplate)
+    }
+
+    // 5. schema.prisma
     const schemaTemplate = `// ${slug} module schema
 // model ${slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('')} {
 //   id        String   @id @default(cuid())
@@ -251,11 +261,11 @@ export async function edit${slug.split('-').map(s => s.charAt(0).toUpperCase() +
 `
     fs.writeFileSync(path.join(moduleDir, 'schema.prisma'), schemaTemplate)
 
-    // 5. locales
+    // 6. locales
     fs.writeFileSync(path.join(moduleDir, 'locales', 'ar.ftl'), `# ${slug} Arabic translations\n${slug}-name = ${name}\n`)
     fs.writeFileSync(path.join(moduleDir, 'locales', 'en.ftl'), `# ${slug} English translations\n${slug}-name = ${nameEn}\n`)
 
-    // 6. tests
+    // 7. tests
     const testTemplate = `import { describe, it, expect } from 'vitest';
 
 describe('${slug} flow', () => {
@@ -266,7 +276,7 @@ describe('${slug} flow', () => {
 `
     fs.writeFileSync(path.join(moduleDir, 'tests', 'flow.test.ts'), testTemplate)
 
-    // 7. package.json
+    // 8. package.json
     const packageJsonTemplate = JSON.stringify({
       name: `@al-saada/module-${slug}`,
       version: '0.0.1',
@@ -329,11 +339,11 @@ async function createNewSectionPrompt(prisma: PrismaClient, parentId: string | n
       validate: async (input) => {
         if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(input))
           return 'Invalid slug format. Use lowercase and hyphens (e.g., "hr-dept").'
-        
+
         const existing = await prisma.section.findUnique({ where: { slug: input } })
         if (existing)
           return `Slug "${input}" is already taken. Please choose another one.`
-        
+
         return true
       },
     },

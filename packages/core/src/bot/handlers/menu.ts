@@ -147,11 +147,11 @@ async function showDynamicMenu(ctx: BotContext, user: MenuUser, modules: LoadedM
   // 2. Add Main Sections for Navigation (FR-005)
   const allMainSections = await prisma.section.findMany({
     where: { parentId: null, isActive: true },
-    include: { 
-      children: { 
-        where: { isActive: true }, 
-        select: { id: true, slug: true } 
-      } 
+    include: {
+      children: {
+        where: { isActive: true },
+        select: { id: true, slug: true },
+      },
     },
     orderBy: { orderIndex: 'asc' },
   })
@@ -183,11 +183,11 @@ async function showDynamicMenu(ctx: BotContext, user: MenuUser, modules: LoadedM
     for (let i = 0; i < mainSections.length; i += 2) {
       const row = []
       const s1 = mainSections[i]
-      row.push({ text: `${s1.icon} ${ctx.t(s1.name as any)}`, callback_data: `section:view:${s1.id}` })   
+      row.push({ text: `${s1.icon} ${ctx.t(s1.name as any)}`, callback_data: `section:view:${s1.id}` })
 
       if (i + 1 < mainSections.length) {
         const s2 = mainSections[i + 1]
-        row.push({ text: `${s2.icon} ${ctx.t(s2.name as any)}`, callback_data: `section:view:${s2.id}` }) 
+        row.push({ text: `${s2.icon} ${ctx.t(s2.name as any)}`, callback_data: `section:view:${s2.id}` })
       }
       keyboard.push(row)
     }

@@ -40,8 +40,7 @@ export async function sectionsCallbackHandler(ctx: BotContext): Promise<void> {
   const id = parts[2] // section ID (may be undefined)
   const _extra = parts[3] // extra param (may be undefined)
 
-  // Update navigation breadcrumb
-  await updateNavigationBreadcrumb(ctx, 'sections')
+  // updateNavigationBreadcrumb removed (handled dynamically in menus)
 
   if (action === 'add') {
     await ctx.answerCallbackQuery()

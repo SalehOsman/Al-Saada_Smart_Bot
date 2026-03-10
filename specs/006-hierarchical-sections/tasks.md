@@ -48,11 +48,11 @@
 
 **Independent Test**: Log in as a user with existing AdminScope and verify access to modules assigned directly to main sections.
 
-- [ ] T020 [US3] Verify `getAuthorizedModules` correctly resolves access for main sections containing both modules and sub-sections in `packages/core/src/bot/handlers/menu.ts`
-- [ ] T021 [US3] Ensure existing `AdminScope` logic in `packages/core/src/services/rbac.ts` supports recursive access to sub-sections
-- [ ] T022 [P] Run `npm run lint` and fix any issues in modified files
-- [ ] T023 [P] Run full test suite `npm test` to ensure no regressions in Platform Core
-- [ ] T024 Update `docs/module-development-guide.md` with new hierarchical scaffolding instructions
+- [x] T020 [US3] Verify `getAuthorizedModules` correctly resolves access for main sections containing both modules and sub-sections in `packages/core/src/bot/handlers/menu.ts`
+- [x] T021 [US3] Ensure existing `AdminScope` logic in `packages/core/src/services/rbac.ts` supports recursive access to sub-sections
+- [x] T022 [P] Run `npm run lint` and fix any issues in modified files
+- [x] T023 [P] Run full test suite `npm test` to ensure no regressions in Platform Core
+- [x] T024 Update `docs/module-development-guide.md` with new hierarchical scaffolding instructions
 
 ## Dependencies & Execution Order
 

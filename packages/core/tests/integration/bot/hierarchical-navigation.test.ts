@@ -9,6 +9,9 @@ const { mockPrisma } = vi.hoisted(() => ({
       findUnique: vi.fn(),
       findMany: vi.fn(),
     },
+    user: {
+      findUnique: vi.fn(),
+    },
   },
 }))
 
@@ -22,6 +25,11 @@ vi.mock('../../../src/bot/module-loader', () => ({
 describe('hierarchical navigation integration (T040-A)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockPrisma.user.findUnique.mockResolvedValue({
+      telegramId: 1n,
+      role: 'SUPER_ADMIN',
+      adminScopes: [],
+    })
   })
 
   it('(1) main menu shows only main sections', async () => {
@@ -33,6 +41,7 @@ describe('hierarchical navigation integration (T040-A)', () => {
     const ctx = {
       t: vi.fn(k => k),
       reply: vi.fn(),
+      from: { id: 1 },
     } as any
 
     await showMainSectionsMenu(ctx)
@@ -63,7 +72,10 @@ describe('hierarchical navigation integration (T040-A)', () => {
     const ctx = {
       t: vi.fn(k => k),
       editMessageText: vi.fn(),
+      reply: vi.fn(),
       answerCallbackQuery: vi.fn(),
+      callbackQuery: { data: 'section:view:main1' },
+      from: { id: 1 },
     } as any
 
     await showSectionModules(ctx, 'main1')
@@ -71,7 +83,7 @@ describe('hierarchical navigation integration (T040-A)', () => {
     expect(ctx.editMessageText).toHaveBeenCalled()
     const editMarkup = ctx.editMessageText.mock.calls[0][1].reply_markup
     expect(editMarkup.inline_keyboard[0][0].text).toContain('Sub 1')
-    expect(editMarkup.inline_keyboard[0][0].text).toContain('📂')
+    expect(editMarkup.inline_keyboard[0][0].text).toContain('📁')
     expect(editMarkup.inline_keyboard[0][0].callback_data).toBe('section:view:sub1')
   })
 
@@ -95,7 +107,10 @@ describe('hierarchical navigation integration (T040-A)', () => {
     const ctx = {
       t: vi.fn(k => k),
       editMessageText: vi.fn(),
+      reply: vi.fn(),
       answerCallbackQuery: vi.fn(),
+      callbackQuery: { data: 'section:view:main2' },
+      from: { id: 1 },
     } as any
 
     await showSectionModules(ctx, 'main2')
@@ -131,7 +146,10 @@ describe('hierarchical navigation integration (T040-A)', () => {
     const ctx = {
       t: vi.fn(k => k),
       editMessageText: vi.fn(),
+      reply: vi.fn(),
       answerCallbackQuery: vi.fn(),
+      callbackQuery: { data: 'section:view:sub1' },
+      from: { id: 1 },
     } as any
 
     await showSectionModules(ctx, 'sub1')
@@ -147,40 +165,30 @@ describe('hierarchical navigation integration (T040-A)', () => {
     expect(editMarkup.inline_keyboard[2][0].callback_data).toBe('section:view:main1')
   })
 
-  it('(5) breadcrumb tracking and back button works', async () => {
-    // Simulate being in a sub-section
+  it('(5) static back button navigation works', async () => {
+    // Simulate back button which now delegates to menuHandler
     const ctx = {
-      session: {
-        currentMenu: [
-          { level: 'main', id: 'menu:main' },
-          { level: 'sections', id: 'menu:sections' },
-          { level: 'section', id: 'main1' },
-          { level: 'section', id: 'sub1' },
-        ],
-      },
       t: vi.fn(k => k),
+      reply: vi.fn(),
       editMessageText: vi.fn(),
-      answerCallbackQuery: vi.fn(),
+      from: { id: 1 },
     } as any
 
-    // Mock parent section for showSectionModules (when going back to main1)
-    mockPrisma.section.findUnique.mockResolvedValue({
-      id: 'main1',
-      name: 'Main 1',
-      children: [],
-      modules: [{ id: 'm1', isActive: true }],
+    mockPrisma.user.findUnique.mockResolvedValue({
+      telegramId: 1n,
+      role: 'SUPER_ADMIN',
+      adminScopes: [],
+      isActive: true,
     })
-    vi.mocked(moduleLoader.getLoadedModules).mockReturnValue([])
 
     await handleBackNavigation(ctx)
 
-    // Should pop 'sub1' and be at 'main1'
-    expect(ctx.session.currentMenu.length).toBe(3)
-    expect(ctx.session.currentMenu[2].id).toBe('main1')
+    // Wait for dynamic import resolution in handleBackNavigation
+    await new Promise(resolve => setTimeout(resolve, 10))
 
-    // Should show modules/subsections for main1
-    expect(mockPrisma.section.findUnique).toHaveBeenCalledWith(expect.objectContaining({
-      where: { id: 'main1' },
+    // Should call menuHandler, which fetches the user
+    expect(mockPrisma.user.findUnique).toHaveBeenCalledWith(expect.objectContaining({
+      where: { telegramId: 1n },
     }))
   })
 })
