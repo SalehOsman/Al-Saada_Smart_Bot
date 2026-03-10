@@ -22,12 +22,12 @@
 
 **Independent Test**: Run `npm run module:create test-hierarchical`, follow interactive prompts to create a new main section and sub-section, and verify `modules/test-hierarchical/config.ts` has correct `sectionSlug`.
 
-- [ ] T008 [US1] Update `scripts/module-create.ts` to use `inquirer` for fetching and displaying main sections from database
-- [ ] T009 [US1] Add "Create New Main Section" interactive flow in `scripts/module-create.ts`
-- [ ] T010 [US1] Implement sub-section selection/creation flow (with skip option) in `scripts/module-create.ts`
-- [ ] T011 [US1] Update scaffolding logic to use the resolved `sectionSlug` in `scripts/module-create.ts`
-- [ ] T012 [US1] Add validation to ensure created section names/slugs are valid and unique in `scripts/module-create.ts`
-- [ ] T013 [US1] Test full interactive CLI flow for SC-001 in `scripts/module-create.ts`
+- [x] T008 [US1] Update `scripts/module-create.ts` to use `inquirer` for fetching and displaying main sections from database
+- [x] T009 [US1] Add "Create New Main Section" interactive flow in `scripts/module-create.ts`
+- [x] T010 [US1] Implement sub-section selection/creation flow (with skip option) in `scripts/module-create.ts`
+- [x] T011 [US1] Update scaffolding logic to use the resolved `sectionSlug` in `scripts/module-create.ts`
+- [x] T012 [US1] Add validation to ensure created section names/slugs are valid and unique in `scripts/module-create.ts`
+- [x] T013 [US1] Test full interactive CLI flow for SC-001 in `scripts/module-create.ts`
 
 ## Phase 4: User Story 2 - Hierarchical Telegram Navigation (Priority: P1)
 
