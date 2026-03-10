@@ -13,11 +13,12 @@
 2. [Current Status](#current-status)
 3. [Phase 3: Production Readiness](#phase-3-production-readiness)
 4. [Phase 4: AI Assistant](#phase-4-ai-assistant)
-5. [Phase 5: Dashboard MVP](#phase-5-dashboard-mvp)
-6. [Phase 6: Advanced Features](#phase-6-advanced-features)
-7. [Timeline](#timeline)
-8. [Risks & Mitigation](#risks--mitigation)
-9. [Success Metrics](#success-metrics)
+5. [Phase 5: AI-Driven Module Kit V2](#phase-5-ai-driven-module-kit-v2)
+6. [Phase 6: Dashboard MVP](#phase-6-dashboard-mvp)
+7. [Phase 7: Advanced Features](#phase-7-advanced-features)
+8. [Timeline](#timeline)
+9. [Risks & Mitigation](#risks--mitigation)
+10. [Success Metrics](#success-metrics)
 
 ---
 
@@ -257,12 +258,33 @@ User: "ما هي رواتب الإدارة؟"
 
 ---
 
-## Phase 5: Dashboard MVP
+## Phase 5: AI-Driven Module Kit V2
+
+**Duration:** 3-5 weeks
+**Priority:** 🟠 HIGH
+**Status:** Planned (Spec: `008-module-kit-v2`)
+**Dependencies:** Phase 4 complete
+
+### Objectives
+
+Upgrade the current Module Kit to a fully Dynamic App Factory, leveraging the AI Assistant to generate complex data gathering modules, relationships, and lifecycles via simple text/yaml configurations without writing raw code.
+
+---
+
+### Key Capabilities
+- **YAML/Blueprint Driven:** Define form fields, types, relationships, and logic in one file.
+- **Dynamic Database:** Auto-generate Prisma tables (schema.prisma) and Zod validations from blueprints.
+- **Relational Lookups:** Automatically fetch and display reference data from other modules.
+- **AI "Intent-to-App":** Automatically write Blueprints, auto-localize text (`ar.json`, `en.json`), and suggest missing fields via RAG LLM integration.
+
+---
+
+## Phase 6: Dashboard MVP
 
 **Duration:** 6-8 weeks
 **Priority:** 🟠 HIGH
 **Status:** Planned
-**Dependencies:** Phase 4 complete
+**Dependencies:** Phase 5 complete
 
 ### Objectives
 
@@ -422,12 +444,12 @@ npm run dashboard:setup
 
 ---
 
-## Phase 6: Advanced Features
+## Phase 7: Advanced Features
 
 **Duration:** 4-6 weeks
 **Priority:** 🟡 MEDIUM
 **Status:** Planned
-**Dependencies:** Phase 5 MVP validated by users
+**Dependencies:** Phase 6 MVP validated by users
 
 ### Objectives
 
@@ -483,11 +505,12 @@ Add advanced dashboard features and Module Kit UX improvements based on user fee
 ├─────────────────────────────────────────────────────────────┤
 │ Week 1-3:    Phase 3 (Production Readiness)                  │
 │ Week 4-9:    Phase 4 (AI Assistant)                          │
-│ Week 10-15:  Phase 5 (Dashboard MVP)                         │
-│ Week 16-21:  Phase 6 (Advanced Features)                     │
+│ Week 10-14:  Phase 5 (AI-Driven Module Kit V2)               │
+│ Week 15-20:  Phase 6 (Dashboard MVP)                         │
+│ Week 21-26:  Phase 7 (Advanced Features)                     │
 └─────────────────────────────────────────────────────────────┘
 
-Total Duration: ~21 weeks (5 months)
+Total Duration: ~26 weeks (6.5 months)
 ```
 
 ### Milestones
@@ -496,8 +519,9 @@ Total Duration: ~21 weeks (5 months)
 |-----------|-------------|-------------|
 | M1: Production Ready | Week 3 | Sentry + CI/CD + Backups |
 | M2: AI Launch | Week 9 | AI Assistant live |
-| M3: Dashboard Beta | Week 15 | Dashboard MVP deployed |
-| M4: Feature Complete | Week 21 | All advanced features |
+| M3: Module Factory | Week 14 | Module Kit V2 AI Generator |
+| M4: Dashboard Beta | Week 20 | Dashboard MVP deployed |
+| M5: Feature Complete | Week 26 | All advanced features |
 
 ---
 
@@ -598,7 +622,8 @@ Total Duration: ~21 weeks (5 months)
 | Version | Date | Changes | Author |
 |---------|------|---------|--------|
 | 1.0.0 | 2026-03-04 | Initial roadmap created from Enhancement Proposals + Dashboard & Scaling | Technical Advisor |
-| 1.1.0 | 2026-03-09 | Phase 3 completed (v0.3.0), updated PR-001→004 with actual implementation details, backlog BL-001→005 marked implemented, Next Steps updated for Phase 4 | Technical Advisor |
+| 1.1.0 | 2026-03-09 | Phase 3 completed (v0.3.0), updated PR-001→004 with actual implementation details | Technical Advisor |
+| 1.2.0 | 2026-03-10 | Added Phase 5 (AI-Driven Module Kit V2) strategically after Phase 4 (AI Assistant). Shifted later phases. | Technical Advisor |
 
 ---
 
