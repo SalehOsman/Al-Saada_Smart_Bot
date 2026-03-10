@@ -1,7 +1,7 @@
 # Al-Saada Smart Bot — Development Roadmap
 
-**Version:** 1.1.0
-**Last Updated:** 2026-03-09
+**Version:** 1.2.0
+**Last Updated:** 2026-03-10
 **Status:** Active
 **Document Owner:** Technical Advisor
 

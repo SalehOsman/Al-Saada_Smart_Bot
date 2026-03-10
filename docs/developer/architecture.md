@@ -1,6 +1,7 @@
 # Architecture Overview
 
-**Last Updated:** 2026-03-03
+**Last Updated:** 2026-03-10
+**Version:** 1.2.0
 
 Al-Saada Smart Bot is built on a **Four-Layer Architecture** designed for scalability, strict isolation of concerns, and ease of extending features via self-contained modules.
 
@@ -19,6 +20,8 @@ The foundation of the bot. It handles everything that is *not* a specific busine
   - `JoinRequestService`: Handling the user registration lifecycle.
   - `RBACService`: Role-based access control.
   - `AdminScopeService`: Managing scoped admin permissions.
+  - `SentryService`: Real-time error tracking and PII filtering.
+  - `BackupService`: Automated encrypted database backups.
 
 ### Layer 2: Module Kit (`packages/module-kit/`)
 The framework for building business features. It provides a standardized API (`validate`, `confirm`, `save`) to ensure all features behave consistently. (See: [Module Kit Reference](module-kit-reference.md))
@@ -42,6 +45,8 @@ The infrastructure services are orchestrated via `docker-compose.yml`:
   - grammY session storage.
   - Draft state persistence (enabling users to pause and resume module flows).
 - **Application:** Node.js (>=20) running the built bot application via `tsx` or standard `node` build.
+- **Monitoring:** Sentry integration for error tracking.
+- **CI/CD:** GitHub Actions for automated linting, testing, and type-checking.
 
 ---
 
@@ -66,14 +71,16 @@ The project uses a monorepo structure (npm workspaces) to strictly isolate the l
 ## 4. Middleware Chain
 
 The bot processes every incoming Telegram update through a strict middleware chain defined in `packages/core/src/bot/index.ts`. The order is critical:
-1. **Error Boundary:** Catches all subsequent synchronous and asynchronous errors.
-2. **Session:** Initializes session state backed by Redis.
-3. **Conversations:** `@grammyjs/conversations` integration for stateful conversational flows.
-4. **i18n:** Fluent-based localization (strictly limits dynamic strings; injects `ctx.t`).
-5. **Auth:** Attaches the User entity to `ctx.user` (or handles bootstrap/join scenarios).
-6. **Draft:** Automatically manages state persistence for active module flows in Redis.
-7. **Hydrate:** `@grammyjs/hydrate` added for simplified Context methods (e.g., `ctx.replyWithHTML`).
-8. **Logging:** Request lifecycle logging.
+1. **Global Error Boundary & Sentry:** Catches all subsequent synchronous and asynchronous errors, reporting to Sentry.
+2. **Rate Limiter:** Protects against Telegram API flood limits and user spam.
+3. **Session:** Initializes session state backed by Redis.
+4. **Conversations:** `@grammyjs/conversations` integration for stateful conversational flows.
+5. **i18n:** Fluent-based localization (strictly limits dynamic strings; injects `ctx.t`).
+6. **Auth:** Attaches the User entity to `ctx.user` (or handles bootstrap/join scenarios).
+7. **Draft:** Automatically manages state persistence for active module flows in Redis.
+8. **Auto-Retry:** Automatic retry for transient Telegram API failures.
+9. **Hydrate:** `@grammyjs/hydrate` added for simplified Context methods.
+10. **Logging:** Request lifecycle logging.
 
 ---
 
