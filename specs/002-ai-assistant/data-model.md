@@ -1,20 +1,34 @@
 # Data Model: AI Assistant - Comprehensive Operational Partner
 
 **Feature**: 002-ai-assistant
-**Date**: 2026-03-02
+**Date**: 2026-03-10
 **Status**: Phase 1 Complete
 
 ## Overview
 
-The AI Assistant introduces 6 new entities to support:
-1. AI interaction logging and tracking
-2. Proactive business suggestions
-3. Scheduled reports configuration
-4. Privacy rules configuration
-5. Document analysis tracking
-6. Voice session management
+The AI Assistant introduces 17 new entities to support:
+- AI interaction logging and tracking
+- Proactive business suggestions
+- Scheduled reports configuration
+- Privacy rules configuration
+- Document analysis tracking
+- Voice session management
+- AI permission profiles with two-layer enforcement
+- AI audit trail
+- Confidence scoring and feedback
+- Health monitoring and quota management
+- Emergency shutdown capability
+- Conversation memory with Redis
+- Smart anomaly detection
+- AI data validation
+- Scheduled AI briefings
+- AI-assisted approvals
+- Business knowledge base
+- Voice data export
 
 All entities integrate with existing User, Role, and AdminScope tables from Platform Core.
+
+---
 
 ## Entity: AIInteraction
 
@@ -23,13 +37,14 @@ All entities integrate with existing User, Role, and AdminScope tables from Plat
 ```prisma
 model AIInteraction {
   id             String    @id @default(cuid())
-  userId          BigInt     @map("user_id")
-  mode            String     // 'fast' | 'smart' | 'training'
-  inputType       String     // 'text' | 'voice' | 'command'
-  processingTimeMs Int        @map("processing_time_ms")
-  outcome         String     // 'success' | 'error' | 'fallback'
-  errorMessage    String?    @map("error_message")
-  createdAt       DateTime   @default(now()) @map("created_at")
+  userId          BigInt    @map("user_id")
+  mode            String    // 'fast' | 'smart' | 'training'
+  inputType       String    // 'text' | 'voice' | 'command'
+  aiProfileId     String?   @map("ai_profile_id")
+  processingTimeMs Int       @map("processing_time_ms")
+  outcome         String    // 'success' | 'error' | 'fallback' | 'denied'
+  errorMessage     String?   @map("error_message")
+  createdAt       DateTime  @default(now()) @map("created_at")
 
   @@index([userId])
   @@index([mode])
@@ -42,11 +57,13 @@ model AIInteraction {
 - `mode` must be one of: `fast`, `smart`, `training`
 - `inputType` must be one of: `text`, `voice`, `command`
 - `processingTimeMs` must be >= 0
-- `outcome` must be one of: `success`, `error`, `fallback`
+- `outcome` must be one of: `success`, `error`, `fallback`, `denied`
+- `aiProfileId` references AIPermissionProfile.id when available
+- Question content is NOT stored (per FR-043)
 
 **Relationships**:
 - `userId` → `User.id` (many-to-one)
-- Question content is NOT stored (per FR-043)
+- `aiProfileId` → `AIPermissionProfile.id` (optional, many-to-one)
 
 ---
 
@@ -57,12 +74,12 @@ model AIInteraction {
 ```prisma
 model AISuggestion {
   id              String    @id @default(cuid())
-  type            String     // 'attendance' | 'fuel' | 'expense' | 'compliance'
+  type            String    // 'attendance' | 'fuel' | 'expense' | 'compliance'
   content         Json      // Suggestion details (count, threshold, entities)
-  targetUserId    BigInt     @map("target_user_id")
-  status          String     @default('pending') // 'pending' | 'acknowledged' | 'dismissed'
-  acknowledgedAt   DateTime?  @map("acknowledged_at")
-  createdAt       DateTime   @default(now()) @map("created_at")
+  targetUserId    BigInt    @map("target_user_id")
+  status          String    @default('pending') // 'pending' | 'acknowledged' | 'dismissed'
+  acknowledgedAt   DateTime? @map("acknowledged_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
 
   @@index([targetUserId])
   @@index([status])
@@ -79,7 +96,7 @@ model AISuggestion {
 
 **Relationships**:
 - `targetUserId` → `User.id` (many-to-one)
-- Routed based on user's `AdminScope`
+- Routed based on user's AdminScope
 
 ---
 
@@ -90,17 +107,18 @@ model AISuggestion {
 ```prisma
 model ScheduledReport {
   id             String    @id @default(cuid())
-  name            String
-  periodType      String     @map("period_type") // 'daily' | 'weekly' | 'monthly'
-  topic           String?    // e.g., 'sales', 'fuel', 'expenses', or null for general
-  frequency       String     // 'daily' | 'weekly' | 'monthly'
-  format          String     @default('text') // 'text' | 'image' | 'pdf'
-  recipients      Json       // Array of userIds who receive the report
-  nextRunAt       DateTime   @map("next_run_at")
-  lastRunAt       DateTime?  @map("last_run_at")
-  isActive        Boolean    @default(true) @map("is_active")
-  createdAt       DateTime   @default(now()) @map("created_at")
+  name           String
+  periodType     String    @map("period_type") // 'daily' | 'weekly' | 'monthly'
+  topic          String?    // e.g., 'sales', 'fuel', 'expenses', or null for general
+  frequency      String    @map("frequency") // 'daily' | 'weekly' | 'monthly'
+  format         String    @default('text') // 'text' | 'image' | 'pdf'
+  recipients      Json      // Array of userIds who receive the report
+  nextRunAt      DateTime  @map("next_run_at")
+  lastRunAt      DateTime?  @map("last_run_at")
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
 
+  @@unique([name])
   @@index([nextRunAt])
   @@index([isActive])
   @@map("scheduled_reports")
@@ -111,10 +129,12 @@ model ScheduledReport {
 - `periodType` must match `frequency` (cannot have monthly period with daily frequency)
 - `format` must be one of: `text`, `image`, `pdf`
 - `recipients` must be a non-empty JSON array of BigInt values
-- `nextRunAt` must be in the future when `isActive` is true
+- `nextRunAt` must be in future when `isActive` is true
+- `lastRunAt` tracks actual execution time for monitoring
 
 **Relationships**:
 - Each `recipient` → `User.id` (many-to-many via JSON)
+- SUPER_ADMIN can create and manage reports
 
 ---
 
@@ -124,13 +144,13 @@ model ScheduledReport {
 
 ```prisma
 model PrivacyRule {
-  id           String    @id @default(cuid())
-  fieldName     String     @map("field_name") // e.g., 'national_id', 'phone'
-  modelType    String     @map("model_type") // 'cloud' | 'both'
-  redactionMethod String     @map("redaction_method") // 'full' | 'partial' | 'token'
-  isActive     Boolean    @default(true) @map("is_active")
-  createdBy    BigInt     @map("created_by")
-  createdAt    DateTime   @default(now()) @map("created_at")
+  id            String    @id @default(cuid())
+  fieldName      String    @map("field_name") // e.g., 'national_id', 'phone'
+  modelType     String    @map("model_type") // 'cloud' | 'both'
+  redactionMethod String    @map("redaction_method") // 'full' | 'partial' | 'token'
+  isActive      Boolean   @default(true) @map("is_active")
+  createdBy     BigInt    @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
 
   @@index([fieldName])
   @@index([isActive])
@@ -142,9 +162,10 @@ model PrivacyRule {
 - `fieldName` must be a known field name (from schema)
 - `modelType` must be one of: `cloud`, `both`
 - `redactionMethod` must be one of: `full`, `partial`, `token`
+- `createdBy` references SUPER_ADMIN only
 
 **Relationships**:
-- `createdBy` → `User.id` (who created the rule, must be SUPER_ADMIN)
+- `createdBy` → `User.id` (many-to-one, SUPER_ADMIN only)
 
 ---
 
@@ -154,17 +175,18 @@ model PrivacyRule {
 
 ```prisma
 model DocumentAnalysis {
-  id                String    @id @default(cuid())
-  fileId            String     @map("file_id") // References stored file
-  fileName          String     @map("file_name")
-  fileType          String     @map("file_type") // 'pdf' | 'image' | 'excel'
-  fileSize          Int        @map("file_size") // bytes
-  extractedData     Json?      @map("extracted_data") // Structured fields
-  ocrText           String?    @map("ocr_text") // Extracted text
-  confidence        Float?     // Extraction confidence score
+  id                 String    @id @default(cuid())
+  fileId             String    @map("file_id") // References stored file
+  fileName           String     @map("file_name")
+  fileType           String     @map("file_type") // 'pdf' | 'image' | 'excel'
+  fileSize           Int       @map("file_size") // bytes
+  extractedData      Json?     @map("extracted_data") // Structured fields
+  ocrProvider        String    @map("ocr_provider") // 'gemini-vision' | 'deepseek-ocr'
+  ocrText            String?    @map("ocr_text") // Extracted text
+  confidence          Float?    @map("confidence") // Extraction confidence score
   moduleSuggestion  String?    @map("module_suggestion") // Suggested target module
-  uploadedBy        BigInt     @map("uploaded_by")
-  createdAt         DateTime   @default(now()) @map("created_at")
+  uploadedBy         BigInt    @map("uploaded_by")
+  createdAt           DateTime  @default(now()) @map("created_at")
 
   @@index([uploadedBy])
   @@index([createdAt])
@@ -176,9 +198,10 @@ model DocumentAnalysis {
 - `fileType` must be one of: `pdf`, `image`, `excel`
 - `fileSize` must be > 0 and <= 25MB (25 * 1024 * 1024)
 - `confidence` must be between 0.0 and 1.0 when present
+- `ocrProvider` must be one of: `gemini-vision`, `deepseek-ocr`
 
 **Relationships**:
-- `uploadedBy` → `User.id` (who uploaded the document)
+- `uploadedBy` → `User.id` (many-to-one)
 - `fileId` references actual file in storage
 
 ---
@@ -190,13 +213,13 @@ model DocumentAnalysis {
 ```prisma
 model VoiceSession {
   id              String    @id @default(cuid())
-  userId           BigInt     @map("user_id")
-  mode             String     // 'TEXT_ONLY' | 'VOICE_INPUT_ONLY' | 'FULL_VOICE'
-  transcription    Json?      // Transcription history with timestamps
-  audioFilePath    String?    @map("audio_file_path") // Optional saved audio
-  startedAt        DateTime   @default(now()) @map("started_at")
-  endedAt          DateTime?  @map("ended_at")
-  durationMs       Int?       @map("duration_ms")
+  userId           BigInt    @map("user_id")
+  mode            String    // 'TEXT_ONLY' | 'VOICE_INPUT_ONLY' | 'FULL_VOICE'
+  transcription     Json?     // Transcription history with timestamps
+  audioFilePath   String?    @map("audio_file_path") // Optional saved audio
+  startedAt       DateTime  @default(now()) @map("started_at")
+  endedAt         DateTime?  @map("ended_at")
+  durationMs      Int?       @map("duration_ms")
 
   @@index([userId])
   @@index([startedAt])
@@ -214,43 +237,471 @@ model VoiceSession {
 
 ---
 
-## Configuration Entities (Extensions to Core)
+## Entity: AIPermissionProfile (2026-03-10)
 
-### AIConfig (User Extension)
+**Purpose**: Define AI access profiles with specific capabilities for users.
+
+```prisma
+model AIPermissionProfile {
+  id              String    @id @default(cuid())
+  name            String    @unique
+  profileType     String    @map("profile_type") // 'FULL_ACCESS' | 'DATA_ANALYST' | 'FINANCIAL_VIEWER' | 'MODULE_QUERY' | 'SELF_ONLY' | 'GUIDANCE_ONLY' | 'CUSTOM'
+  capabilities     Json      // Array of capability names
+  isCustom        Boolean   @default(false) @map("is_custom")
+  createdBy       BigInt    @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([profileType])
+  @@map("ai_permission_profiles")
+}
+```
+
+**Validation Rules**:
+- `profileType` must be one of: `FULL_ACCESS`, `DATA_ANALYST`, `FINANCIAL_VIEWER`, `MODULE_QUERY`, `SELF_ONLY`, `GUIDANCE_ONLY`, `CUSTOM`
+- `capabilities` must be non-empty JSON array when `isCustom` is true
+- Built-in profiles cannot be modified: `isCustom=false` + `profileType` in built-in set
+- `createdBy` references SUPER_ADMIN only
+
+**Profile Types and Capabilities**:
+- **FULL_ACCESS**: All AI capabilities
+- **DATA_ANALYST**: Cross-module reports, OCR, data queries
+- **FINANCIAL_VIEWER**: Financial data access + reports
+- **MODULE_QUERY**: Query assigned module data only
+- **SELF_ONLY**: Own records only
+- **GUIDANCE_ONLY**: Usage guidance only, no data access
+- **CUSTOM**: Administrator-defined combination
+
+**Relationships**:
+- Many `User` records share one profile → `AIPermissionProfile.id`
+- `createdBy` → `User.id` (SUPER_ADMIN only)
+
+---
+
+## Entity: AIConfig (User Extension)
+
+**Purpose**: User-specific AI configuration with operating mode, provider, and preferences.
 
 ```prisma
 model AIConfig {
-  id              String    @id @default(cuid())
-  userId           BigInt     @map("user_id") @unique
-  operatingMode   String     @map("operating_mode") // 'fast' | 'smart' | 'training'
-  cloudProvider   String?    @map("cloud_provider") // 'gemini' | 'openai' | 'claude'
-  voiceResponse    Boolean    @default(false) @map("voice_response") // TTS enabled?
-  updatedAt       DateTime   @updatedAt @map("updated_at")
+  id                String    @id @default(cuid())
+  userId            BigInt    @map("user_id") @unique
+  operatingMode    String    @default('fast') // 'fast' | 'smart' | 'training'
+  cloudProvider     String?    @map("cloud_provider") // 'gemini' | 'openai' | 'claude'
+  voiceResponse     Boolean   @default(false) @map("voice_response")
+  updatedAt         DateTime  @updatedAt
 
   @@unique([userId])
   @@map("ai_configs")
 }
 ```
 
-**Scope**: AIConfig is per-user (one config per userId, enforced by @unique constraint). System-wide defaults are applied when a user has no AIConfig record. Only SUPER_ADMIN can modify their own or other users' AI configuration.
+**Validation Rules**:
+- `operatingMode` must be one of: `fast`, `smart`, `training`
+- `cloudProvider` must be one of: `gemini`, `openai`, `claude` when set
+- `userId` references User table
+
+**Relationships**:
+- `userId` → `User.id` (one-to-one)
+
+---
+
+## Entity: AIAuditTrail (2026-03-10)
+
+**Purpose**: Complete audit log of all AI interactions with filter and export capability.
+
+```prisma
+model AIAuditTrail {
+  id                String    @id @default(cuid())
+  userId            BigInt    @map("user_id")
+  requestType       String    @map("request_type") // Categorized type for filtering
+  aiProfileId       String?   @map("ai_profile_id")
+  timestamp         DateTime  @default(now()) @map("timestamp")
+  result            String    // 'success' | 'denied' | 'error' | 'injection_blocked'
+  isInjectionAttempt Boolean   @default(false) @map("is_injection_attempt")
+  deniedCapability  String?    @map("denied_capability") // Denied AI capability if result='denied'
+
+  @@index([userId])
+  @@index([timestamp])
+  @@index([result])
+  @@index([requestType])
+  @@index([isInjectionAttempt])
+  @@map("ai_audit_trail")
+}
+```
+
+**Validation Rules**:
+- `requestType` must be a valid categorized type
+- `result` must be one of: `success`, `denied`, `error`, `injection_blocked`
+- `deniedCapability` required when `result` is `denied`
+- `isInjectionAttempt` must be true when `result` is `injection_blocked` (FR-120)
+
+**Relationships**:
+- `userId` → `User.id` (many-to-one)
+- `aiProfileId` → `AIPermissionProfile.id` (optional)
+
+---
+
+## Entity: AIFeedback (2026-03-10)
+
+**Purpose**: User feedback on AI responses used for Training Mode improvement.
+
+```prisma
+model AIFeedback {
+  id              String    @id @default(cuid())
+  aiInteractionId String    @map("ai_interaction_id") // Reference to AIInteraction
+  rating          String    // 'correct' | 'incorrect' | 'partial'
+  correction       String?    // User's optional correction
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([aiInteractionId])
+  @@index([rating])
+  @@map("ai_feedback")
+}
+```
+
+**Validation Rules**:
+- `rating` must be one of: `correct`, `incorrect`, `partial`
+- `correction` available when `rating` is `incorrect`
+
+**Relationships**:
+- `aiInteractionId` → `AIInteraction.id` (many-to-one)
+
+---
+
+## Entity: AIQuota (2026-03-10)
+
+**Purpose**: Monthly usage quota tracking per cloud AI service.
+
+```prisma
+model AIQuota {
+  id             String    @id @default(cuid())
+  serviceType    String    @map("service_type") // 'gemini' | 'whisper' | 'ocr'
+  periodStart    DateTime  @map("period_start") // First day of quota period
+  periodEnd      DateTime  @map("period_end")   // Last day of quota period
+  quotaLimit     Int       @map("quota_limit")   // Monthly limit count
+  quotaUsed      Int       @default(0) @map("quota_used") // Current usage count
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@unique([serviceType, periodStart])
+  @@map("ai_quotas")
+}
+```
+
+**Validation Rules**:
+- `serviceType` must be one of: `gemini`, `whisper`, `ocr`
+- `periodStart` < `periodEnd`
+- `quotaUsed` <= `quotaLimit`
+- New record created each month for each service
+
+---
+
+## Entity: EmergencyShutdownState (2026-03-10)
+
+**Purpose**: Single global state for AI emergency shutdown capability.
+
+```prisma
+model EmergencyShutdownState {
+  id              String    @id @default(unique())
+  isShutdown      Boolean   @default(false) @map("is_shutdown")
+  shutdownBy      BigInt    @map("shutdown_by")
+  shutdownAt      DateTime  @map("shutdown_at")
+  reenabledBy     BigInt?    @map("reenabled_by")
+  reenabledAt     DateTime? @map("reenabled_at")
+
+  @@map("emergency_shutdown_state")
+}
+```
+
+**Validation Rules**:
+- Only SUPER_ADMIN can toggle `isShutdown`
+- `shutdownBy` references SUPER_ADMIN
+- `reenabledBy` references SUPER_ADMIN when present
+
+**Relationships**:
+- `shutdownBy` → `User.id` (SUPER_ADMIN only)
+
+---
+
+## Entity: AIHealthStatus (2026-03-10)
+
+**Purpose**: Real-time health status tracking for AI services.
+
+```prisma
+model AIHealthStatus {
+  id              String    @id @default(unique())
+  serviceName     String    // 'local_model' | 'gemini_api' | 'whisper_api' | 'ocr_service' | 'rag_service' | 'voice_stt' | 'voice_tts'
+  status          String    // 'operational' | 'degraded' | 'down'
+  responseTimeMs  Int?      @map("response_time_ms") // P50 response time
+  todayCount     Int       @default(0) @map("today_count")
+  lastFailureAt  DateTime? @map("last_failure_at")
+  lastFailureError String?   @map("last_failure_error")
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([serviceName])
+  @@map("ai_health_status")
+}
+```
+
+**Validation Rules**:
+- `serviceName` must be one of tracked services
+- `status` must be one of: `operational`, `degraded`, `down`
+
+---
+
+## Entity: BusinessKnowledgeEntry (2026-03-10)
+
+**Purpose**: Business-specific knowledge entries for AI validation and responses.
+
+```prisma
+model BusinessKnowledgeEntry {
+  id              String    @id @default(cuid())
+  type            String    @map("type") // 'price_range' | 'staff_responsibility' | 'seasonal_pattern' | 'domain_fact'
+  name            String
+  content         Json      // Structured data specific to type
+  lastUsedAt     DateTime? @map("last_used_at")
+  createdBy       BigInt    @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([type])
+  @@index([name])
+  @@map("business_knowledge_entries")
+}
+```
+
+**Validation Rules**:
+- `type` must be one of: `price_range`, `staff_responsibility`, `seasonal_pattern`, `domain_fact`
+- `content` must be valid JSON for the type
+- SUPER_ADMIN only can create/edit/delete entries
+
+**Knowledge Types**:
+- **price_range**: `{"currency": "EGP", "min": 10, "max": 13, "unit": "per liter"}`
+- **staff_responsibility**: `{"area": "fleet", "responsible": "Ahmed"}`
+- **seasonal_pattern**: `{"season": "summer", "pattern": "Higher demand"}`
+- **domain_fact**: `{"fact": "Company policy", "value": "Closed on Friday"}`
+
+**Relationships**:
+- `createdBy` → `User.id` (SUPER_ADMIN only)
+
+---
+
+## Entity: ConversationMemory (2026-03-10)
+
+**Purpose**: Session-scoped conversation context stored in Redis (virtual model).
+
+**Note**: This is a Redis-backed entity used for temporary session storage.
+
+```typescript
+interface ConversationMemory {
+  sessionId: string;      // Redis key prefix: "conv:{userId}:{sessionId}"
+  userId: bigint;          // Associated user
+  context: Array<{
+    timestamp: Date;
+    role: string;          // 'user' | 'assistant'
+    content: string;
+    embeddings?: number[]; // For semantic reference
+  }>;
+  ttl: number;             // Session TTL in seconds (default: 30 minutes)
+  lastActivity: Date;     // For TTL refresh
+}
+```
+
+**Redis Key Pattern**: `conv:{userId}:{sessionId}`
+- Stores compressed context for rapid retrieval
+- TTL-based cleanup for privacy
+- Cleared on session end or explicit topic change
+
+---
+
+## Entity: AnomalyDetection (2026-03-10)
+
+**Purpose**: Statistical anomaly detection baseline and alerts.
+
+```prisma
+model AnomalyDetection {
+  id              String    @id @default(cuid())
+  metricType      String    @map("metric_type") // e.g., 'fuel_consumption', 'employee_attendance'
+  baselineStats   Json      // Mean, std dev, min, max
+  alertThreshold  Float     @map("alert_threshold") // Standard deviations from mean
+  isEnabled      Boolean   @default(true) @map("is_enabled")
+  lastCalibrationAt DateTime  @map("last_calibration_at")
+  createdBy       BigInt    @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@unique([metricType])
+  @@map("anomaly_detection")
+}
+```
+
+**Validation Rules**:
+- `alertThreshold` must be positive (1-10 standard deviations typical)
+- Background BullMQ jobs continuously analyze and update baselines
+
+---
+
+## Entity: DataValidationAlert (2026-03-10)
+
+**Purpose**: Track data validation warnings and confirmations.
+
+```prisma
+model DataValidationAlert {
+  id              String    @id @default(cuid())
+  entityType      String    @map("entity_type") // Table name
+  entityId        BigInt    @map("entity_id")
+  fieldName       String    @map("field_name")
+  enteredValue    Float    @map("entered_value")
+  historicalMean  Float    @map("historical_mean")
+  deviationPct    Float    @map("deviation_pct") // Percentage from mean
+  wasConfirmed   Boolean   @default(false) @map("was_confirmed")
+  userId          BigInt    @map("user_id") // Who entered the data
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@map("data_validation_alerts")
+}
+```
+
+**Validation Rules**:
+- Warning triggered when `deviationPct` > 200% (2 standard deviations per FR-106)
+- User can confirm anomalous data despite warning
+- Confirmed-but-warning records flagged for audit review
+
+---
+
+## Entity: BriefingJob (2026-03-10)
+
+**Purpose**: BullMQ job tracking for scheduled AI briefings.
+
+```typescript
+interface BriefingJob {
+  id: string;            // BullMQ job ID
+  reportId: string;      // References ScheduledReport
+  schedule: string;      // Cron expression
+  status: string;         // 'waiting' | 'running' | 'completed' | 'failed'
+  scheduledAt: Date;
+  startedAt?: Date;
+  completedAt?: Date;
+  deliveryCount: number; // Number of recipients notified
+  error?: string;
+}
+```
+
+**BullMQ Queue**: `ai-briefings`
+- Scheduled via node-cron
+- Background processing doesn't affect query latency
+- SLA: 99% delivered within 60 seconds of trigger time
+
+---
+
+## Entity: ApprovalRecommendation (2026-03-10)
+
+**Purpose**: AI-generated recommendations for approval requests.
+
+```prisma
+model ApprovalRecommendation {
+  id                String    @id @default(cuid())
+  approvalType     String    @map("approval_type") // 'leave' | 'expense' | 'purchase'
+  approvalId       BigInt    @map("approval_id") // References approval request
+  recommendation     String    // 'approve' | 'reject' | 'defer'
+  reasoning         Json      // Data-driven reasoning factors
+  confidence        Float?    @map("confidence") // 0-1.0
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([approvalType, approvalId])
+  @@map("approval_recommendations")
+}
+```
+
+**Validation Rules**:
+- `recommendation` must be one of: `approve`, `reject`, `defer`
+- `confidence` between 0.0 and 1.0 when present
+- Advisory only — human approver makes final decision
+
+---
+
+## Entity: OnboardingStatus (2026-03-10)
+
+**Purpose**: Track user AI onboarding completion state.
+
+```prisma
+model OnboardingStatus {
+  id        String    @id @default(cuid())
+  userId    BigInt    @map("user_id") @unique
+  completed Boolean   @default(false) @map("completed")
+  skipped   Boolean   @default(false) @map("skipped")
+  completedAt DateTime? @map("completed_at")
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  @@unique([userId])
+  @@map("onboarding_status")
+}
+```
+
+**Validation Rules**:
+- Each user has one record
+- `completed` or `skipped` = true prevents onboarding from re-triggering
+
+---
+
+## Configuration Entities (Extensions to Core)
+
+### AIConfig (User Extension)
+
+```prisma
+model AIConfig {
+  id                String    @id @default(cuid())
+  userId            BigInt    @map("user_id") @unique
+  operatingMode    String    @default('fast') // 'fast' | 'smart' | 'training'
+  cloudProvider     String?    @map("cloud_provider") // 'gemini' | 'openai' | 'claude'
+  voiceResponse     Boolean   @default(false) @map("voice_response")
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([userId])
+  @@map("ai_configs")
+}
+```
 
 ---
 
 ## Relationships Diagram
 
 ```
-User (Core)
-  ├── 1:N ── AIInteraction
-  ├── 1:N ── AISuggestion (as target)
-  ├── 1:1 ── AIConfig
-  ├── 1:N ── DocumentAnalysis (as uploadedBy)
-  └── 1:N ── VoiceSession
+User (Core Platform)
+├── 1:N AIInteraction          ← user makes queries
+├── 1:N AISuggestion           ← user receives suggestions (as target)
+├── 1:1 AIConfig              ← user's AI settings
+├── 1:N DocumentAnalysis       ← user uploads documents (as uploader)
+├── 1:N VoiceSession            ← user's voice interactions
+├── 1:1 OnboardingStatus      ← onboarding state
+├── N:1 AIPermissionProfile   ← many users share one profile
+├── 1:N AIFeedback             ← feedback on AI interactions
+├── N:1 ApprovalRecommendation ← receives recommendations
 
 PrivacyRule
-  └── N:1 ── User (as createdBy)
+└── N:1 User                  ← created by SUPER_ADMIN only
 
 ScheduledReport
-  └── N:N ── User (via recipients JSON)
+└── N:N User                  ← recipients (via JSON array)
+
+EmergencyShutdownState
+├── N:1 User (shutdownBy)
+└── N:1 User (reenabledBy)
+
+BusinessKnowledgeEntry
+└── N:1 User (createdBy)
+
+DataValidationAlert
+└── N:1 User (who entered data)
+
+AnomalyDetection
+└── N:1 User (createdBy)
+
+AdminScope (Core Platform)
+└── Used by:
+    ├── RAGService              ← RBAC filtering for queries
+    ├── SuggestionService        ← RBAC filtering for suggestions
+    ├── ReportService           ← RBAC filtering for reports
+    └── AnomalyDetectionService   ← RBAC for alerts
 ```
 
 ---
@@ -258,39 +709,77 @@ ScheduledReport
 ## State Transitions
 
 ### AISuggestion Status Flow
+
 ```
 pending ──[user acknowledges]──> acknowledged
-   │
-   └─[user dismisses]──> dismissed
+pending ──[user dismisses]──> dismissed
 ```
 
 ### ScheduledReport Lifecycle
-```
-created ──[isActive=true]──> scheduled
-   │
-   └─[isActive=false]──> paused
 
-scheduled ──[cron triggers]──> running ──[complete]──> scheduled (nextRunAt updated)
+```
+created[isActive=true] ──[cron trigger]──> running ──[complete]──> scheduled
+      │                           │
+      └─[pause]───────────────┘─[resume]──> scheduled
+      └─[deactivate]─────────> paused[isActive=false]
+```
+
+### Conversation Memory Lifecycle
+
+```
+active ──[user ends session]──> cleared (TTL expiration)
+active ──[user changes topic]──> cleared (manual reset)
+active ──[TTL expires]──────────────> cleared (auto)
 ```
 
 ---
 
 ## Index Strategy
 
-All indexes are defined to support common query patterns:
-- **Time-based queries**: All entities have `createdAt` index
-- **User-based queries**: `userId`/`targetUserId` indexes for filtering
-- **Status-based queries**: `status`/`isActive` indexes for filtering
-- **Scheduled queries**: `nextRunAt` index for cron job efficiency
+All entities include appropriate indexes for:
+- **Time-based queries**: `createdAt`, `updatedAt` indexes
+- **User-based queries**: `userId` indexes for filtering
+- **Status-based queries**: `status`, `isActive` indexes
+- **Unique constraints**: Prevent duplicates and ensure data integrity
 
 ---
 
-## RBAC Integration
+## Foreign Key Relationships
 
-All AI queries are filtered by user role:
-- **SUPER_ADMIN**: Access all data, can configure AI settings
-- **ADMIN**: Access data within AdminScope, receives relevant suggestions
-- **EMPLOYEE**: Access own data only, can query about personal information
-- **VISITOR**: No AI access
+| Child Entity | Parent Entity | Relationship | Constraints |
+|-------------|-------------|-------------|-------------|
+| AIInteraction | User | N:1 | Cascade on delete |
+| AISuggestion | User | N:1 (target) | Cascade on delete |
+| VoiceSession | User | N:1 | Cascade on delete |
+| AIConfig | User | 1:1 | Cascade on delete |
+| PrivacyRule | User | N:1 (creator) | SUPER_ADMIN only |
+| AIPermissionProfile | User | N:1 | Many users share one profile |
+| AIFeedback | AIInteraction | N:1 | Cascade on delete |
+| DocumentAnalysis | User | N:1 (uploader) | Cascade on delete |
+| OnboardingStatus | User | 1:1 | Cascade on delete |
+| AIAuditTrail | User | N:1 | Cascade on delete |
+| AIPermissionProfile | User (SUPER_ADMIN) | N:1 (creator) | SUPER_ADMIN only |
+| DataValidationAlert | User | N:1 | Cascade on delete |
+| AnomalyDetection | User | N:1 (creator) | SUPER_ADMIN only |
+| EmergencyShutdownState | User (shutdownBy) | N:1 | N:1 (reenabledBy) | SUPER_ADMIN only |
+| AIFeedback | AIInteraction | N:1 | Reference only |
 
-Per FR-008 and FR-021, RAG queries apply RBAC filters at database level using vector similarity with scope constraints.
+---
+
+## Data Volume Estimates
+
+| Entity | Est. Records | Growth Rate | Retention |
+|--------|--------------|------------|----------|
+| AIInteraction | ~10K/day/user | 10M/month | Configurable (NFR-013) |
+| AISuggestion | ~50/day/all | 1.5M/month | Configurable (NFR-024) |
+| DocumentAnalysis | ~100/day/all | 3M/month | Configurable (NFR-014) |
+| VoiceSession | ~5K/session | 150K/month | TTL-based |
+| AIFeedback | ~1:1 per interaction | 3M/month | Linked to AIInteraction |
+| AIAuditTrail | ~1:1 per interaction | 3M/month | Linked to AIInteraction |
+| BusinessKnowledgeEntry | ~100 entries | Static | Permanent |
+| AnomalyDetection | ~20 metrics | Static | Permanent |
+| DataValidationAlert | ~500/day | 15M/month | 90 days (SC-016) |
+| ApprovalRecommendation | ~100/day | 3M/month | Linked to approval requests |
+| OnboardingStatus | 1 per user | Static | Permanent |
+
+**Total**: ~22M records/month peak, manageable with PostgreSQL partitioning strategy.

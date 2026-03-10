@@ -1,0 +1,187 @@
+openapi: 3.0.0
+info:
+  title: Voice Service
+  description: Speech-to-Text, Text-to-Speech, and voice export functionality
+  version: 1.0.0
+
+paths:
+  /voice/stt:
+    post:
+      summary: Convert speech to text
+      description: Transcribes audio input to text using Whisper API
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [audioFile]
+              properties:
+                audioFile:
+                  type: string
+                  format: binary
+                  description: Audio file (supports: m4a, mp3, webm, wav)
+                language:
+                  type: string
+                  default: ar
+                  description: Language code (ar, en)
+      responses:
+        '200':
+          description: Transcription successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+                    description: Transcribed text
+                  confidence:
+                    type: number
+                    format: float
+                    minimum: 0
+                    maximum: 1
+                  provider:
+                    type: string
+                    enum: [openai_whisper, local_whisper]
+        '400':
+          description: Invalid audio format
+        '413':
+          description: Audio file too large (max 25MB)
+
+  /voice/tts:
+    post:
+      summary: Convert text to speech
+      description: Generates audio from text using Google Cloud TTS
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  description: Text to convert to speech
+                language:
+                  type: string
+                  default: ar-EG
+                  description: Language code for pronunciation
+                voice:
+                  type: string
+                  description: Voice type (uses default if not specified)
+      responses:
+        '200':
+          description: Audio generated successfully
+          content:
+            audio/mpeg:
+            audio/wav:
+            audio/ogg:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid text or language
+
+  /voice/export:
+    post:
+      summary: Request report delivery via voice command
+      description: Processes voice export command and delivers report via configured method
+      security:
+        - bearerAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reportId, deliveryMethod]
+              properties:
+                reportId:
+                  type: string
+                  description: ID of the report to export
+                deliveryMethod:
+                  type: string
+                  enum: [telegram, email]
+                  description: Where to deliver the report
+                format:
+                  type: string
+                  enum: [pdf, text]
+                  default: pdf
+                  description: Export format
+      responses:
+        '200':
+          description: Export initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+                    description: Background job ID for export tracking
+                  estimatedTime:
+                    type: integer
+                    description: Estimated completion time in seconds
+        '400':
+          description: Report not found or invalid delivery method
+        '404':
+          description: User email not configured for email delivery
+
+  /voice/session/start:
+    post:
+      summary: Start a voice session
+      description: Initializes a voice session for continuous interaction
+      security:
+        - bearerAuth
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mode:
+                  type: string
+                  enum: [INPUT_ONLY, OUTPUT_ONLY, FULL_DUPLEX]
+                  default: FULL_DUPLEX
+                  description: Voice session mode
+      responses:
+        '200':
+          description: Voice session started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionId:
+                    type: string
+                    description: Unique session identifier
+                  expiresAt:
+                    type: string
+                    format: date-time
+                    description: Session expiration time
+
+  /voice/session/end:
+    post:
+      summary: End current voice session
+      description: Closes the active voice session and clears context
+      security:
+        - bearerAuth
+      responses:
+        '200':
+          description: Session ended
+        '404':
+          description: No active voice session
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

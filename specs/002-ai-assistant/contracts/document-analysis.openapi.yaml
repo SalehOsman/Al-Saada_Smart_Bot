@@ -1,14 +1,14 @@
 openapi: 3.0.0
 info:
   title: Document Analysis Service
-  description: Document parsing, OCR, and data extraction service
+  description: Document parsing with hybrid OCR (Gemini Vision + DeepSeek-OCR) and data extraction
   version: 1.0.0
 
 paths:
   /documents/upload:
     post:
       summary: Upload document for analysis
-      description: Uploads PDF, image, or Excel file for OCR and data extraction
+      description: Uploads PDF, image, or Excel file for OCR and data extraction with automatic provider selection
       security:
         - bearerAuth
       requestBody:
@@ -26,6 +26,11 @@ paths:
                 targetModule:
                   type: string
                   description: Optional target module for data mapping
+                ocrProvider:
+                  type: string
+                  enum: [gemini_vision, deepseek_ocr, auto]
+                  default: auto
+                  description: OCR provider to use (auto = system default with automatic fallback)
       responses:
         '201':
           description: Document uploaded and analysis started
@@ -42,6 +47,9 @@ paths:
                   estimatedTime:
                     type: integer
                     description: Estimated processing time in seconds
+                  ocrProvider:
+                    type: string
+                    description: Provider being used for this document
         '400':
           description: Invalid file type or size
         '413':
@@ -78,6 +86,13 @@ paths:
                   ocrText:
                     type: string
                     nullable: true
+                  ocrProvider:
+                    type: string
+                    enum: [gemini_vision, deepseek_ocr]
+                    description: Provider that processed this document
+                  providerFallback:
+                    type: boolean
+                    description: Whether primary provider failed and fallback was used
                   confidence:
                     type: number
                     format: float
@@ -95,7 +110,7 @@ paths:
   /documents/{id}/extracted-data:
     get:
       summary: Get extracted structured data
-      description: Returns only the structured fields for direct data entry
+      description: Returns only structured fields for direct data entry
       security:
         - bearerAuth
       parameters:
@@ -121,7 +136,7 @@ paths:
   /documents/{id}/save-to-module:
     post:
       summary: Save extracted data to module
-      description: Saves the extracted data to the specified module
+      description: Saves extracted data to specified module
       security:
         - bearerAuth
       parameters:
@@ -188,8 +203,19 @@ paths:
                         maxSize:
                           type: integer
                           description: Maximum size in bytes
-                        ocrSupported:
-                          type: boolean
+                        ocrProviders:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              provider:
+                                type: string
+                                enum: [gemini_vision, deepseek_ocr]
+                              recommendedFor:
+                                type: array
+                                items:
+                                  type: string
+                                  description: Document types this provider handles best
 
   /documents/analyze/{id}:
     post:
@@ -229,6 +255,85 @@ paths:
                     items:
                       type: string
                       description: Relevant sections from document
+                  confidence:
+                    type: number
+                    format: float
+
+  /documents/ocr/providers:
+    get:
+      summary: Get available OCR providers
+      description: Returns available OCR providers with capabilities
+      security:
+        - bearerAuth
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  defaultProvider:
+                    type: string
+                    enum: [gemini_vision, deepseek_ocr]
+                  providers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          enum: [gemini_vision, deepseek_ocr]
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        supportsTables:
+                          type: boolean
+                          description: Whether provider handles table extraction well
+                        supportsArabic:
+                          type: boolean
+                          description: Whether provider supports Arabic text
+                        averageTime:
+                          type: integer
+                          description: Average processing time per page (seconds)
+
+  /documents/ocr/retry/{id}:
+    post:
+      summary: Retry OCR with different provider
+      description: Re-processes document with alternative OCR provider
+      security:
+        - bearerAuth
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                provider:
+                  type: string
+                  enum: [gemini_vision, deepseek_ocr]
+                  description: Provider to retry with
+      responses:
+        '202':
+          description: OCR retry initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+        '400':
+          description: Same provider as before or invalid provider
+        '404':
+          description: Document not found
 
 components:
   schemas:
@@ -246,3 +351,23 @@ components:
           format: float
           minimum: 0
           maximum: 1
+        sourceRegion:
+          type: object
+          properties:
+            page:
+              type: integer
+            x:
+              type: number
+            y:
+              type: number
+            width:
+              type: number
+            height:
+              type: number
+          description: Bounding box of extracted region
+
+securitySchemes:
+  bearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT
