@@ -22,7 +22,7 @@ paths:
                 audioFile:
                   type: string
                   format: binary
-                  description: Audio file (supports: m4a, mp3, webm, wav)
+                  description: 'Audio file (supports: m4a, mp3, webm, wav)'
                 language:
                   type: string
                   default: ar

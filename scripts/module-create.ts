@@ -4,11 +4,13 @@
  *
  * Developer CLI tool for scaffolding new bot modules.
  * Automates directory creation, configuration generation, and Prisma schema integration.
+ * Enhanced with interactive hierarchical section scaffolding (FR-002, FR-003, FR-004).
  */
 
 import fs from 'node:fs'
 import path from 'node:path'
 import { execSync } from 'node:child_process'
+import process from 'node:process'
 import inquirer from 'inquirer'
 import { PrismaClient } from '@prisma/client'
 import 'dotenv/config'
@@ -23,11 +25,7 @@ import 'dotenv/config'
  * ```
  */
 async function main() {
-  // eslint-disable-next-line node/prefer-global/process
   const slugArg = process.argv[2]
-
-  // Support for non-interactive mode via arguments (Issue D1 / Testing)
-  // eslint-disable-next-line node/prefer-global/process
   const isNonInteractive = process.argv.includes('--non-interactive')
 
   let slug = slugArg
@@ -49,15 +47,12 @@ async function main() {
   }
   else if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
     console.error('Error: Slug must be provided and valid in non-interactive mode.')
-    // eslint-disable-next-line node/prefer-global/process
     process.exit(1)
   }
 
-  // eslint-disable-next-line node/prefer-global/process
   const moduleDir = path.join(process.cwd(), 'modules', slug)
   if (fs.existsSync(moduleDir)) {
     console.error(`Error: Module directory already exists at ${moduleDir}`)
-    // eslint-disable-next-line node/prefer-global/process
     process.exit(1)
   }
 
@@ -67,21 +62,16 @@ async function main() {
     let name, nameEn, sectionSlug, icon, includeEdit, includeHooks
 
     if (isNonInteractive) {
-      // eslint-disable-next-line node/prefer-global/process
       name = process.argv.find(a => a.startsWith('--name='))?.split('=')[1] || `${slug}-name`
-      // eslint-disable-next-line node/prefer-global/process
       nameEn = process.argv.find(a => a.startsWith('--nameEn='))?.split('=')[1] || `${slug}-name-en`
-      // eslint-disable-next-line node/prefer-global/process
       sectionSlug = process.argv.find(a => a.startsWith('--sectionSlug='))?.split('=')[1] || 'operations'
-      // eslint-disable-next-line node/prefer-global/process
       icon = process.argv.find(a => a.startsWith('--icon='))?.split('=')[1] || '📦'
-      // eslint-disable-next-line node/prefer-global/process
       includeEdit = process.argv.includes('--includeEdit')
-      // eslint-disable-next-line node/prefer-global/process
       includeHooks = process.argv.includes('--includeHooks')
     }
     else {
-      const response = await inquirer.prompt([
+      // Basic info prompts
+      const infoResponse = await inquirer.prompt([
         {
           type: 'input',
           name: 'name',
@@ -93,23 +83,6 @@ async function main() {
           name: 'nameEn',
           message: 'Enter English display name (i18n key):',
           default: `${slug}-name-en`,
-        },
-        {
-          type: 'input',
-          name: 'sectionSlug',
-          message: 'Enter section slug (e.g., "operations"):',
-          validate: async (input) => {
-            try {
-              const section = await prisma.section.findUnique({ where: { slug: input } })
-              if (section)
-                return true
-              return `Section "${input}" not found in database. Please ensure the section exists first.`
-            }
-            catch {
-              console.warn(`\n⚠️ Warning: Database connection failed. Skipping validation for sectionSlug: "${input}".`)
-              return true // Allow continuation even if DB is unreachable (Issue F1)
-            }
-          },
         },
         {
           type: 'input',
@@ -130,12 +103,80 @@ async function main() {
           default: false,
         },
       ])
-      name = response.name
-      nameEn = response.nameEn
-      sectionSlug = response.sectionSlug
-      icon = response.icon
-      includeEdit = response.includeEdit
-      includeHooks = response.includeHooks
+
+      name = infoResponse.name
+      nameEn = infoResponse.nameEn
+      icon = infoResponse.icon
+      includeEdit = infoResponse.includeEdit
+      includeHooks = infoResponse.includeHooks
+
+      // --- Hierarchical Section Selection (T008, T009, T010, T012) ---
+      console.log('\n📂 Selecting Section Hierarchy...')
+
+      // 1. Select Main Section
+      const mainSections = await prisma.section.findMany({
+        where: { parentId: null },
+        orderBy: { name: 'asc' },
+      })
+
+      const mainSectionChoices = [
+        ...mainSections.map(s => ({ name: `${s.icon} ${s.name} (${s.slug})`, value: s })),
+        new inquirer.Separator(),
+        { name: '➕ Create New Main Section', value: 'CREATE_NEW' },
+      ]
+
+      const { mainSelection } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'mainSelection',
+          message: 'Choose Main Section:',
+          choices: mainSectionChoices,
+        },
+      ])
+
+      let selectedMainSection
+      if (mainSelection === 'CREATE_NEW') {
+        selectedMainSection = await createNewSectionPrompt(prisma, null)
+      }
+      else {
+        selectedMainSection = mainSelection
+      }
+
+      // 2. Select Sub-section
+      const subSections = await prisma.section.findMany({
+        where: { parentId: selectedMainSection.id },
+        orderBy: { name: 'asc' },
+      })
+
+      const subSectionChoices = [
+        ...subSections.map(s => ({ name: `${s.icon} ${s.name} (${s.slug})`, value: s })),
+        new inquirer.Separator(),
+        { name: '➕ Create New Sub-section', value: 'CREATE_NEW' },
+        { name: '⭐ Skip (Place directly in Main Section)', value: 'SKIP' },
+      ]
+
+      const { subSelection } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'subSelection',
+          message: `Choose Sub-section for "${selectedMainSection.name}":`,
+          choices: subSectionChoices,
+        },
+      ])
+
+      let finalSection
+      if (subSelection === 'CREATE_NEW') {
+        finalSection = await createNewSectionPrompt(prisma, selectedMainSection.id)
+      }
+      else if (subSelection === 'SKIP') {
+        finalSection = selectedMainSection
+      }
+      else {
+        finalSection = subSelection
+      }
+
+      sectionSlug = finalSection.slug
+      console.log(`✅ Selected section: ${finalSection.icon} ${finalSection.name} (${finalSection.slug})\n`)
     }
 
     console.log(`Scaffolding module "${slug}"...`)
@@ -145,7 +186,7 @@ async function main() {
     fs.mkdirSync(path.join(moduleDir, 'locales'), { recursive: true })
     fs.mkdirSync(path.join(moduleDir, 'tests'), { recursive: true })
 
-    // 1. config.ts
+    // 1. config.ts (T011)
     const configTemplate = `import { defineModule } from '@al-saada/module-kit';
 import { Role } from '@prisma/client';
 import { add${slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('')}Conversation } from './add.conversation.js';
@@ -175,8 +216,8 @@ import { BotContext, validate, confirm, save } from '@al-saada/module-kit';
 
 export async function add${slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('')}Conversation(conversation: Conversation<BotContext>, ctx: BotContext) {
   const data: any = {};
-  
-  // Example step:
+
+  // Example flow using validate/confirm/save
   // data.amount = await validate(conversation, ctx, {
   //   field: 'amount',
   //   promptKey: '${slug}.prompt.amount',
@@ -235,7 +276,7 @@ describe('${slug} flow', () => {
 `
     fs.writeFileSync(path.join(moduleDir, 'tests', 'flow.test.ts'), testTemplate)
 
-    // 8. package.json (required for monorepo workspaces)
+    // 8. package.json
     const packageJsonTemplate = JSON.stringify({
       name: `@al-saada/module-${slug}`,
       version: '0.0.1',
@@ -248,8 +289,10 @@ describe('${slug} flow', () => {
     fs.writeFileSync(path.join(moduleDir, 'package.json'), packageJsonTemplate)
 
     // Copy schema to prisma/schema/modules/
-    // eslint-disable-next-line node/prefer-global/process
     const targetSchemaPath = path.join(process.cwd(), 'prisma', 'schema', 'modules', `${slug}.prisma`)
+    if (!fs.existsSync(path.dirname(targetSchemaPath))) {
+      fs.mkdirSync(path.dirname(targetSchemaPath), { recursive: true })
+    }
     fs.copyFileSync(path.join(moduleDir, 'schema.prisma'), targetSchemaPath)
 
     console.log('Running prisma generate...')
@@ -267,3 +310,64 @@ describe('${slug} flow', () => {
 }
 
 main()
+
+/**
+ * Prompts the developer to create a new section in the database.
+ * (T009, T010, T012)
+ */
+async function createNewSectionPrompt(prisma: PrismaClient, parentId: string | null) {
+  const type = parentId ? 'Sub-section' : 'Main Section'
+  console.log(`\n✨ Creating New ${type}...`)
+
+  const response = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'name',
+      message: `Enter ${type} Arabic name (display text):`,
+      validate: input => input.trim().length >= 2 || 'Name must be at least 2 characters.',
+    },
+    {
+      type: 'input',
+      name: 'nameEn',
+      message: `Enter ${type} English name (display text):`,
+      validate: input => input.trim().length >= 2 || 'English name must be at least 2 characters.',
+    },
+    {
+      type: 'input',
+      name: 'slug',
+      message: `Enter ${type} slug (lowercase, hyphen-separated):`,
+      validate: async (input) => {
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(input))
+          return 'Invalid slug format. Use lowercase and hyphens (e.g., "hr-dept").'
+
+        const existing = await prisma.section.findUnique({ where: { slug: input } })
+        if (existing)
+          return `Slug "${input}" is already taken. Please choose another one.`
+
+        return true
+      },
+    },
+    {
+      type: 'input',
+      name: 'icon',
+      message: `Enter ${type} emoji icon:`,
+      default: parentId ? '🔹' : '📂',
+      validate: input => input.trim().length > 0 || 'Icon is required.',
+    },
+  ])
+
+  // Create the section in the database
+  const section = await prisma.section.create({
+    data: {
+      slug: response.slug,
+      name: response.name,
+      nameEn: response.nameEn,
+      icon: response.icon,
+      parentId,
+      orderIndex: 0,
+    },
+  })
+
+  console.log(`✅ ${type} "${section.name}" created successfully.`)
+  return section
+}

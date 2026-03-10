@@ -15,13 +15,16 @@ menu-employee = Welcome, { $name }! You can access the sections assigned to you:
 menu-visitor = Welcome, { $name }! You have basic system access.
 
 button-sections = Sections
+button-sections-manage = Manage Sections
 button-users = Users
 button-maintenance = Maintenance
-button-maintenance-on = Enable Maintenance 🟢
-button-maintenance-off = Disable Maintenance 🔴
+button-maintenance-on = Enable Maintenance ðŸŸ¢
+button-maintenance-off = Disable Maintenance ðŸ”´
 button-audit = Audit Log
 button-modules = Modules
+button-modules-manage = Manage Modules
 button-notifications = Notifications
+
 
 # Join Request Strings
 join-welcome =

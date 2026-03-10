@@ -9,19 +9,27 @@ const { mockPrisma } = vi.hoisted(() => ({
       findUnique: vi.fn(),
       findMany: vi.fn(),
     },
+    user: {
+      findUnique: vi.fn(),
+    },
   },
 }))
 
 vi.mock('../../../src/database/prisma', () => ({ prisma: mockPrisma }))
 vi.mock('../../../src/bot/module-loader', () => ({
   moduleLoader: {
-    getLoadedModules: vi.fn(),
+    getLoadedModules: vi.fn(() => []),
   },
 }))
 
 describe('hierarchical navigation integration (T040-A)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockPrisma.user.findUnique.mockResolvedValue({
+      telegramId: 1n,
+      role: 'SUPER_ADMIN',
+      adminScopes: [],
+    })
   })
 
   it('(1) main menu shows only main sections', async () => {
@@ -33,6 +41,7 @@ describe('hierarchical navigation integration (T040-A)', () => {
     const ctx = {
       t: vi.fn(k => k),
       reply: vi.fn(),
+      from: { id: 1 },
     } as any
 
     await showMainSectionsMenu(ctx)
@@ -42,7 +51,8 @@ describe('hierarchical navigation integration (T040-A)', () => {
     }))
 
     const replyMarkup = ctx.reply.mock.calls[0][1].reply_markup
-    expect(replyMarkup.inline_keyboard.length).toBe(4) // S1, S2, Add, Back
+    // S1, S2, Add, Back
+    expect(replyMarkup.inline_keyboard.length).toBe(4)
     expect(replyMarkup.inline_keyboard[0][0].callback_data).toBe('section:view:s1')
     expect(replyMarkup.inline_keyboard[1][0].callback_data).toBe('section:view:s2')
   })
@@ -53,33 +63,27 @@ describe('hierarchical navigation integration (T040-A)', () => {
       id: 'main1',
       name: 'Main 1',
       icon: '📁',
-      children: [{ id: 'sub1', name: 'Sub 1', icon: '📄', _count: { modules: 1 } }],
+      children: [{ id: 'sub1', name: 'Sub 1', icon: '📄', isActive: true }],
       modules: [],
     }
 
-    // Ensure both findUnique calls return the same mock section
     mockPrisma.section.findUnique.mockResolvedValue(mockSection)
 
     const ctx = {
       t: vi.fn(k => k),
       editMessageText: vi.fn(),
+      reply: vi.fn(),
       answerCallbackQuery: vi.fn(),
+      callbackQuery: { data: 'section:view:main1' },
+      from: { id: 1 },
     } as any
 
     await showSectionModules(ctx, 'main1')
 
-    // It should fetch children for the menu
-    expect(mockPrisma.section.findUnique).toHaveBeenCalled()
-
-    // Ensure editMessageText was called
     expect(ctx.editMessageText).toHaveBeenCalled()
-
-    const firstCall = ctx.editMessageText.mock.calls[0]
-    expect(firstCall).toBeDefined()
-    expect(firstCall[1]).toBeDefined()
-
-    const editMarkup = firstCall[1].reply_markup
+    const editMarkup = ctx.editMessageText.mock.calls[0][1].reply_markup
     expect(editMarkup.inline_keyboard[0][0].text).toContain('Sub 1')
+    expect(editMarkup.inline_keyboard[0][0].text).toContain('📁')
     expect(editMarkup.inline_keyboard[0][0].callback_data).toBe('section:view:sub1')
   })
 
@@ -103,7 +107,10 @@ describe('hierarchical navigation integration (T040-A)', () => {
     const ctx = {
       t: vi.fn(k => k),
       editMessageText: vi.fn(),
+      reply: vi.fn(),
       answerCallbackQuery: vi.fn(),
+      callbackQuery: { data: 'section:view:main2' },
+      from: { id: 1 },
     } as any
 
     await showSectionModules(ctx, 'main2')
@@ -139,7 +146,10 @@ describe('hierarchical navigation integration (T040-A)', () => {
     const ctx = {
       t: vi.fn(k => k),
       editMessageText: vi.fn(),
+      reply: vi.fn(),
       answerCallbackQuery: vi.fn(),
+      callbackQuery: { data: 'section:view:sub1' },
+      from: { id: 1 },
     } as any
 
     await showSectionModules(ctx, 'sub1')
@@ -148,48 +158,37 @@ describe('hierarchical navigation integration (T040-A)', () => {
     expect(ctx.editMessageText).toHaveBeenCalled()
 
     const editMarkup = ctx.editMessageText.mock.calls[0][1].reply_markup
-    // 2 modules + back button = 3 rows
     expect(editMarkup.inline_keyboard.length).toBe(3)
     expect(editMarkup.inline_keyboard[0][0].callback_data).toBe('mod:mod-a')
     expect(editMarkup.inline_keyboard[1][0].callback_data).toBe('mod:mod-b')
-    // Last row = back button
-    expect(editMarkup.inline_keyboard[2][0].callback_data).toBe('menu:sections')
+    // Last row = back button to parent
+    expect(editMarkup.inline_keyboard[2][0].callback_data).toBe('section:view:main1')
   })
 
-  it('(5) breadcrumb tracking and back button works', async () => {
-    // Simulate being in a sub-section
+  it('(5) static back button navigation works', async () => {
+    // Simulate back button which now delegates to menuHandler
     const ctx = {
-      session: {
-        currentMenu: [
-          { level: 'main', id: 'menu:main' },
-          { level: 'sections', id: 'menu:sections' },
-          { level: 'section', id: 'main1' },
-          { level: 'section', id: 'sub1' },
-        ],
-      },
       t: vi.fn(k => k),
+      reply: vi.fn(),
       editMessageText: vi.fn(),
-      answerCallbackQuery: vi.fn(),
+      from: { id: 1 },
     } as any
 
-    // Mock parent section for showSectionModules (when going back to main1)
-    mockPrisma.section.findUnique.mockResolvedValue({
-      id: 'main1',
-      name: 'Main 1',
-      children: [],
-      modules: [{ id: 'm1', isActive: true }],
+    mockPrisma.user.findUnique.mockResolvedValue({
+      telegramId: 1n,
+      role: 'SUPER_ADMIN',
+      adminScopes: [],
+      isActive: true,
     })
-    vi.mocked(moduleLoader.getLoadedModules).mockReturnValue([])
 
     await handleBackNavigation(ctx)
 
-    // Should pop 'sub1' and be at 'main1'
-    expect(ctx.session.currentMenu.length).toBe(3)
-    expect(ctx.session.currentMenu[2].id).toBe('main1')
+    // Wait for dynamic import resolution in handleBackNavigation
+    await new Promise(resolve => setTimeout(resolve, 10))
 
-    // Should show modules/subsections for main1
-    expect(mockPrisma.section.findUnique).toHaveBeenCalledWith(expect.objectContaining({
-      where: { id: 'main1' },
+    // Should call menuHandler, which fetches the user
+    expect(mockPrisma.user.findUnique).toHaveBeenCalledWith(expect.objectContaining({
+      where: { telegramId: 1n },
     }))
   })
 })

@@ -32,6 +32,7 @@ The `slug` MUST be unique across all modules and use kebab-case format
 ### Rule 3: Valid SectionSlug
 The `sectionSlug` MUST match an existing `Section.slug` in the database
 - Modules are organized under sections in the UI
+- Support for **Hierarchical Sections**: A module can be placed in a Main Section or a Sub-section
 - Common sections: `operations`, `finance`, `hr`, `inventory`
 
 ### Rule 4: Non-Empty View Permissions
@@ -339,7 +340,11 @@ describe('FuelEntries Module', () => {
 npm run module:create
 ```
 
-Follow the interactive prompts to generate a module skeleton.
+Follow the interactive prompts to generate a module skeleton. The CLI will automatically:
+1. **Fetch Main Sections** from the database for you to choose from.
+2. **Fetch Sub-sections** based on your main section choice.
+3. Allow you to **Create New** sections (Main or Sub) directly from the prompt.
+4. Allow you to **Skip** sub-section selection to place the module directly in a Main Section.
 
 #### Option B: AI Wizard
 

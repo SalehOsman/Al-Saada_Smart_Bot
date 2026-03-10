@@ -47,6 +47,10 @@ describe('menu Visibility (US5)', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockPrisma.section.findMany.mockResolvedValue([
+      { id: 'sec-ops', slug: 'operations', name: 'Operations', icon: '⚙️', children: [] },
+      { id: 'sec-hr', slug: 'hr', name: 'HR', icon: '👥', children: [] },
+    ])
     // Default mock modules
     mockModuleLoader.getLoadedModules.mockReturnValue([
       {
@@ -80,13 +84,13 @@ describe('menu Visibility (US5)', () => {
 
     await menuHandler(mockCtx)
 
-    const call = mockCtx.reply.mock.calls.find(c => c[1]?.reply_markup?.inline_keyboard)
+    const call = mockCtx.reply.mock.calls.find((c: any) => c[1]?.reply_markup?.inline_keyboard)
     const keyboard = call[1].reply_markup.inline_keyboard
 
     // Flatten keyboard to check for buttons
     const buttons = keyboard.flat()
-    expect(buttons.some(b => b.callback_data === 'mod:fuel-entry')).toBe(true)
-    expect(buttons.some(b => b.callback_data === 'mod:admin-only-module')).toBe(true)
+    expect(buttons.some((b: any) => b.callback_data === 'section:view:sec-ops')).toBe(true)
+    expect(buttons.some((b: any) => b.callback_data === 'section:view:sec-hr')).toBe(true)
   })
 
   it('eMPLOYEE only sees modules where role is in permissions.view', async () => {
@@ -100,12 +104,12 @@ describe('menu Visibility (US5)', () => {
 
     await menuHandler(mockCtx)
 
-    const call = mockCtx.reply.mock.calls.find(c => c[1]?.reply_markup?.inline_keyboard)
+    const call = mockCtx.reply.mock.calls.find((c: any) => c[1]?.reply_markup?.inline_keyboard)
     expect(call).toBeDefined()
     const buttons = call[1].reply_markup.inline_keyboard.flat()
 
-    expect(buttons.some(b => b.callback_data === 'mod:fuel-entry')).toBe(true)
-    expect(buttons.some(b => b.callback_data === 'mod:admin-only-module')).toBe(false)
+    expect(buttons.some((b: any) => b.callback_data === 'section:view:sec-ops')).toBe(true)
+    expect(buttons.some((b: any) => b.callback_data === 'section:view:sec-hr')).toBe(false)
   })
 
   it('aDMIN only sees modules with matching AdminScope', async () => {
@@ -120,23 +124,35 @@ describe('menu Visibility (US5)', () => {
     })
     mockPrisma.auditLog.create.mockResolvedValue({})
 
-    // Precise mock for section lookup
+    // Precise mock for section lookup used in getAuthorizedModules
     mockPrisma.section.findMany.mockImplementation(({ where }: any) => {
-      const ids = where.id.in
+      // If querying for main menu rendering (parentId: null)
+      if (where.parentId === null) {
+        return Promise.resolve([
+          { id: 'sec-ops', slug: 'operations', name: 'Operations', icon: '⚙️', children: [] },
+          { id: 'sec-hr', slug: 'hr', name: 'HR', icon: '👥', children: [] },
+        ])
+      }
+
+      // If querying for AdminScope resolution in getAuthorizedModules
       const all = [
         { id: 'sec-ops', slug: 'operations' },
         { id: 'sec-hr', slug: 'hr' },
       ]
-      return Promise.resolve(all.filter(s => ids.includes(s.id)))
+      if (where.OR) {
+        const ids = where.OR[0].id.in || []
+        return Promise.resolve(all.filter(s => ids.includes(s.id)))
+      }
+      return Promise.resolve([])
     })
 
     await menuHandler(mockCtx)
 
-    const call = mockCtx.reply.mock.calls.find(c => c[1]?.reply_markup?.inline_keyboard)
+    const call = mockCtx.reply.mock.calls.find((c: any) => c[1]?.reply_markup?.inline_keyboard)
     expect(call).toBeDefined()
     const buttons = call[1].reply_markup.inline_keyboard.flat()
 
-    expect(buttons.some(b => b.callback_data === 'mod:fuel-entry')).toBe(true)
-    expect(buttons.some(b => b.callback_data === 'mod:admin-only-module')).toBe(false)
+    expect(buttons.some((b: any) => b.callback_data === 'section:view:sec-ops')).toBe(true)
+    expect(buttons.some((b: any) => b.callback_data === 'section:view:sec-hr')).toBe(false)
   })
 })
