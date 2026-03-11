@@ -21,6 +21,11 @@ vi.mock('../../../src/bot/module-loader', () => ({
     getLoadedModules: vi.fn(() => []),
   },
 }))
+vi.mock('../../../src/services/maintenance', () => ({
+  maintenanceService: {
+    isMaintenanceMode: vi.fn().mockResolvedValue(false),
+  },
+}))
 
 describe('hierarchical navigation integration (T040-A)', () => {
   beforeEach(() => {
