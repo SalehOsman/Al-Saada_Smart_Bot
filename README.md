@@ -226,8 +226,9 @@ al-saada-smart-bot/
 | **Phase 2** | Module Kit (Helpers, Drafts, CLI) | v0.2.0 | ✅ مكتمل |
 | **Phase 3** | Production Readiness (Sentry, CI/CD, Backups) | v0.3.0 | ✅ مكتمل |
 | **Phase 4** | مساعد ذكاء اصطناعي تشغيلي | v0.4.0 | ⏳ قادم |
-| **Phase 5** | لوحة القيادة الذكية (Dashboard MVP) | v0.5.0 | ⏳ قادم |
-| **Phase 6** | ميزات متقدمة (Advanced Features) | v1.0.0 | ⏳ قادم |
+| **Phase 5** | Module Kit V2 (Schema-Driven App Factory) | v0.9.0 | ⏳ قادم |
+| **Phase 6** | لوحة القيادة الذكية (Dashboard MVP) | v0.5.0 | ⏳ قادم |
+| **Phase 7** | ميزات متقدمة (Advanced Features) | v1.0.0 | ⏳ قادم |
 
 📋 **للتفاصيل الكاملة:** راجع [`docs/project/roadmap.md`](docs/project/roadmap.md)
 
@@ -422,8 +423,9 @@ npm run module:remove
 | **Phase 2** | Module Kit (Helpers, Drafts, CLI) | v0.2.0 | ✅ Complete |
 | **Phase 3** | Production Readiness (Sentry, CI/CD, Backups) | v0.3.0 | ✅ Complete |
 | **Phase 4** | AI Operational Assistant | v0.4.0 | ⏳ Coming |
-| **Phase 5** | Smart Admin Dashboard (MVP) | v0.5.0 | ⏳ Coming |
-| **Phase 6** | Advanced Features | v1.0.0 | ⏳ Coming |
+| **Phase 5** | Module Kit V2 (Schema-Driven App Factory) | v0.9.0 | ⏳ Coming |
+| **Phase 6** | Smart Admin Dashboard (MVP) | v0.5.0 | ⏳ Coming |
+| **Phase 7** | Advanced Features | v1.0.0 | ⏳ Coming |
 
 📋 **Full Details:** See [`docs/project/roadmap.md`](docs/project/roadmap.md)
 
