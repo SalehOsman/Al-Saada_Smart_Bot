@@ -28,13 +28,15 @@
 | [User Scenarios](scenarios/README.md) | سيناريوهات التفاعل مع البوت وشجرة التدفقات | All | AR |
 
 ## Project Status
-- **Implemented**: Layer 1 (Platform Core), Layer 2 (Module Kit).
-- **Planned**: Layer 3 (Modules), Layer 4 (AI Assistant), BullMQ notifications, Section Management.
+- **Implemented**: Layer 1 (Platform Core), Layer 2 (Module Kit V1).
+- **In Progress**: Layer 4 (AI Assistant), Layer 2 Module Kit V2 (Schema-Driven App Factory).
+- **Planned**: Layer 3 (Modules), Layer 5 (Dashboard MVP), Layer 6 (Advanced Features).
 
 ## Available Specifications
 - `001-platform-core`: Foundation of the bot, RBAC, services.
 - `002-ai-assistant`: AI layer using LLMs and RAG.
-- `003-module-kit`: Strict validation and drafting flow framework.
+- `003-module-kit`: Strict validation and drafting flow framework (V1).
+- `008-schema-driven-modules`: Next-gen App Factory for Module Kit V2 with 19 Field Types and Zero-Code YAML.
 
 ## API Reference
 **Run `npm run docs:api` to generate TypeDoc API reference locally.** The generated static site will be placed in `docs/api/`.

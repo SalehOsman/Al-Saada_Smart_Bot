@@ -18,15 +18,16 @@
 | C-06 | [إدارة صلاحيات Admin](core/C-06-admin-scopes.md) | `users.ts` | ✅ مُنفذ |
 | C-07 | [إلغاء العمليات (`/cancel`)](core/C-07-cancel-flow.md) | `conversation.ts` | ✅ مُنفذ |
 | C-08 | [الرسائل غير المدعومة](core/C-08-fallback.md) | `fallback.ts` | ✅ مُنفذ |
-| C-09 | [إدارة الأقسام](core/C-09-section-management.md) | — | ⏳ غير مُنفذ |
-| C-10 | [وضع الصيانة](core/C-10-maintenance-mode.md) | — | ⏳ غير مُنفذ |
-| C-11 | [التنقل في الأقسام الفرعية](core/C-11-sub-section-navigation.md) | — | ⏳ مقترح |
+| C-09 | [إدارة الأقسام](core/C-09-section-management.md) | `sections.ts` | ✅ مُنفذ |
+| C-10 | [وضع الصيانة](core/C-10-maintenance-mode.md) | `settings.ts` | ✅ مُنفذ |
+| C-11 | [التنقل في الأقسام الفرعية](core/C-11-sub-section-navigation.md) | `menu.ts` | ✅ مُنفذ |
 
 ---
 
-## 🟢 سيناريوهات بناء الموديولات (Module Kit - Layer 2)
+## 🟢 سيناريوهات بناء الموديولات (Module Kit V1 - Layer 2)
 
-سيناريوهات المطور عند إنشاء موديول جديد باستخدام أدوات Module Kit.
+سيناريوهات المطور عند إنشاء موديول جديد باستخدام أدوات Module Kit الإصدار الأول (V1).
+> **ملاحظة:** الإصدار الثاني (V2 Schema-Driven App Factory) قيد التطوير لتمكين بناء الموديولات عبر ملفات YAML مباشرةً دون كتابة كود.
 
 | # | السيناريو | الملف |
 |---|----------|-------|

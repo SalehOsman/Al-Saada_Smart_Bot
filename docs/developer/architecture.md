@@ -24,16 +24,18 @@ The foundation of the bot. It handles everything that is *not* a specific busine
   - `BackupService`: Automated encrypted database backups.
 
 ### Layer 2: Module Kit (`packages/module-kit/`)
-The framework for building business features. It provides a standardized API (`validate`, `confirm`, `save`) to ensure all features behave consistently. (See: [Module Kit Reference](module-kit-reference.md))
+The framework for building business features.
+- **V1 Framework:** Provides a standardized API (`validate`, `confirm`, `save`) to build conversation flows via code. (See: [Module Kit Reference](module-kit-reference.md))
+- **V2 Schema-Driven App Factory:** (Under Development) Allows defining modules entirely via YAML Blueprints with 19 field types, generating Database schema, UI, and Validators automatically. (See: [Module Kit V2 Design Document](module-kit-v2.md))
 - **ModuleLoader:** Resides in `core` (`src/bot/module-loader.ts`) but acts as the bridge. It discovers, registers, and loads modules defined using the Module Kit.
 - **Draft System:** Middleware (`draft.ts`) that automatically persists user input state to Redis, allowing users to resume interrupted flows.
 
 ### Layer 3: Modules (`modules/`)
-The actual business features of the bot (e.g., Leave Requests, Maintenance Tickets). Each module is a self-contained package that uses the API provided by Layer 2. *Currently planned / under development.*
+The actual business features of the bot (e.g., Leave Requests, Maintenance Tickets). Each module is a self-contained package that uses the API provided by Layer 2. *(Planned)*
 
-### Layer 4: AI Assistant (`packages/ai-assistant/` - Planned)
-*(Planned / Not Yet Implemented)*
-An intelligent layer utilizing local LLMs (Qwen2.5:7b) and vector databases (pgvector) to provide intelligent semantic search, RAG-based query answers, and automated tasks, strictly adhering to the RBAC rules defined in Layer 1.
+### Layer 4: AI Assistant (`packages/ai-assistant/`)
+*(In Progress)*
+An intelligent operational assistant layer utilizing local LLMs (Qwen2.5:7b) and cloud models, combined with vector databases (pgvector). It provides intelligent semantic search, RAG-based query answers, OCR, and automated tasks, strictly adhering to the RBAC rules defined in Layer 1.
 
 ---
 
