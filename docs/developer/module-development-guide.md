@@ -1,8 +1,11 @@
 # Module Development Guide
 
-**Version**: 1.0
-**Last Updated**: 2026-03-02
+**Version**: 1.1
+**Last Updated**: 2026-03-11
 **Purpose**: Comprehensive guide for developing compliant modules in the Al-Saada Smart Bot platform
+
+> [!IMPORTANT]
+> This guide covers **Module Kit V1** — the current, implemented module framework. For the planned Schema-Driven App Factory (V2), see [Module Kit V2 Design Document](module-kit-v2.md).
 
 ## Table of Contents
 
@@ -94,105 +97,78 @@ modules/
 
 ## Code Examples
 
-### 1. Minimal config.ts (Config Only Level)
+### 1. config.ts (Module Definition)
 
 ```typescript
 import { defineModule } from '@al-saada/module-kit'
+import { addFuelEntry } from './conversations/add'
 
 export const config = defineModule({
   slug: 'fuel-entries',
   sectionSlug: 'operations',
   name: 'fuel-entries-name',
-  description: 'fuel-entries-description',
+  nameEn: 'fuel-entries-name-en',
+  icon: '⛽',
 
   permissions: {
-    view: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'],
+    view: ['SUPER_ADMIN', 'ADMIN'],
     create: ['SUPER_ADMIN', 'ADMIN'],
     edit: ['SUPER_ADMIN', 'ADMIN'],
     delete: ['SUPER_ADMIN'],
-    approve: ['SUPER_ADMIN'],
   },
 
-  fields: [
-    {
-      key: 'amount',
-      type: 'number',
-      label: 'fuel-entries-field-amount',
-      required: true,
-    },
-    {
-      key: 'type',
-      type: 'select',
-      label: 'fuel-entries-field-type',
-      options: ['fuel-entries-option-diesel', 'fuel-entries-option-petrol'],
-      required: true,
-    },
-    {
-      key: 'truckId',
-      type: 'reference',
-      label: 'fuel-entries-field-truck',
-      reference: 'Truck',
-      required: true,
-    },
-  ],
+  addEntryPoint: addFuelEntry,
+  // editEntryPoint: editFuelEntry,  // Optional
 })
 ```
 
-### 2. Config with Hooks (Config + Hooks Level)
+### 2. Conversation Flow (add.conversation.ts)
 
 ```typescript
-import { defineModule } from '@al-saada/module-kit'
+import type { Conversation } from '@grammyjs/conversations'
+import type { BotContext } from '@al-saada/module-kit'
+import { validate, confirm, save } from '@al-saada/module-kit'
 
-export const config = defineModule({
-  slug: 'fuel-entries',
-  sectionSlug: 'operations',
-  name: 'fuel-entries-name',
-  description: 'fuel-entries-description',
+export async function addFuelEntry(
+  conversation: Conversation<BotContext>,
+  ctx: BotContext,
+) {
+  // Step 1: Collect amount
+  const amount = await validate(conversation, ctx, {
+    field: 'amount',
+    promptKey: 'fuel-entries-prompt-amount',
+    errorKey: 'fuel-entries-error-amount',
+    validator: val => !Number.isNaN(Number(val)) && Number(val) > 0,
+    formatter: val => Number(val),
+  })
+  if (!amount) return
 
-  permissions: {
-    view: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'],
-    create: ['SUPER_ADMIN', 'ADMIN'],
-    edit: ['SUPER_ADMIN', 'ADMIN'],
-    delete: ['SUPER_ADMIN'],
-    approve: ['SUPER_ADMIN'],
-  },
+  // Step 2: Collect fuel type
+  const type = await validate(conversation, ctx, {
+    field: 'type',
+    promptKey: 'fuel-entries-prompt-type',
+    errorKey: 'fuel-entries-error-type',
+    validator: val => ['diesel', 'petrol'].includes(val),
+  })
+  if (!type) return
 
-  fields: [
-    // ... field definitions
-  ],
+  // Step 3: Confirm
+  const data = { amount, type }
+  const confirmed = await confirm(conversation, ctx, {
+    data,
+    labels: { amount: 'fuel-entries-label-amount', type: 'fuel-entries-label-type' },
+    editableFields: ['amount', 'type'],
+    reAsk: async (field) => { /* re-ask logic */ },
+  })
+  if (!confirmed) return
 
-  hooks: {
-    // Validate data before moving to next step
-    onStepValidate: async (step, data) => {
-      if (step === 'amount' && data.amount > 1000) {
-        throw new Error('fuel-entries-error-max-amount')
-      }
-    },
-
-    // Run before saving to database
-    beforeSave: async (data) => {
-      // Calculate derived fields
-      data.costPerLiter = data.totalCost / data.amount
-      return data
-    },
-
-    // Run after successful save
-    afterSave: async (savedData) => {
-      // Trigger notifications
-      await notifyTruckDriver(savedData.truckId, 'fuel-entries-notification')
-    },
-
-    // Run when record is approved
-    onApproval: async (record) => {
-      await updateInventory(record)
-    },
-
-    // Run when record is rejected
-    onRejection: async (record, reason) => {
-      await notifySubmitter(record, reason)
-    },
-  },
-})
+  // Step 4: Save
+  await save(ctx, {
+    moduleSlug: 'fuel-entries',
+    action: async prisma => prisma.fuelEntry.create({ data }),
+    audit: { action: 'MODULE_CREATE', targetType: 'FuelEntry', details: data },
+  })
+}
 ```
 
 ### 3. Custom Code Directory Structure
@@ -334,7 +310,7 @@ describe('FuelEntries Module', () => {
 
 ### 1. Create a New Module
 
-#### Option A: CLI (Recommended for Fast Scaffolding)
+#### Option A: CLI (Recommended)
 
 ```bash
 npm run module:create
@@ -346,26 +322,22 @@ Follow the interactive prompts to generate a module skeleton. The CLI will autom
 3. Allow you to **Create New** sections (Main or Sub) directly from the prompt.
 4. Allow you to **Skip** sub-section selection to place the module directly in a Main Section.
 
-#### Option B: AI Wizard
-
-Use the `/ai create-module` command in the bot to get guided assistance from the AI Assistant.
-
-#### Option C: Manual Creation
+#### Option B: Manual Creation
 
 1. Create module directory under `modules/`
 2. Create all required files manually
 3. Follow the Module Contract rules
 
+> **🚧 V2 Preview:** In Module Kit V2, a third option — **AI Wizard** (`/ai create-module`) — will generate modules from natural language descriptions. See [Module Kit V2](module-kit-v2.md).
+
 ### 2. Development Steps
 
 1. **Plan**: Define the module's purpose, fields, and workflows
-2. **Configure**: Edit `config.ts` with fields and permissions
-3. **Internationalize**: Add all text to both `ar.ftl` and `en.ftl`
-4. **Define Schema**: Create `schema.prisma` with module tables only
-5. **Implement Logic**: Add conversation flow and custom code if needed
+2. **Configure**: Edit `config.ts` with `defineModule()` and permissions
+3. **Implement**: Write `conversation.ts` using `validate()`, `confirm()`, `save()`
+4. **Internationalize**: Add all text to both `ar.ftl` and `en.ftl`
+5. **Define Schema**: Create `schema.prisma` with module tables only
 6. **Test**: Write tests and ensure 80%+ coverage
-7. **Validate**: Run `npm run module:validate <slug>` to check compliance
-8. **Review**: Use `/ai review-module <slug>` for AI-assisted code review
 
 ---
 
@@ -527,8 +499,6 @@ Before deploying a module to production, verify all items:
 
 ### Runtime Validation
 
-- [ ] Run `npm run module:validate <slug>` — no errors
-- [ ] Run `/ai review-module <slug>` — no violations
 - [ ] Module loads successfully in dev environment
 - [ ] Module is accessible to configured roles
 - [ ] Conversation flow completes without errors
@@ -653,9 +623,27 @@ describe('Module Contract', () => {
 ## Additional Resources
 
 - **Module Kit Reference**: [module-kit-reference.md](module-kit-reference.md)
+- **Module Kit V2 Design**: [module-kit-v2.md](module-kit-v2.md)
 - **Platform Core Reference**: [platform-core-reference.md](platform-core-reference.md)
 - **Architecture**: [architecture.md](architecture.md)
 - **Database Schema**: [database-schema.md](database-schema.md)
+
+---
+
+## 🚧 Module Kit V2 Preview
+
+Module Kit V2 (planned after Phase 4: AI Assistant) will introduce a **Schema-Driven App Factory** approach. Key changes:
+
+- **YAML Blueprints** replace manual `conversation.ts` files
+- **Declarative `fields`** define data structure + conversation flow in one place
+- **Lifecycle `hooks`** (`beforeSave`, `afterSave`, `onApproval`, etc.) for optional custom logic
+- **`approve` permission** for approval workflows
+- **Generator Engine** auto-creates: `schema.prisma`, validators, i18n files
+- **AI Integration** for generating Blueprints from natural language
+
+V1 modules will continue to work unchanged. Migration is optional and progressive.
+
+**Full details:** [Module Kit V2 Design Document](module-kit-v2.md)
 
 ---
 
