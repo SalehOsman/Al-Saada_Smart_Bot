@@ -209,6 +209,8 @@ Build an AI-powered operational assistant serving as a comprehensive operational
 - ✅ AI Toolkit: Internal API for module integration (@al-saada/ai-assistant/toolkit)
 - ✅ RBAC-aware: Enforced via System Roles + AI Permission Profiles
 - ✅ Read-only Training Mode: Background self-improvement for vector embeddings
+- ✅ Quality Patterns: Corrective RAG (CRAG) and Self-RAG
+- ✅ Security: Prompt Injection Protection and Quota Headers
 
 ---
 

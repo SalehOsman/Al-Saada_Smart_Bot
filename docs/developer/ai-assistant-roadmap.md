@@ -1,6 +1,6 @@
 # AI Assistant Roadmap & Architecture
 
-**Last Updated:** 2026-03-03
+**Last Updated:** 2026-03-11
 
 The AI Assistant transforms the Al-Saada Smart Bot from a reactive tool to a proactive operational partner. It acts as "Layer 4" within the platform architecture, standing atop the Platform Core and Module Kit.
 
@@ -8,18 +8,19 @@ The AI Assistant transforms the Al-Saada Smart Bot from a reactive tool to a pro
 
 ## 1. Vision & Core Capabilities
 
-The objective of the AI Assistant is to abstract away complex UI navigation and reporting interfaces, allowing natural interaction with the system using Arabic text and voice.
+The objective of the AI Assistant is to abstract away complex UI navigation and reporting interfaces, allowing natural interaction with the system using Arabic text and voice, while ensuring rigorous security and compliance.
 
-### Primary Capabilities
-- **Natural Language Data Entry (P1):** Users seamlessly input business data like fuel usage or attendance via conversational Arabic without structured forms.
-- **Natural Language Querying (P1):** Business users retrieve live stats or metrics instantaneously through natural Q&A over the business datasets.
-- **Smart Report Generation (P2):** Generation of scheduled or ad-hoc reports dynamically infused with predictive insights highlighting trends and anomalies.
-- **Proactive Suggestions (P2):** Algorithmic threshold monitors push relevant business anomalies directly to scoped Admins (e.g., repeating lateness, missing truck logs).
-- **Document Analysis (P2):** Hybrid OCR ingestion (Gemini Vision + DeepSeek-OCR) extracting schema-ready data from invoices and PDFs directly to the database.
-- **Voice Interaction (P3):** Hands-free operation using high-accuracy Whisper STT transcription and Google TTS.
-- **Module Developer Wizard (P3):** AI-paired Module Generation via `/ai create-module` scaffolding conversational codebases safely on-demand.
-- **Usage Guidance Assistant (P3):** Intelligent routing of user questions to module documentation via RAG index.
-- **AI Toolkit APIs (P2):** Shared typed interfaces for integrations across Layer 3 modules.
+### Primary Capabilities (26 User Stories)
+- **Natural Language Input & Queries (P1):** Seamless conversational data entry and Arabic Q&A querying mapped safely via RBAC.
+- **Data Validation & Suggestions (P1/P2):** Pre-save advisory constraints cross-validation against business context and proactive algorithmic anomaly alerts (e.g., repeated lateness).
+- **Document Analysis & Hybrid OCR (P2):** Automatic data extraction from uploads via pluggable providers (Gemini Vision + DeepSeek-OCR) combined with document-specific Q&A.
+- **Smart Reports & Executive Briefings (P2):** Generation of scheduled or ad-hoc reports dynamically infused with predictive insights highlighting trends.
+- **AI Permission Profiles & Auditing (P1):** 6 configurable profiles (from GUIDANCE_ONLY to FULL_ACCESS) governing capabilities, actively documented in a filterable AI Audit Trail.
+- **Voice Interaction & Export (P3):** Hands-free operation using Whisper STT/Google TTS, and voice-commanded data export to Telegram/Email.
+- **Health, Quota, & Cost Control (P3):** Hard rate-limits (X-RateLimit headers), real-time service dashboards, and emergency shutdown mechanisms.
+- **RAG Quality Patterns (P2):** Implementation of Corrective RAG (CRAG) and Self-RAG evaluations for maximum answer fidelity.
+- **AI Toolkit APIs (P2):** Shared typed interfaces for integrations across Layer 3 modules (`@al-saada/ai-assistant/toolkit`).
+- **Module Developer Wizard (P3):** AI-paired Module Generation via `/ai create-module` with automatic contract alignment.
 
 ---
 
@@ -51,7 +52,7 @@ The AI implementation mirrors the "Phase 4" structure defined within the platfor
 Established natural language extraction paradigms via semantic prompts, implemented pgvector architecture over Prisma, and cemented Google TTS and Whisper STT for Arabic logic.
 
 ### Phase 1: Design & Contracts *(Completed)*
-Established all underlying models: `AIInteraction`, `AISuggestion`, `ScheduledReport`, `PrivacyRule`, `DocumentAnalysis`, `VoiceSession`, and `AIConfig`. Drafted fully typed OpenAPI specs isolating structured services. Generated comprehensive implementation plan (`plan.md`) and highly detailed test-driven tasks (`tasks.md`) explicitly covering Priority Requirements: Prompt Injection Protection, Quota Signalling, PII Redaction, and comprehensive AI Toolkit service signatures.
+Established all 17 underlying models (including new entities for Permission Profiles, Audit Trail, Anomalies, Feedback, Quotas, Emergency State, and Business Knowledge). Drafted 7 fully typed OpenAPI specs isolating structured services. Generated comprehensive implementation plan (`plan.md`) and highly detailed test-driven tasks (`tasks.md`) explicitly covering Priority Requirements: Prompt Injection Protection, Quota Signalling, OCR PII Redaction, CRAG/Self-RAG evaluation, and stable AI Toolkit service signatures.
 
 ### Phase 2: Implementation *(Pending)*
 Execution of the actual AI processing logic via 251 sequential tasks from `tasks.md`, including integrating the Vercel AI SDK into the `packages/ai-assistant` package, building prompt pipelines, and fortifying security layers prior to production launch.
@@ -60,12 +61,15 @@ Execution of the actual AI processing logic via 251 sequential tasks from `tasks
 
 ## 4. Security & AI-RBAC (Role Based Access Control)
 
-Unlike standard stateless operations, the AI is heavily intertwined with system security. The interaction loop is fundamentally gated by `AdminScope` policies mapped in Layer 1.
+Unlike standard stateless operations, the AI is heavily intertwined with system security. The interaction loop is fundamentally gated by two distinct layers:
+1. **System AdminScope (Layer 1):** Policies mapped in Layer 1 limit which records an admin or employee can query.
+2. **AI Permission Profiles (Layer 2):** 6 built-in profiles (e.g., GUIDANCE_ONLY, DATA_ANALYST, FULL_ACCESS) dictate exactly what AI *capabilities* a user has, regardless of their System Role.
 
 Every single query against PostgreSQL utilizing pgvector must dynamically apply scope variables.
 - **Employee Search**: Is strictly filtered exclusively against their exact operating context.
 - **Managers / Admins**: Cannot ask the AI questions correlating to Sections or Modules they do not explicitly oversee.
 - **Redaction Logic**: Handled centrally by `PrivacyRule` mapping arrays, ensuring phone numbers, National IDs, and configured financial keys are stripped down to structural tokens before engaging generalized models via REST.
+- **Input Sanitization:** A prompt injection protection layer filters out malicious overrides before any processing or cloud transmission.
 
 ---
 
