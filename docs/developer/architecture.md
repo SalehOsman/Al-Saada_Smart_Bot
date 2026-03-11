@@ -22,6 +22,7 @@ The foundation of the bot. It handles everything that is *not* a specific busine
   - `AdminScopeService`: Managing scoped admin permissions.
   - `SentryService`: Real-time error tracking and PII filtering.
   - `BackupService`: Automated encrypted database backups.
+  - **Hierarchical Sections:** Multi-level container architecture mapping for modules.
 
 ### Layer 2: Module Kit (`packages/module-kit/`)
 The framework for building business features. It provides a standardized API (`validate`, `confirm`, `save`) to ensure all features behave consistently. (See: [Module Kit Reference](module-kit-reference.md))

@@ -222,7 +222,7 @@ al-saada-smart-bot/
 
 | المرحلة | الوصف | الإصدار | الحالة |
 |---------|-------|---------|--------|
-| **Phase 1** | نواة المنصة (Bot, RBAC, Sections, Audit) | v0.1.0 | ✅ مكتمل |
+| **Phase 1** | نواة المنصة (Bot, RBAC, Sections, Audit, Hierarchical Sections) | v0.1.0 | ✅ مكتمل |
 | **Phase 2** | Module Kit (Helpers, Drafts, CLI) | v0.2.0 | ✅ مكتمل |
 | **Phase 3** | Production Readiness (Sentry, CI/CD, Backups) | v0.3.0 | ✅ مكتمل |
 | **Phase 4** | مساعد ذكاء اصطناعي تشغيلي | v0.4.0 | ⏳ قادم |
@@ -419,7 +419,7 @@ npm run module:remove
 
 | Phase | Description | Version | Status |
 |-------|-------------|---------|--------|
-| **Phase 1** | Platform Core (Bot, RBAC, Sections, Audit) | v0.1.0 | ✅ Complete |
+| **Phase 1** | Platform Core (Bot, RBAC, Sections, Audit, Hierarchical Sections) | v0.1.0 | ✅ Complete |
 | **Phase 2** | Module Kit (Helpers, Drafts, CLI) | v0.2.0 | ✅ Complete |
 | **Phase 3** | Production Readiness (Sentry, CI/CD, Backups) | v0.3.0 | ✅ Complete |
 | **Phase 4** | AI Operational Assistant | v0.4.0 | ⏳ Coming |
