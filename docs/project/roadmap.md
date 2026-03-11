@@ -262,9 +262,9 @@ User: "ما هي رواتب الإدارة؟"
 
 **Duration:** 3-5 weeks
 **Priority:** 🟠 HIGH
-**Status:** Design Phase (SpecKit: pending `008-module-kit-v2`)
+**Status:** Planning Complete (Pending Implementation)
 **Dependencies:** Phase 4 complete
-**Design Doc:** `docs/developer/module-kit-v2.md` (v0.1.0)
+**Design Doc:** `docs/developer/module-kit-v2.md` (v0.9.0)
 
 ### Objectives
 
@@ -283,8 +283,8 @@ Transform Module Kit from a scaffolding + helpers toolkit into a **Schema-Driven
 | **YAML Blueprints** | Define module fields, types, relationships, validation, and display in one file |
 | **Generator Engine** | Auto-generate `schema.prisma`, Zod validators, `config.ts`, i18n files, tests |
 | **Conversation Engine** | Dynamic runtime engine that reads Blueprint and renders Telegram conversation steps |
-| **10 Field Types** | text, number, money, date, boolean, select, multiSelect, photo, relation, computed |
-| **Built-in Validators** | positive, min/max, egyptianPhone, egyptianNationalId, afterField, regex, unique |
+| **19 Field Types** | text, textarea, number, decimal, money, date, time, boolean, select, multiSelect, email, phone, photo, document, file, location, rating, barcode, relation, computed |
+| **Built-in Validators** | positive, min/max, egyptianPhone, egyptianNationalId, afterField, beforeField, regex, unique, email, precision |
 | **Conditional Fields** | `showIf` — display fields based on other field values |
 | **Field Groups (Steps)** | Organize fields into multi-step wizards for better UX |
 | **Display Configuration** | Define how records appear in lists (fields, sorting, searching) |
