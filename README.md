@@ -73,9 +73,11 @@
 | الطبقة | الوصف | الحالة |
 |--------|-------|--------|
 | **Layer 1** — نواة المنصة | بوت، مصادقة، صلاحيات، أقسام، تدقيق | ✅ مكتمل |
-| **Layer 2** — Module Kit | أدوات التحقق، التأكيد، الحفظ، المسودات | ✅ مكتمل |
+| **Layer 2** — Module Kit V2 | Schema-Driven App Factory (YAML Blueprints) | 🚀 قيد التطوير |
 | **Layer 3** — الموديولات | تعريف الموديول + مسارات الحوار | 🔧 جاهز للبناء |
 | **Layer 4** — المساعد الذكي | معالجة لغة طبيعية، تقارير ذكية، OCR، RAG | ⏳ جاهز للبرمجة |
+
+> ✨ **جديد:** يمر Module Kit حالياً بترقية ضخمة للإصدار الثاني (V2) ليصبح **Schema-Driven App Factory**. يمكنك تعريف موديول كامل للموارد البشرية أو المالية باستخدام ملف **YAML** بدون برمجة (Zero-Code)، والمنصة ستتولى توليد واجهة المستخدم (تليجرام)، قواعد البيانات، والمحققون تلقائياً، مع دعم 19 نوع مختلف من الحقول.
 
 ---
 
@@ -314,9 +316,11 @@ Employee opens bot ──▶ selects section ──▶ selects module ──▶ 
 | Layer | Description | Status |
 |-------|-------------|--------|
 | **Layer 1** — Platform Core | Bot, Auth, RBAC, Sections, Audit | ✅ Complete |
-| **Layer 2** — Module Kit | Validation, Confirmation, Persistence, Drafts | ✅ Complete |
+| **Layer 2** — Module Kit V2 | Schema-Driven App Factory (YAML Blueprints) | 🚀 Under Dev |
 | **Layer 3** — Modules | Module definitions + Conversation flows | 🔧 Ready to build |
 | **Layer 4** — AI Assistant | NLP, Smart Reports, OCR, RAG, Suggestions | ⏳ Ready for Dev |
+
+> ✨ **NEW:** Module Kit is currently undergoing a massive upgrade to V2 (**Schema-Driven App Factory**). You can define a complete HR or Finance module using a single **YAML** file (Zero-Code). The platform automatically generates the Telegram UI, Database Schema, and Validators, supporting 19 different field types.
 
 ---
 

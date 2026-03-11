@@ -258,24 +258,41 @@ User: "ما هي رواتب الإدارة؟"
 
 ---
 
-## Phase 5: AI-Driven Module Kit V2
+## Phase 5: Module Kit V2 — Schema-Driven App Factory
 
 **Duration:** 3-5 weeks
 **Priority:** 🟠 HIGH
-**Status:** Planned (Spec: `008-module-kit-v2`)
+**Status:** Design Phase (SpecKit: pending `008-module-kit-v2`)
 **Dependencies:** Phase 4 complete
+**Design Doc:** `docs/developer/module-kit-v2.md` (v0.1.0)
 
 ### Objectives
 
-Upgrade the current Module Kit to a fully Dynamic App Factory, leveraging the AI Assistant to generate complex data gathering modules, relationships, and lifecycles via simple text/yaml configurations without writing raw code.
+Transform Module Kit from a scaffolding + helpers toolkit into a **Schema-Driven App Factory** where developers define modules via declarative YAML Blueprints. Zero-Code is the default — custom code is the exception.
 
 ---
 
+### Core Principle
+
+> Zero-Code by default. A developer writes a YAML Blueprint → Generator Engine produces everything (database, validation, conversation flow, i18n files). Custom `hooks.ts` code is only needed for exceptional business logic.
+
 ### Key Capabilities
-- **YAML/Blueprint Driven:** Define form fields, types, relationships, and logic in one file.
-- **Dynamic Database:** Auto-generate Prisma tables (schema.prisma) and Zod validations from blueprints.
-- **Relational Lookups:** Automatically fetch and display reference data from other modules.
-- **AI "Intent-to-App":** Automatically write Blueprints, auto-localize text (`ar.json`, `en.json`), and suggest missing fields via RAG LLM integration.
+
+| Capability | Description |
+|-----------|-------------|
+| **YAML Blueprints** | Define module fields, types, relationships, validation, and display in one file |
+| **Generator Engine** | Auto-generate `schema.prisma`, Zod validators, `config.ts`, i18n files, tests |
+| **Conversation Engine** | Dynamic runtime engine that reads Blueprint and renders Telegram conversation steps |
+| **10 Field Types** | text, number, money, date, boolean, select, multiSelect, photo, relation, computed |
+| **Built-in Validators** | positive, min/max, egyptianPhone, egyptianNationalId, afterField, regex, unique |
+| **Conditional Fields** | `showIf` — display fields based on other field values |
+| **Field Groups (Steps)** | Organize fields into multi-step wizards for better UX |
+| **Display Configuration** | Define how records appear in lists (fields, sorting, searching) |
+| **Module Lifecycle** | DRAFT → ACTIVE → DISABLED → DEPRECATED → ARCHIVED |
+| **Lifecycle Hooks** | Optional: beforeSave, afterSave, onStepValidate, onApproval, beforeDelete |
+| **Blueprint Templates** | Pre-built templates for HR, Finance, Operations, Inventory |
+| **AI Integration** | Intent-to-App, Auto-Localization, Smart Suggestions (via Phase 4 AI Assistant) |
+| **V1 Compatibility** | Existing V1 modules continue working — migration optional and progressive |
 
 ---
 
@@ -623,7 +640,8 @@ Total Duration: ~26 weeks (6.5 months)
 |---------|------|---------|--------|
 | 1.0.0 | 2026-03-04 | Initial roadmap created from Enhancement Proposals + Dashboard & Scaling | Technical Advisor |
 | 1.1.0 | 2026-03-09 | Phase 3 completed (v0.3.0), updated PR-001→004 with actual implementation details | Technical Advisor |
-| 1.2.0 | 2026-03-10 | Added Phase 5 (AI-Driven Module Kit V2) strategically after Phase 4 (AI Assistant). Shifted later phases. | Technical Advisor |
+| 1.2.0 | 2026-03-10 | Added Phase 5 (AI-Driven Module Kit V2) strategically after Phase 4 (AI Assistant). Shifted later phases. |
+| 1.3.0 | 2026-03-11 | Enriched Phase 5 with full V2 scope: 10 field types, Conversation Engine, Blueprint spec, Conditional Fields, Field Groups, Display Config, Module Lifecycle, Templates. Linked to design doc `docs/developer/module-kit-v2.md` v0.1.0. | Technical Advisor |
 
 ---
 

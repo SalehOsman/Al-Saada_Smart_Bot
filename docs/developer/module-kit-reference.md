@@ -1,6 +1,6 @@
 # Module Kit Reference (Layer 2)
 
-**Last Updated:** 2026-03-03
+**Last Updated:** 2026-03-11
 
 ## 1. Overview
 The Module Kit (`packages/module-kit/`) establishes the standard framework for creating scalable business features (Layer 3 Modules) in the Al-Saada Smart Bot. It provides a standardized Public API for conversational validation, confirmations, state persistence, structured definitions, and PII masking.
@@ -189,16 +189,28 @@ Purges a specified slug directory iteratively alongside ripping corresponding pr
 
 ---
 
-## 10. Known Limitations & Planned Improvements
+## 10. Known Limitations & Status
 
-| ID | Title | Current Behavior | Planned Improvement | Priority |
-|----|-------|-----------------|---------------------|----------|
-| BL-001 | Redis failure user warning | Draft middleware catches Redis errors silently (log only) | Warn user via `module-kit-draft-save-unavailable` i18n key | LOW |
-| BL-002 | save() automatic retry | Throws error immediately, draft preserved in Redis | Max 1 automatic retry before throwing, show `module-kit-save-failed-persistent` | LOW |
-| BL-003 | Conversation inactivity timeout | No timeout — conversation handler stays active indefinitely | 15-minute inactivity timeout, release handler, keep draft in Redis | LOW |
-| BL-004 | confirm() empty data guard | No validation on data parameter | Throw developer-facing error if data object is empty | LOW |
-| BL-005 | FR-007 doc alignment | FR-007 says "no standalone notifyScopedAdmins" | Update spec to reflect actual private helper in persistence.ts | LOW |
+| ID | Title | Status | Evidence |
+|----|-------|--------|----------|
+| BL-001 | Redis failure user warning | ✅ IMPLEMENTED (v0.3.0) | `draft.ts` — warns via `module-kit-draft-save-unavailable` |
+| BL-002 | save() automatic retry | ✅ IMPLEMENTED (v0.3.0) | `persistence.ts` — max 1 retry |
+| BL-003 | Conversation inactivity timeout | ✅ IMPLEMENTED (v0.3.0) | `draft.ts` — 15-min timeout |
+| BL-004 | confirm() empty data guard | ✅ IMPLEMENTED (v0.3.0) | `confirmation.ts` — guard check |
+| BL-005 | FR-007 doc alignment | ✅ IMPLEMENTED (v0.3.0) | `spec.md` — updated |
 
 ---
 
-**See Also:** [Platform Core Reference](platform-core-reference.md) | [Architecture Overview](architecture.md)
+## 11. Module Kit V2 (Planned)
+
+Module Kit V2 will transform this toolkit into a **Schema-Driven App Factory** with:
+- YAML Blueprints replacing manual conversation handlers
+- Dynamic Conversation Engine rendering fields automatically
+- Generator producing schema.prisma + validators + i18n from blueprints
+- AI integration for natural-language module creation
+
+**Full design:** [Module Kit V2 Design Document](module-kit-v2.md)
+
+---
+
+**See Also:** [Module Development Guide](module-development-guide.md) | [Platform Core Reference](platform-core-reference.md) | [Architecture Overview](architecture.md)
