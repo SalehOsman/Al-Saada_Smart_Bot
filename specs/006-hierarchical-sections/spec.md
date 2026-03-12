@@ -2,7 +2,7 @@
 
 **Feature Branch**: `006-hierarchical-sections`  
 **Created**: 2026-03-10  
-**Status**: In Progress  
+**Status**: Complete  
 **Input**: User description: "Create an additional layer for sub-sections if they do not exist in the module creation dialog... When choosing a main section, it asks to choose a sub-section... If none, it asks to create a new one or skip to place the module directly in the main section."
 
 ## Clarifications
